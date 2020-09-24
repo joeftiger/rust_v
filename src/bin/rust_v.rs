@@ -7,11 +7,12 @@ const OUTPUT: &str = "output_file";
 const VERBOSE: &str = "VERBOSE";
 
 fn main() {
-    init_help();
+    // let app = init_help();
+    // let _matches = app.get_matches();
 }
 
 fn init_help<'a, 'b>() -> App<'a, 'b> {
-    App::new("Rust-V")
+   App::new("Rust-V")
         .version("0.0.1")
         .author("Julius Oeftiger")
         .about("A rust ray tracer supporting rgb and spectral ray tracing")
