@@ -1,4 +1,6 @@
 # Benchmarks
+The following benchmarks were made on an AMD Ryzen 5 1500X.
+
 ## Aabb - Ray Intersections
 The different implementations operated on a `Vec3` struct or directly on `f32` values.
 
