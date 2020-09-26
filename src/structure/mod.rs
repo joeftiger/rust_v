@@ -9,42 +9,45 @@ fn global_bounding_box<T: Boxable>(objects: &Vec<T>) -> Option<Aabb> {
         return None;
     }
 
-    let mut aabb = Aabb::new(Vec3::one() * f32::INFINITY, Vec3::one() * f32::NEG_INFINITY);
+    let mut aabb = Aabb::default();
+    let mut at_least_one_aabb = false;
 
     for o in objects {
         if let Some(boxed) = o.bounding_box() {
-            aabb = aabb.outer_join(&boxed);
+            if !at_least_one_aabb {
+                at_least_one_aabb = true;
+                aabb = boxed;
+            } else {
+                aabb = aabb.outer_join(&boxed);
+            }
         }
     }
 
-    if aabb.min.x == f32::INFINITY {
+    if !at_least_one_aabb {
         return None;
     }
 
     Some(aabb)
 }
 
-fn bounding_box_and_cell_size<T: Boxable>(objects: &Vec<T>) -> (Option<Aabb>, Option<Vec3>) {
+fn average_cell_size<T: Boxable>(objects: &Vec<T>) -> Option<Vec3> {
     if objects.is_empty() {
-        return (None, None);
+        return None;
     }
 
-    let mut bounding_box = Aabb::new(Vec3::one() * f32::INFINITY, Vec3::one() * f32::NEG_INFINITY);
-
-    let mut cell_size = Vec3::one() * f32::INFINITY;
+    let mut cell_size = Vec3::zero();
+    let mut at_least_one_cell = false;
 
     for o in objects {
         if let Some(aabb) = o.bounding_box() {
-            bounding_box = bounding_box.outer_join(&aabb);
+            at_least_one_cell = true;
             cell_size += aabb.size();
         }
     }
 
-    if cell_size.x == f32::INFINITY {
-        return (None, None);
+    if !at_least_one_cell {
+        return None;
     }
 
-    cell_size /= objects.len() as f32;
-
-    (Some(bounding_box), Some(cell_size))
+    Some(cell_size / objects.len() as f32)
 }

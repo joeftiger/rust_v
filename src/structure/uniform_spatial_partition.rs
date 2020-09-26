@@ -1,7 +1,7 @@
 use ultraviolet::Vec3;
 
 use crate::geometry::{Aabb, Boxable, CeilFloor, Intersectable};
-use crate::structure::bounding_box_and_cell_size;
+use crate::structure::{bounding_box_and_cell_size, global_bounding_box, average_cell_size};
 
 #[derive(Default)]
 struct SpatialCell<'a, T: Boxable> {
@@ -16,9 +16,8 @@ struct SpatialPartition<'a, T: Boxable> {
 
 impl<'a, T: Boxable> SpatialPartition<'a, T> {
     pub fn new_averaged(boxables: &'a Vec<T>) -> SpatialPartition<'a, T> {
-        let (global_box, cell_size) = bounding_box_and_cell_size(boxables);
-        let global_box = global_box.unwrap();
-        let cell_size = cell_size.unwrap();
+        let global_box = global_bounding_box(boxables).unwrap();
+        let cell_size = average_cell_size(boxables).unwrap();
 
         // fit cells
         let fitting_cells = global_box.size() / cell_size;
