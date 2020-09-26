@@ -4,13 +4,13 @@ use crate::util::sorted_vec::SortedVec;
 
 #[derive(Clone, Default)]
 pub struct Wave {
-    wave_length_nm: f32,
+    pub wave_length_nm: f32,
 }
 
 #[derive(Clone, Default)]
-struct SpectrumEntry {
-    x: f32,
-    y: f32,
+pub struct SpectrumEntry {
+    pub x: f32,
+    pub y: f32,
 }
 
 pub struct Spectrum {
