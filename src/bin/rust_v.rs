@@ -2,7 +2,6 @@ extern crate clap;
 
 use std::time::Instant;
 
-
 use clap::{App, Arg};
 use ultraviolet::Vec3;
 
