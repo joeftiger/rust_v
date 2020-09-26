@@ -1,9 +1,35 @@
 struct KdNode<T> {
-    item: T,
-    left: Option<Box<Self>>,
-    right: Option<Box<Self>>,
+    pub item: T,
+    pub left: Option<Box<Self>>,
+    pub right: Option<Box<Self>>,
 }
 
 pub struct KdTree<T> {
-    root: Option<Box<KdNode<T>>>,
+    pub root: Option<Box<KdNode<T>>>,
+}
+
+impl<T> KdNode<T> {
+    pub fn new(item: T) -> Self {
+        KdNode {
+            item,
+            left: None,
+            right: None,
+        }
+    }
+
+    pub fn set_left(&mut self, left: Box<Self>) -> &mut Self {
+        self.left = Some(left);
+        self
+    }
+
+    pub fn set_right(&mut self, right: Box<Self>) -> &mut Self {
+        self.right = Some(right);
+        self
+    }
+
+    pub fn set_left_right(&mut self, left: Box<Self>, right: Box<Self>) -> &mut Self {
+        self.set_left(left);
+        self.set_right(right);
+        self
+    }
 }
