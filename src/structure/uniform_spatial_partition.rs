@@ -1,7 +1,7 @@
 use ultraviolet::Vec3;
 
 use crate::geometry::{Aabb, Boxable, CeilFloor, Intersectable};
-use crate::structure::{bounding_box_and_cell_size, global_bounding_box, average_cell_size};
+use crate::structure::{global_bounding_box, average_cell_size};
 
 #[derive(Default)]
 struct SpatialCell<'a, T: Boxable> {
@@ -61,7 +61,7 @@ impl<'a, T: Boxable> SpatialPartition<'a, T> {
             grid.push(grid_y);
         }
 
-        SpatialPartition {
+        Self {
             grid,
             cell_size,
         }
