@@ -1,10 +1,12 @@
 extern crate clap;
 
-use clap::{App, Arg};
 use std::time::Instant;
-use rust_v::geometry::sphere::Sphere;
+
+
+use clap::{App, Arg};
 use ultraviolet::Vec3;
-use rust_v::geometry::{Ray, Intersectable};
+
+use rust_v::geometry::{Aabb, Intersectable, Ray};
 
 const INPUT: &str = "input_file";
 const OUTPUT: &str = "output_file";
@@ -14,36 +16,53 @@ fn main() {
     // let app = init_help();
     // let _matches = app.get_matches();
 
-   quick_bench();
+    quick_bench();
 }
 
 fn quick_bench() {
-   const SECONDS: u64 = 300;
+    const SECONDS: u64 = 10;
 
-   let sphere = Sphere::new(Vec3::zero(), 1.0);
-   let ray = Ray::new(-Vec3::unit_x() * 2.0, Vec3::unit_x());
+    let now = Instant::now();
 
-   let now = Instant::now();
+    println!("Warming up for 5 s...");
+    while now.elapsed().as_secs() < 5 {
+        let min = -Vec3::new(rand::random(), rand::random(), rand::random());
+        let max = Vec3::new(rand::random(), rand::random(), rand::random());
+        let aabb = Aabb::new(min, max);
 
-   println!("Warming up for {} s...", 5);
-   while now.elapsed().as_secs() < 5 {
-      let _hit = sphere.intersects(&ray);
-   }
+        let origin = -Vec3::new(rand::random(), rand::random(), rand::random()) * 2.0;
+        let direction = Vec3::new(rand::random(), rand::random(), rand::random());
+        let ray = Ray::new(origin, direction);
 
-   println!("Benchmarking for {} s...", SECONDS);;
-   let mut hits = 0;
-   let now = Instant::now();
+        let _hit = aabb.intersects(&ray);
+    }
 
-   while now.elapsed().as_secs() < SECONDS {
-      let _hit = sphere.intersects(&ray);
-      hits += 1;
-   }
+    println!("Benchmarking for {} s...", SECONDS);
+    let mut hits: u64 = 0;
+    let mut casts: u64 = 0;
+    let now = Instant::now();
 
-   println!("{} casts/s", hits / SECONDS);
+    while now.elapsed().as_secs() < SECONDS {
+        let min = -Vec3::new(rand::random(), rand::random(), rand::random());
+        let max = Vec3::new(rand::random(), rand::random(), rand::random());
+        let aabb = Aabb::new(min, max);
+
+        let origin = -Vec3::new(rand::random(), rand::random(), rand::random()) * 2.0;
+        let direction = Vec3::new(rand::random(), rand::random(), rand::random());
+
+        let ray = Ray::new(origin, direction);
+        if aabb.intersects(&ray) {
+            hits += 1;
+        }
+        casts += 1;
+    }
+
+    println!("{} hits", hits);
+    println!("{} casts/s", casts / SECONDS);
 }
 
 fn init_help<'a, 'b>() -> App<'a, 'b> {
-   App::new("Rust-V")
+    App::new("Rust-V")
         .version("0.0.1")
         .author("Julius Oeftiger")
         .about("A rust ray tracer supporting rgb and spectral ray tracing")
