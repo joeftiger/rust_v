@@ -7,7 +7,7 @@ pub struct SortedVec<T: Ord> {
 }
 
 impl<T: Ord> SortedVec<T> {
-    pub const fn new() -> Self {
+    pub fn new() -> Self {
         Self {
             vec: Vec::new(),
         }
