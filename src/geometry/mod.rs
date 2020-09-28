@@ -11,7 +11,7 @@ pub trait Angular<T> {
     fn angle_to(&self, other: T) -> f32;
 }
 
-pub trait CeilFloor {
+pub trait CeilFloorExt {
     fn ceil(&self) -> Self;
     fn floor(&self) -> Self;
 }
@@ -39,7 +39,7 @@ impl Angular<Vec3> for Vec3 {
     }
 }
 
-impl CeilFloor for Vec3 {
+impl CeilFloorExt for Vec3 {
     fn ceil(&self) -> Self {
         Self {
             x: self.x.ceil(),
