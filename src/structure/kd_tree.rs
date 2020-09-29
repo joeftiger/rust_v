@@ -32,8 +32,6 @@ impl<T> KdNode<T> {
 
 impl<T: Boxable> KdTree<T> {
     fn new() -> Self {
-        Self {
-            root: None
-        }
+        Self { root: None }
     }
 }

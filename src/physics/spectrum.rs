@@ -26,7 +26,22 @@ impl SpectrumEntry {
     }
 }
 
-pub trait CoefficientSpectrum<const SAMPLES: usize>: Add + AddAssign + Sub + SubAssign + Mul + MulAssign + Div + DivAssign + Mul<f32> + MulAssign<f32> + Div<f32> + DivAssign<f32> + Eq + Sized {
+pub trait CoefficientSpectrum<const SAMPLES: usize>:
+    Add
+    + AddAssign
+    + Sub
+    + SubAssign
+    + Mul
+    + MulAssign
+    + Div
+    + DivAssign
+    + Mul<f32>
+    + MulAssign<f32>
+    + Div<f32>
+    + DivAssign<f32>
+    + Eq
+    + Sized
+{
     /// Creates and assigns the given value to the whole spectrum.
     fn new(value: f32) -> Self;
 

@@ -1,7 +1,7 @@
-use ultraviolet::Vec3;
-use std::ops::Index;
-use crate::geometry::{Boxable, Intersectable, Ray, Intersection};
 use crate::geometry::aabb::Aabb;
+use crate::geometry::{Boxable, Intersectable, Intersection, Ray};
+use std::ops::Index;
+use ultraviolet::Vec3;
 
 /// A triangle consists of 3 vertices.
 ///
@@ -40,9 +40,9 @@ impl Intersectable<&Ray> for Triangle {
     fn intersects(&self, ray: &Ray) -> Option<Intersection> {
         let edge1 = self[1] - self[0];
         let edge2 = self[2] - self[0];
-        
+
         let h = ray.direction.cross(edge2);
-        
+
         let a = edge1.dot(h);
         if a.abs() <= f32::EPSILON {
             return None;
@@ -56,7 +56,7 @@ impl Intersectable<&Ray> for Triangle {
             return None;
         }
 
-        let q =  s.cross(edge1);
+        let q = s.cross(edge1);
         let v = f * ray.direction.dot(q);
         if v < 0.0 || v > 1.0 {
             return None;

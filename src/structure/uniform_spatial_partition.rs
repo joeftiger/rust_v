@@ -1,8 +1,8 @@
 use ultraviolet::Vec3;
 
-use crate::geometry::{Boxable, CeilFloorExt, Intersectable};
-use crate::structure::{global_bounding_box, average_cell_size};
 use crate::geometry::aabb::Aabb;
+use crate::geometry::{Boxable, CeilFloorExt, Intersectable};
+use crate::structure::{average_cell_size, global_bounding_box};
 
 #[derive(Default)]
 struct SpatialCell<'a, T: Boxable> {
@@ -25,7 +25,9 @@ impl<'a, T: Boxable> SpatialPartition<'a, T> {
         let cell_size = cell_size * fitting_cells.ceil() / fitting_cells;
         let fitting_cells = fitting_cells.ceil();
 
-        let unit = Vec3::unit_x() * cell_size.x + Vec3::unit_y() * cell_size.y + Vec3::unit_z() * cell_size.z;
+        let unit = Vec3::unit_x() * cell_size.x
+            + Vec3::unit_y() * cell_size.y
+            + Vec3::unit_z() * cell_size.z;
 
         // create grid
         let mut grid: Vec<Vec<Vec<SpatialCell<T>>>> = Vec::with_capacity(cell_size.x as usize);
@@ -47,12 +49,19 @@ impl<'a, T: Boxable> SpatialPartition<'a, T> {
                     // add objects inside the cell boundinx box
                     let mut objects = vec![];
                     for o in boxables {
-                        if o.bounding_box().unwrap().intersects(&bounding_box).is_some() {
+                        if o.bounding_box()
+                            .unwrap()
+                            .intersects(&bounding_box)
+                            .is_some()
+                        {
                             objects.push(o);
                         }
                     }
 
-                    let cell = SpatialCell { bounding_box, objects };
+                    let cell = SpatialCell {
+                        bounding_box,
+                        objects,
+                    };
                     grid_z.push(cell);
                 }
 
@@ -62,9 +71,6 @@ impl<'a, T: Boxable> SpatialPartition<'a, T> {
             grid.push(grid_y);
         }
 
-        Self {
-            grid,
-            cell_size,
-        }
+        Self { grid, cell_size }
     }
 }

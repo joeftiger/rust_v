@@ -4,9 +4,9 @@ use ultraviolet::Vec3;
 
 use crate::geometry::aabb::Aabb;
 
+pub mod aabb;
 pub mod plane;
 pub mod sphere;
-pub mod aabb;
 pub mod triangle;
 
 #[derive(Debug, Default)]

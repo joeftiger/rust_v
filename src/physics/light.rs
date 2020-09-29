@@ -19,24 +19,19 @@ pub struct Spectrum {
 
 impl Wave {
     pub fn new(wave_length_nm: f32) -> Self {
-        Self {
-            wave_length_nm
-        }
+        Self { wave_length_nm }
     }
 }
 
 impl SpectrumEntry {
     pub fn new(x: f32, y: f32) -> Self {
-        Self {
-            x,
-            y,
-        }
+        Self { x, y }
     }
 
     pub fn new_x(x: f32) -> Self {
         Self {
             x,
-            y: f32::default()
+            y: f32::default(),
         }
     }
 }
@@ -63,14 +58,15 @@ impl Ord for SpectrumEntry {
 
 impl Spectrum {
     pub fn new(spectrum: SortedVec<SpectrumEntry>) -> Self {
-        Self {
-            spectrum
-        }
+        Self { spectrum }
     }
 
     /// Uses linear interpolation for given wave length.
     pub fn evaluate_linear(&self, wave_length: f32) -> Option<Wave> {
-        if let Some(min_index) = self.spectrum.index_of_next_lower(SpectrumEntry::new_x(wave_length)) {
+        if let Some(min_index) = self
+            .spectrum
+            .index_of_next_lower(SpectrumEntry::new_x(wave_length))
+        {
             if min_index + 1 >= self.spectrum.len() {
                 return Some(Wave::new(self.spectrum[min_index].y));
             }

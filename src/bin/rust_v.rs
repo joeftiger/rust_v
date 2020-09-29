@@ -5,8 +5,8 @@ use std::time::Instant;
 use clap::{App, Arg};
 use ultraviolet::Vec3;
 
-use rust_v::geometry::{Ray, Intersectable};
 use rust_v::geometry::aabb::Aabb;
+use rust_v::geometry::{Intersectable, Ray};
 
 const INPUT: &str = "input_file";
 const OUTPUT: &str = "output_file";
@@ -66,18 +66,24 @@ fn init_help<'a, 'b>() -> App<'a, 'b> {
         .version("0.0.1")
         .author("Julius Oeftiger")
         .about("A rust ray tracer supporting rgb and spectral ray tracing")
-        .arg(Arg::with_name(INPUT)
-            // .short("i")
-            // .long("input")
-            .help("The input file to use")
-            .required(true))
-        .arg(Arg::with_name(OUTPUT)
-            // .short("o")
-            // .long("output")
-            .help("The output file to save in (png)")
-            .required(true))
-        .arg(Arg::with_name(VERBOSE)
-            .short("v")
-            .long("verbose")
-            .required(false))
+        .arg(
+            Arg::with_name(INPUT)
+                // .short("i")
+                // .long("input")
+                .help("The input file to use")
+                .required(true),
+        )
+        .arg(
+            Arg::with_name(OUTPUT)
+                // .short("o")
+                // .long("output")
+                .help("The output file to save in (png)")
+                .required(true),
+        )
+        .arg(
+            Arg::with_name(VERBOSE)
+                .short("v")
+                .long("verbose")
+                .required(false),
+        )
 }

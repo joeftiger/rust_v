@@ -66,7 +66,8 @@ impl Intersectable<&Self> for Aabb {
     fn intersects(&self, other: &Self) -> Option<Intersection> {
         if (self.min.x <= other.max.x && self.max.x >= other.min.x)
             && (self.min.y <= other.max.y && self.max.y >= other.min.y)
-            && (self.min.z <= other.max.z && self.max.z >= other.min.z) {
+            && (self.min.z <= other.max.z && self.max.z >= other.min.z)
+        {
             return Some(Intersection::default());
         }
 

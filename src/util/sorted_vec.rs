@@ -8,9 +8,7 @@ pub struct SortedVec<T: Ord> {
 
 impl<T: Ord> SortedVec<T> {
     pub fn new() -> Self {
-        Self {
-            vec: Vec::new(),
-        }
+        Self { vec: Vec::new() }
     }
 
     pub fn with_capacity(capacity: usize) -> Self {
@@ -21,7 +19,7 @@ impl<T: Ord> SortedVec<T> {
 
     pub unsafe fn from_raw_parts(ptr: *mut T, length: usize, capacity: usize) -> Self {
         Self {
-            vec: Vec::from_raw_parts(ptr, length, capacity)
+            vec: Vec::from_raw_parts(ptr, length, capacity),
         }
     }
 
@@ -131,7 +129,7 @@ impl<T: Ord> SortedVec<T> {
     #[must_use = "use `.truncate()` if you don't need the other half"]
     pub fn split_off(&mut self, at: usize) -> Self {
         Self {
-            vec: self.vec.split_off(at)
+            vec: self.vec.split_off(at),
         }
     }
 
@@ -139,7 +137,6 @@ impl<T: Ord> SortedVec<T> {
         self.vec.resize_with(new_len, f);
         self.vec.sort()
     }
-
 
     // TODO: Fix import of Splice<I::IntoIter>
     // pub fn splice<R: RangeBounds<usize>, I: IntoIterator<Item = T>>(&mut self, range: R, replace_with: I) -> Splice<I::IntoIter> {
@@ -249,9 +246,7 @@ impl<T: Ord, I: SliceIndex<[T]>> IndexMut<I> for SortedVec<T> {
 
 impl<T: Ord> From<Vec<T>> for SortedVec<T> {
     fn from(vec: Vec<T>) -> Self {
-        let mut sorted_vec = Self {
-            vec
-        };
+        let mut sorted_vec = Self { vec };
         sorted_vec.vec.sort();
 
         sorted_vec
