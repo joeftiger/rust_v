@@ -27,15 +27,15 @@ impl Plane {
 }
 
 impl Intersectable<&Ray> for Plane {
-    fn intersects(&self, ray: &Ray) -> Intersection {
+    fn intersects(&self, ray: &Ray) -> Option<Intersection> {
         let denom = self.normal.dot(ray.direction);
         if denom.abs() <= f32::EPSILON {
-            return Intersection::none();
+            return None;
         }
 
         let t = -(self.normal.dot(ray.origin) + self.d) / denom;
         if t <= f32::EPSILON {
-            return Intersection::none();
+            return None;
         }
 
         let position = ray.at(t);
@@ -45,7 +45,7 @@ impl Intersectable<&Ray> for Plane {
             normal = -normal;
         }
 
-        Intersection::at(position, normal)
+        Some(Intersection::at(position, normal))
     }
 }
 

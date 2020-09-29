@@ -47,7 +47,7 @@ impl<'a, T: Boxable> SpatialPartition<'a, T> {
                     // add objects inside the cell boundinx box
                     let mut objects = vec![];
                     for o in boxables {
-                        if o.bounding_box().unwrap().intersects(&bounding_box).hit {
+                        if o.bounding_box().unwrap().intersects(&bounding_box).is_some() {
                             objects.push(o);
                         }
                     }

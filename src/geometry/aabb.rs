@@ -63,18 +63,20 @@ impl Aabb {
 impl Intersectable<&Self> for Aabb {
     #[inline]
     #[must_use]
-    fn intersects(&self, other: &Self) -> Intersection {
-        Intersection::only_hit(
-            (self.min.x <= other.max.x && self.max.x >= other.min.x)
-                && (self.min.y <= other.max.y && self.max.y >= other.min.y)
-                && (self.min.z <= other.max.z && self.max.z >= other.min.z)
-        )
+    fn intersects(&self, other: &Self) -> Option<Intersection> {
+        if (self.min.x <= other.max.x && self.max.x >= other.min.x)
+            && (self.min.y <= other.max.y && self.max.y >= other.min.y)
+            && (self.min.z <= other.max.z && self.max.z >= other.min.z) {
+            return Some(Intersection::default());
+        }
+
+        None
     }
 }
 
 impl Intersectable<&Ray> for Aabb {
     #[inline]
-    fn intersects(&self, ray: &Ray) -> Intersection {
+    fn intersects(&self, ray: &Ray) -> Option<Intersection> {
         let t1 = (self.min - ray.origin) / ray.direction;
         let t2 = (self.max - ray.origin) / ray.direction;
 
@@ -85,7 +87,7 @@ impl Intersectable<&Ray> for Aabb {
         let t_max = f32::min(t_max_vec.z, f32::min(t_max_vec.y, t_max_vec.x));
 
         if t_max < 0.0 || t_max < t_min {
-            return Intersection::none();
+            return None;
         }
 
         let position = ray.at(t_min);
@@ -107,6 +109,6 @@ impl Intersectable<&Ray> for Aabb {
             panic!("f32::EPSILON is too small!");
         }
 
-        Intersection::at(position, normal)
+        Some(Intersection::at(position, normal))
     }
 }

@@ -7,33 +7,17 @@ use crate::geometry::aabb::Aabb;
 pub mod plane;
 pub mod sphere;
 pub mod aabb;
+pub mod triangle;
 
+#[derive(Debug, Default)]
 pub struct Intersection {
-    pub hit: bool,
     pub position: Option<Vec3>,
     pub normal: Option<Vec3>,
 }
 
 impl Intersection {
-    pub fn none() -> Self {
-        Self {
-            hit: false,
-            position: None,
-            normal: None,
-        }
-    }
-
-    pub fn only_hit(hit: bool) -> Self {
-        Self {
-            hit,
-            position: None,
-            normal: None,
-        }
-    }
-
     pub fn at(position: Vec3, normal: Vec3) -> Self {
         Self {
-            hit: true,
             position: Some(position),
             normal: Some(normal),
         }
@@ -66,7 +50,7 @@ pub trait CeilFloorExt {
 
 pub trait Intersectable<T> {
     #[must_use]
-    fn intersects(&self, intersector: T) -> Intersection;
+    fn intersects(&self, intersector: T) -> Option<Intersection>;
 }
 
 pub trait Boxable {

@@ -25,7 +25,7 @@ impl Boxable for Sphere {
 }
 
 impl Intersectable<&Ray> for Sphere {
-    fn intersects(&self, ray: &Ray) -> Intersection {
+    fn intersects(&self, ray: &Ray) -> Option<Intersection> {
         let oc = ray.origin - self.center;
 
         let a = ray.direction.mag_sq();
@@ -34,13 +34,13 @@ impl Intersectable<&Ray> for Sphere {
         let discriminant = b * b - 4.0 * a * c;
 
         if discriminant <= 0.0 {
-            return Intersection::none();
+            return None;
         }
 
         let t = -b * discriminant.sqrt() / (2.0 * a);
         let position = ray.at(t);
         let normal = (position - self.center).normalized();
 
-        Intersection::at(position, normal)
+        Some(Intersection::at(position, normal))
     }
 }
