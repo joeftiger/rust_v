@@ -1,7 +1,8 @@
 use ultraviolet::Vec3;
 
-use crate::geometry::{Aabb, Boxable, CeilFloor, Intersectable};
+use crate::geometry::{Boxable, CeilFloor, Intersectable};
 use crate::structure::{global_bounding_box, average_cell_size};
+use crate::geometry::aabb::Aabb;
 
 #[derive(Default)]
 struct SpatialCell<'a, T: Boxable> {
@@ -46,7 +47,7 @@ impl<'a, T: Boxable> SpatialPartition<'a, T> {
                     // add objects inside the cell boundinx box
                     let mut objects = vec![];
                     for o in boxables {
-                        if o.bounding_box().unwrap().intersects(&bounding_box) {
+                        if o.bounding_box().unwrap().intersects(&bounding_box).hit {
                             objects.push(o);
                         }
                     }

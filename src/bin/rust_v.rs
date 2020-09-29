@@ -5,7 +5,8 @@ use std::time::Instant;
 use clap::{App, Arg};
 use ultraviolet::Vec3;
 
-use rust_v::geometry::{Aabb, Intersectable, Ray};
+use rust_v::geometry::{Ray, Intersectable};
+use rust_v::geometry::aabb::Aabb;
 
 const INPUT: &str = "input_file";
 const OUTPUT: &str = "output_file";
@@ -33,7 +34,7 @@ fn quick_bench() {
         let direction = Vec3::new(rand::random(), rand::random(), rand::random());
         let ray = Ray::new(origin, direction);
 
-        let _hit = aabb.intersects(&ray);
+        let _hit = aabb.intersects(&ray).hit;
     }
 
     println!("Benchmarking for {} s...", SECONDS);
@@ -50,7 +51,7 @@ fn quick_bench() {
         let direction = Vec3::new(rand::random(), rand::random(), rand::random());
 
         let ray = Ray::new(origin, direction);
-        if aabb.intersects(&ray) {
+        if aabb.intersects(&ray).hit {
             hits += 1;
         }
         casts += 1;

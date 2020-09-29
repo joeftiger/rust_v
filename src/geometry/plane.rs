@@ -1,6 +1,6 @@
 use ultraviolet::Vec3;
 
-use crate::geometry::{Aabb, Angular, Intersectable, Line, Ray, Boxable};
+use crate::geometry::{Aabb, Angular, Boxable, Intersectable, Intersection, Ray};
 
 pub struct Plane {
     d: f32,
@@ -27,14 +27,25 @@ impl Plane {
 }
 
 impl Intersectable<&Ray> for Plane {
-    fn intersects(&self, ray: &Ray) -> bool {
-        ray.direction.angle_to(self.normal) <= f32::EPSILON
-    }
-}
+    fn intersects(&self, ray: &Ray) -> Intersection {
+        let denom = self.normal.dot(ray.direction);
+        if denom.abs() <= f32::EPSILON {
+            return Intersection::none();
+        }
 
-impl Intersectable<&Line> for Plane {
-    fn intersects(&self, line: &Line) -> bool {
-        line.direction.angle_to(self.normal) <= f32::EPSILON
+        let t = -(self.normal.dot(ray.origin) + self.d) / denom;
+        if t <= f32::EPSILON {
+            return Intersection::none();
+        }
+
+        let position = ray.at(t);
+
+        let mut normal = self.normal;
+        if denom < 0.0 {
+            normal = -normal;
+        }
+
+        Intersection::at(position, normal)
     }
 }
 

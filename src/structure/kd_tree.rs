@@ -1,4 +1,8 @@
-struct KdNode<T> {
+use crate::geometry::aabb::Aabb;
+use crate::geometry::Boxable;
+
+pub struct KdNode<T> {
+    bounding_box: Aabb,
     pub item: T,
     pub left: Option<Box<Self>>,
     pub right: Option<Box<Self>>,
@@ -9,14 +13,6 @@ pub struct KdTree<T> {
 }
 
 impl<T> KdNode<T> {
-    pub fn new(item: T) -> Self {
-        KdNode {
-            item,
-            left: None,
-            right: None,
-        }
-    }
-
     pub fn set_left(&mut self, left: Box<Self>) -> &mut Self {
         self.left = Some(left);
         self
@@ -31,5 +27,13 @@ impl<T> KdNode<T> {
         self.set_left(left);
         self.set_right(right);
         self
+    }
+}
+
+impl<T: Boxable> KdTree<T> {
+    fn new() -> Self {
+        Self {
+            root: None
+        }
     }
 }

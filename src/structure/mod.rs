@@ -1,8 +1,9 @@
 pub mod kd_tree;
 pub mod uniform_spatial_partition;
 
-use crate::geometry::{Aabb, Boxable, Intersectable, Ray};
+use crate::geometry::Boxable;
 use ultraviolet::Vec3;
+use crate::geometry::aabb::Aabb;
 
 fn global_bounding_box<T: Boxable>(objects: &Vec<T>) -> Option<Aabb> {
     if objects.is_empty() {
