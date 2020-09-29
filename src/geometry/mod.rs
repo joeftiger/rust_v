@@ -50,15 +50,14 @@ pub trait Angular<T> {
 /// A trait that allows the implementation to ceil / floor itself, such that e.g.:
 /// ```rust
 /// use ultraviolet::Vec3;
-/// use rust_v::geometry::CeilFloor;
+/// use rust_v::geometry::CeilFloorExt;
 ///
 /// let v = Vec3::new(0.7, 0.7, 0.7);
 ///
 /// assert_eq!(Vec3::one(), v.ceil());
 /// assert_eq!(Vec3::zero(), v.floor());
 /// ```
-pub trait CeilFloor {
-    #[must_use]
+pub trait CeilFloorExt {
     fn ceil(&self) -> Self;
 
     #[must_use]
@@ -88,7 +87,7 @@ impl Angular<Vec3> for Vec3 {
     }
 }
 
-impl CeilFloor for Vec3 {
+impl CeilFloorExt for Vec3 {
     fn ceil(&self) -> Self {
         Self {
             x: self.x.ceil(),
