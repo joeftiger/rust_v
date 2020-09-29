@@ -3,8 +3,8 @@ use ultraviolet::Vec3;
 use crate::geometry::{Aabb, Angular, Boxable, Intersectable, Intersection, Ray};
 
 pub struct Plane {
-    d: f32,
-    normal: Vec3,
+    pub d: f32,
+    pub normal: Vec3,
 }
 
 impl Plane {

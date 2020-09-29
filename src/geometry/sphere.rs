@@ -3,8 +3,8 @@ use ultraviolet::Vec3;
 use crate::geometry::{Aabb, Boxable, Intersectable, Intersection, Ray};
 
 pub struct Sphere {
-    center: Vec3,
-    radius: f32,
+    pub center: Vec3,
+    pub radius: f32,
 }
 
 impl Sphere {
