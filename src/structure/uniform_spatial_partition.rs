@@ -1,6 +1,6 @@
 use ultraviolet::Vec3;
 
-use crate::geometry::{Boxable, CeilFloor, Intersectable};
+use crate::geometry::{Boxable, CeilFloorExt, Intersectable};
 use crate::structure::{global_bounding_box, average_cell_size};
 use crate::geometry::aabb::Aabb;
 
