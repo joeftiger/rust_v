@@ -1,6 +1,6 @@
 use ultraviolet::Vec3;
 
-use crate::geometry::{Aabb, Angular, Boxable, Intersectable, Intersection, Ray};
+use crate::geometry::{Aabb, AngularExt, Boxable, Intersectable, Intersection, Ray};
 
 pub struct Plane {
     pub d: f32,
@@ -45,7 +45,7 @@ impl Intersectable<&Ray> for Plane {
             normal = -normal;
         }
 
-        Some(Intersection::at(position, normal))
+        Some(Intersection::new(position, normal))
     }
 }
 

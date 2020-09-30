@@ -1,7 +1,9 @@
-use crate::geometry::aabb::Aabb;
-use crate::geometry::{Boxable, Intersectable, Intersection, Ray};
 use std::ops::Index;
+
 use ultraviolet::Vec3;
+
+use crate::geometry::{Boxable, Intersectable, Intersection, Ray};
+use crate::geometry::aabb::Aabb;
 
 /// A triangle consists of 3 vertices.
 ///

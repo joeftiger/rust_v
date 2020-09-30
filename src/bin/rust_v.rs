@@ -5,8 +5,8 @@ use std::time::Instant;
 use clap::{App, Arg};
 use ultraviolet::Vec3;
 
-use rust_v::geometry::aabb::Aabb;
 use rust_v::geometry::{Intersectable, Ray};
+use rust_v::geometry::aabb::Aabb;
 
 const INPUT: &str = "input_file";
 const OUTPUT: &str = "output_file";

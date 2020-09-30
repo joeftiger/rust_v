@@ -27,10 +27,21 @@ impl Intersection {
 }
 
 /// A trait that allows measuring the angle between two same structs.
-pub trait Angular<T> {
+/// For example:
+/// ```
+/// use ultraviolet::Vec3;
+/// use rust_v::geometry::AngularExt;
+///
+/// let v1 = Vec3::unit_x();
+/// let v2 = Vec3::unit_y();
+/// let angle = v1.angle_to(v2);
+///
+/// assert_eq!(angle, 90 * 180 / f32::PI);  // 90 degrees in radians
+/// ```
+pub trait AngularExt {
     /// Returns the angle to the other self in radians.
     #[must_use]
-    fn angle_to(&self, other: T) -> f32;
+    fn angle_to(&self, other: Self) -> f32;
 }
 
 /// A trait that allows the implementation to ceil / floor itself, such that e.g.:
@@ -50,22 +61,47 @@ pub trait CeilFloorExt {
     fn floor(&self) -> Self;
 }
 
+/// This trait allows an intersector to check for an intersection with the implementation.
+/// For example:
+/// ```
+/// use rust_v::geometry::aabb::Aabb;
+/// use ultraviolet::Vec3;
+/// use rust_v::geometry::{Ray, Intersectable};
+///
+/// let aabb = Aabb::new(-Vec3::one(), Vec3::one());
+/// let ray = Ray::new(-Vec3::unit_x() * 2, Vec3::unit_x());
+/// let intersection = aabb.intersects(&ray);
+///
+/// assert!(intersection.is_some());
+/// ```
 pub trait Intersectable<T> {
     #[must_use]
     fn intersects(&self, intersector: T) -> Option<Intersection>;
 }
 
+/// Allows an implementation to be put in a "box" (aabb), if available.
 pub trait Boxable {
     #[must_use]
     fn bounding_box(&self) -> Option<Aabb>;
 }
 
-pub trait Inversible {
+/// Allows itself to be inversed.
+/// For example:
+/// ```
+/// use ultraviolet::Vec3;
+/// use rust_v::geometry::InversibleExt;
+///
+/// let v = Vec3::one() * 2.0;
+/// let inverse = v.inversed();
+///
+/// assert_eq!(inverse, Vec3::one() / 2.0);
+/// ```
+pub trait InversibleExt {
     #[must_use]
     fn inversed(&self) -> Self;
 }
 
-impl Angular<Vec3> for Vec3 {
+impl AngularExt for Vec3 {
     #[inline]
     #[must_use]
     fn angle_to(&self, other: Vec3) -> f32 {
@@ -91,7 +127,7 @@ impl CeilFloorExt for Vec3 {
     }
 }
 
-impl Inversible for Vec3 {
+impl InversibleExt for Vec3 {
     #[inline]
     #[must_use]
     fn inversed(&self) -> Self {
