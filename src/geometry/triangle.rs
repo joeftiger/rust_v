@@ -75,6 +75,6 @@ impl Intersectable<&Ray> for Triangle {
             normal = -normal;
         }
 
-        Some(Intersection::at(position, normal))
+        Some(Intersection::new(position, normal))
     }
 }

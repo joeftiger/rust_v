@@ -9,6 +9,8 @@ pub mod plane;
 pub mod sphere;
 pub mod triangle;
 
+/// An intersection consists of a position and a normal, therefore allowing calculations like
+/// reflection and refraction.
 #[derive(Debug, Default)]
 pub struct Intersection {
     pub position: Option<Vec3>,
@@ -16,7 +18,7 @@ pub struct Intersection {
 }
 
 impl Intersection {
-    pub fn at(position: Vec3, normal: Vec3) -> Self {
+    pub fn new(position: Vec3, normal: Vec3) -> Self {
         Self {
             position: Some(position),
             normal: Some(normal),

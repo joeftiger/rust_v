@@ -110,6 +110,6 @@ impl Intersectable<&Ray> for Aabb {
             panic!("f32::EPSILON is too small!");
         }
 
-        Some(Intersection::at(position, normal))
+        Some(Intersection::new(position, normal))
     }
 }
