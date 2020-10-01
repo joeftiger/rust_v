@@ -1,6 +1,7 @@
 use ultraviolet::Vec3;
 
 use crate::geometry::{Intersectable, Intersection, Ray};
+use crate::geometry::plane::Plane;
 
 /// An geometrical axis-aligned bounding box.
 #[derive(Debug, Default)]
@@ -59,7 +60,7 @@ impl Aabb {
     #[must_use]
     pub fn volume(&self) -> f32 {
         // max is guaranteed to be greater-or-equal to min.
-        (self.max.x - self.min.x) * (self.max.y - self.min.y) * (self.max.z - self.min.z).
+        (self.max.x - self.min.x) * (self.max.y - self.min.y) * (self.max.z - self.min.z).abs()
     }
 
     /// Calculates the size.
@@ -67,6 +68,48 @@ impl Aabb {
     #[must_use]
     pub fn size(&self) -> Vec3 {
         self.max.abs() - self.min.abs()
+    }
+    
+    pub fn x_plane_min(&self) -> Plane {
+        Plane::new(self.max.x, -Vec3::unit_x())
+    }
+
+    pub fn x_plane_max(&self) -> Plane {
+        Plane::new(self.max.x, Vec3::unit_x())
+    }
+
+    pub fn y_plane_min(&self) -> Plane {
+        Plane::new(self.max.y, -Vec3::unit_y())
+    }
+
+    pub fn y_plane_max(&self) -> Plane {
+        Plane::new(self.max.y, Vec3::unit_y())
+    }
+
+    pub fn z_plane_min(&self) -> Plane {
+        Plane::new(self.max.z, -Vec3::unit_z())
+    }
+
+    pub fn z_plane_max(&self) -> Plane {
+        Plane::new(self.max.z, Vec3::unit_z())
+    }
+    
+    pub fn closest_side_normal(&self, v: Vec3) -> Vec3 {
+        if (v.x - self.min.x) <= f32::EPSILON {
+            -Vec3::unit_x()
+        } else if (v.x - self.max.x) <= f32::EPSILON {
+            Vec3::unit_x()
+        } else if (v.y - self.min.y) <= f32::EPSILON {
+            -Vec3::unit_y()
+        } else if (v.y - self.max.y) <= f32::EPSILON {
+            Vec3::unit_y()
+        } else if (v.z - self.min.z) <= f32::EPSILON {
+            -Vec3::unit_z()
+        } else if (v.z - self.max.z) <= f32::EPSILON {
+            Vec3::unit_z()
+        } else {
+            panic!("f32::EPSILON is too small!");
+        }
     }
 }
 
@@ -102,23 +145,7 @@ impl Intersectable<&Ray> for Aabb {
         }
 
         let position = ray.at(t_min);
-
-        let normal: Vec3;
-        if (position.x - self.min.x) <= f32::EPSILON {
-            normal = -Vec3::unit_x();
-        } else if (position.x - self.max.x) <= f32::EPSILON {
-            normal = Vec3::unit_x();
-        } else if (position.y - self.min.y) <= f32::EPSILON {
-            normal = -Vec3::unit_y();
-        } else if (position.y - self.max.y) <= f32::EPSILON {
-            normal = Vec3::unit_y();
-        } else if (position.z - self.min.z) <= f32::EPSILON {
-            normal = -Vec3::unit_z();
-        } else if (position.z - self.max.z) <= f32::EPSILON {
-            normal = Vec3::unit_z();
-        } else {
-            panic!("f32::EPSILON is too small!");
-        }
+        let normal= self.closest_side_normal(position);
 
         Some(Intersection::new(position, normal))
     }
