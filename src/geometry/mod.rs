@@ -26,7 +26,7 @@ impl Intersection {
     }
 }
 
-/// A trait that allows measuring the angle between two same structs.
+/// A trait that allows measuring the angle between two structs.
 /// For example:
 /// ```
 /// use ultraviolet::Vec3;
@@ -38,10 +38,10 @@ impl Intersection {
 ///
 /// assert_eq!(angle, 90 * 180 / f32::PI);  // 90 degrees in radians
 /// ```
-pub trait AngularExt {
-    /// Returns the angle to the other self in radians.
+pub trait AngularExt<T> {
+    /// Returns the angle to the other in radians.
     #[must_use]
-    fn angle_to(&self, other: Self) -> f32;
+    fn angle_to(&self, other: T) -> f32;
 }
 
 /// A trait that allows the implementation to ceil / floor itself, such that e.g.:
@@ -101,11 +101,19 @@ pub trait InversibleExt {
     fn inversed(&self) -> Self;
 }
 
-impl AngularExt for Vec3 {
+impl AngularExt<Self> for Vec3 {
     #[inline]
     #[must_use]
-    fn angle_to(&self, other: Vec3) -> f32 {
+    fn angle_to(&self, other: Self) -> f32 {
         f32::acos(self.dot(other) / (self.mag() * other.mag()))
+    }
+}
+
+impl AngularExt<&Ray> for Vec3 {
+    #[inline]
+    #[must_use]
+    fn angle_to(&self, other: &Ray) -> f32 {
+        self.angle_to(other.direction)
     }
 }
 
@@ -166,9 +174,27 @@ impl Ray {
     }
 }
 
+impl AngularExt<Self> for Ray {
+    #[inline]
+    #[must_use]
+    fn angle_to(&self, other: Ray) -> f32 {
+        self.direction.angle_to(other.direction)
+    }
+}
+
+impl AngularExt<Vec3> for Ray {
+    #[inline]
+    #[must_use]
+    fn angle_to(&self, other: Vec3) -> f32 {
+        self.direction.angle_to(other)
+    }
+}
+
 impl Mul<f32> for Ray {
     type Output = Vec3;
 
+    #[inline]
+    #[must_use]
     fn mul(self, rhs: f32) -> Self::Output {
         self.at(rhs)
     }
