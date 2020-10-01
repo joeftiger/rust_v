@@ -5,7 +5,7 @@ use ultraviolet::Vec3;
 use crate::geometry::{Boxable, Intersectable, Intersection, Ray};
 use crate::geometry::aabb::Aabb;
 
-/// A triangle consists of 3 vertices.
+/// A geometrical triangle.
 ///
 /// They are accessible through the `Index<usize>` trait.
 pub struct Triangle {

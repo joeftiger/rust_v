@@ -2,8 +2,11 @@ use ultraviolet::Vec3;
 
 use crate::geometry::{Aabb, Boxable, Intersectable, Intersection, Ray};
 
+/// A geometrical sphere.
 pub struct Sphere {
+    /// The center of the sphere.
     pub center: Vec3,
+    /// The radius of the sphere.
     pub radius: f32,
 }
 

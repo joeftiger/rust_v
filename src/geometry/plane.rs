@@ -2,8 +2,11 @@ use ultraviolet::Vec3;
 
 use crate::geometry::{Aabb, AngularExt, Boxable, Intersectable, Intersection, Ray};
 
+/// A geometrical plane.
 pub struct Plane {
+    /// The distance of the plane into the normal direction.
     pub d: f32,
+    /// The normal of a plane.
     pub normal: Vec3,
 }
 

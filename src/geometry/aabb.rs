@@ -2,17 +2,24 @@ use ultraviolet::Vec3;
 
 use crate::geometry::{Intersectable, Intersection, Ray};
 
-/// An axis-aligned bounding box
+/// An geometrical axis-aligned bounding box.
 #[derive(Debug, Default)]
 #[repr(C)]
 pub struct Aabb {
+    /// The minimum position of the aabb.
     pub min: Vec3,
+    /// The maximum position of the aabb.
     pub max: Vec3,
 }
 
 impl Aabb {
+    /// Creates a new aabb.
+    ///
+    /// It minimizes `min` anx maximizes `max` in case of argument error.
     #[must_use]
     pub fn new(min: Vec3, max: Vec3) -> Self {
+        let min = min.min_by_component(max);
+        let max = max.max_by_component(min);
         Self { min, max }
     }
 
@@ -50,6 +57,7 @@ impl Aabb {
     #[inline]
     #[must_use]
     pub fn volume(&self) -> f32 {
+        // max is guaranteed to be greater-or-equal to min.
         (self.max.x - self.min.x) * (self.max.y - self.min.y) * (self.max.z - self.min.z)
     }
 
