@@ -54,17 +54,19 @@ impl Aabb {
         }
     }
 
+    /// Calculates the volume.
     #[inline]
     #[must_use]
     pub fn volume(&self) -> f32 {
         // max is guaranteed to be greater-or-equal to min.
-        (self.max.x - self.min.x) * (self.max.y - self.min.y) * (self.max.z - self.min.z)
+        (self.max.x - self.min.x) * (self.max.y - self.min.y) * (self.max.z - self.min.z).
     }
 
+    /// Calculates the size.
     #[inline]
     #[must_use]
     pub fn size(&self) -> Vec3 {
-        self.min.abs() + self.max.abs()
+        self.max.abs() - self.min.abs()
     }
 }
 
