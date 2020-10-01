@@ -34,7 +34,7 @@ fn quick_bench() {
         let direction = Vec3::new(rand::random(), rand::random(), rand::random());
         let ray = Ray::new(origin, direction);
 
-        let _hit = aabb.intersects(&ray).is_some();
+        let _hit = aabb.intersects(ray).is_some();
     }
 
     println!("Benchmarking for {} s...", SECONDS);
@@ -51,7 +51,7 @@ fn quick_bench() {
         let direction = Vec3::new(rand::random(), rand::random(), rand::random());
 
         let ray = Ray::new(origin, direction);
-        if aabb.intersects(&ray).is_some() {
+        if aabb.intersects(ray).is_some() {
             hits += 1;
         }
         casts += 1;

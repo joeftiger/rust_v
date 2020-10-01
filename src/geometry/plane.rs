@@ -29,8 +29,8 @@ impl Plane {
     }
 }
 
-impl Intersectable<&Ray> for Plane {
-    fn intersects(&self, ray: &Ray) -> Option<Intersection> {
+impl Intersectable<Ray> for Plane {
+    fn intersects(&self, ray: Ray) -> Option<Intersection> {
         let denom = self.normal.dot(ray.direction);
         if denom.abs() <= f32::EPSILON {
             return None;

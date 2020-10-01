@@ -109,10 +109,10 @@ impl AngularExt<Self> for Vec3 {
     }
 }
 
-impl AngularExt<&Ray> for Vec3 {
+impl AngularExt<Ray> for Vec3 {
     #[inline]
     #[must_use]
-    fn angle_to(&self, other: &Ray) -> f32 {
+    fn angle_to(&self, other: Ray) -> f32 {
         self.angle_to(other.direction)
     }
 }
