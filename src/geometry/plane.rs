@@ -1,8 +1,10 @@
 use ultraviolet::Vec3;
+use serde::{Deserialize, Serialize};
 
 use crate::geometry::{Aabb, AngularExt, Boxable, Intersectable, Intersection, Ray};
 
 /// A geometrical plane.
+#[derive(Debug, Default, Deserialize, Serialize)]
 pub struct Plane {
     /// The distance of the plane into the normal direction.
     pub d: f32,

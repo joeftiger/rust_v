@@ -1,25 +1,16 @@
 use ultraviolet::Vec3;
+use serde::{Deserialize, Serialize};
 
 use crate::geometry::{Intersectable, Intersection, Ray};
 use crate::geometry::plane::Plane;
 
 /// An geometrical axis-aligned bounding box.
-#[derive(Debug, Default)]
-#[repr(C)]
+#[derive(Debug, Default, Deserialize, Serialize)]
 pub struct Aabb {
     /// The minimum position of the aabb.
     pub min: Vec3,
     /// The maximum position of the aabb.
     pub max: Vec3,
-}
-
-pub enum AabbSide {
-    XMin,
-    XMax,
-    YMin,
-    YMax,
-    ZMin,
-    ZMax,
 }
 
 impl Aabb {

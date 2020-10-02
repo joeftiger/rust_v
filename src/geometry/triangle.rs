@@ -1,21 +1,25 @@
 use std::ops::Index;
 
 use ultraviolet::Vec3;
+use serde::{Deserialize, Serialize};
 
 use crate::geometry::{Boxable, Intersectable, Intersection, Ray};
 use crate::geometry::aabb::Aabb;
 
 /// A geometrical triangle.
 ///
-/// They are accessible through the `Index<usize>` trait.
+/// The vertices are also accessible through the `Index<usize>` trait.
+#[derive(Debug, Default, Deserialize, Serialize)]
 pub struct Triangle {
-    vertices: [Vec3; 3],
+    pub vertex0: Vec3,
+    pub vertex1: Vec3,
+    pub vertex2: Vec3,
 }
 
 impl Triangle {
     pub fn new(vertex0: Vec3, vertex1: Vec3, vertex2: Vec3) -> Self {
         Self {
-            vertices: [vertex0, vertex1, vertex2],
+            vertex0, vertex1, vertex2,
         }
     }
 }
@@ -24,7 +28,12 @@ impl Index<usize> for Triangle {
     type Output = Vec3;
 
     fn index(&self, index: usize) -> &Self::Output {
-        &self.vertices[index]
+        match index {
+            0 => &self.vertex0,
+            1 => &self.vertex1,
+            2 => &self.vertex2,
+            _ =>  panic!("Index out of range. Valid inputs are in the range of [0, 1, 2]")
+        }
     }
 }
 

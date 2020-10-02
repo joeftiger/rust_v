@@ -1,8 +1,10 @@
 use ultraviolet::Vec3;
+use serde::{Deserialize, Serialize};
 
 use crate::geometry::{Aabb, Boxable, Intersectable, Intersection, Ray};
 
 /// A geometrical sphere.
+#[derive(Debug, Default, Deserialize, Serialize)]
 pub struct Sphere {
     /// The center of the sphere.
     pub center: Vec3,
