@@ -4,9 +4,12 @@ use std::time::Instant;
 
 use clap::{App, Arg};
 use ultraviolet::Vec3;
+use serde_json::json;
 
 use rust_v::geometry::{Intersectable, Ray};
 use rust_v::geometry::aabb::Aabb;
+use std::fs::{File, Permissions, OpenOptions, remove_dir, create_dir, remove_file};
+use std::io::{Write, Read};
 
 const INPUT: &str = "input_file";
 const OUTPUT: &str = "output_file";
@@ -16,7 +19,46 @@ fn main() {
     // let app = init_help();
     // let _matches = app.get_matches();
 
-    quick_bench();
+    // quick_bench();
+    test_save_load_aabb();
+}
+
+fn test_save_load_aabb() {
+    let aabb = Aabb::new(-Vec3::one(), Vec3::one());
+    let json = serde_json::to_string_pretty(&aabb).expect("Could not serialize aabb");
+
+    {
+        create_dir("./json_tests").expect("Could not create test directory");
+
+        OpenOptions::new()
+            .create(true)
+            .write(true)
+            .open("./json_tests/aabb.json")
+            .unwrap()
+            .write_all(json.as_ref())
+            .expect("Could not write to test file");
+    }
+
+    let mut json_read = String::new();
+
+    {
+        OpenOptions::new()
+            .read(true)
+            .open("./json_tests/aabb.json")
+            .unwrap()
+            .read_to_string(&mut json_read)
+            .expect("Could not read from test file");
+    }
+
+    assert_eq!(json_read, json);
+
+    let aabb_read: Aabb = serde_json::from_str(&*json_read).expect("Could not parse aabb");
+
+    assert_eq!(aabb.min, aabb_read.min);
+    assert_eq!(aabb.max, aabb_read.max);
+
+    remove_file("./json_tests/aabb.json").expect("Could not delete test file");
+    remove_dir("./json_tests").expect("Could not delete test directory");
 }
 
 fn quick_bench() {
@@ -59,6 +101,8 @@ fn quick_bench() {
 
     println!("{} hits", hits);
     println!("{} casts/s", casts / SECONDS);
+
+
 }
 
 fn init_help<'a, 'b>() -> App<'a, 'b> {
