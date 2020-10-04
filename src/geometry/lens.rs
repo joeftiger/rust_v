@@ -1,6 +1,7 @@
 use crate::geometry::sphere::Sphere;
 use crate::geometry::{Boxable, Intersectable, Ray, Intersection};
 use crate::geometry::aabb::Aabb;
+use crate::geometry::plane::Plane;
 
 /// A geometrical simple lens consists of the intersection of two spheres.
 pub struct SimpleLens {
@@ -46,5 +47,32 @@ impl Intersectable<Ray> for SimpleLens {
         }
 
         None
+    }
+}
+
+pub struct PlanoConvexLens {
+    pub sphere: Sphere,
+    pub plane: Plane,
+}
+
+impl PlanoConvexLens {
+    pub fn new(sphere: Sphere, plane: Plane) -> Self {
+        Self { sphere, plane }
+    }
+}
+
+impl Boxable for PlanoConvexLens {
+    fn bounding_box(&self) -> Option<Aabb> {
+        self.sphere.bounding_box()
+    }
+}
+
+impl Intersectable<Ray> for PlanoConvexLens {
+    fn intersects(&self, ray: Ray) -> Option<Intersection> {
+        if let Some(is) = self.sphere.intersects(ray) {
+        }
+
+        // TODO: IMPLEMENT
+        unimplemented!();
     }
 }

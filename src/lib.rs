@@ -4,5 +4,7 @@
 
 pub mod geometry;
 pub mod physics;
+pub mod scene;
 pub mod structure;
 pub mod util;
+pub mod math;

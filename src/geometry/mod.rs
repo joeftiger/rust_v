@@ -5,6 +5,7 @@ use ultraviolet::Vec3;
 use crate::geometry::aabb::Aabb;
 
 pub mod aabb;
+pub mod cylinder;
 pub mod triangle;
 pub mod lens;
 pub mod mesh;
