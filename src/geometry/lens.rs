@@ -1,0 +1,50 @@
+use crate::geometry::sphere::Sphere;
+use crate::geometry::{Boxable, Intersectable, Ray, Intersection};
+use crate::geometry::aabb::Aabb;
+
+/// A geometrical simple lens consists of the intersection of two spheres.
+pub struct SimpleLens {
+    pub sphere0: Sphere,
+    pub sphere1: Sphere,
+}
+
+impl SimpleLens {
+    pub fn new(sphere0: Sphere, sphere1: Sphere) -> Self {
+        Self { sphere0, sphere1 }
+    }
+
+    pub fn is_symmetric(&self) -> bool {
+        f32::abs(self.sphere0.radius - self.sphere1.radius) <= f32::EPSILON
+    }
+}
+
+impl Boxable for SimpleLens {
+    fn bounding_box(&self) -> Option<Aabb> {
+        let aabb0 = self.sphere0.bounding_box().unwrap();
+        let aabb1 = self.sphere1.bounding_box().unwrap();
+        let inner_join = aabb0.inner_join(&aabb1);
+
+        Some(inner_join)
+    }
+}
+
+impl Intersectable<Ray> for SimpleLens {
+    fn intersects(&self, ray: Ray) -> Option<Intersection> {
+        if let Some(i0) = self.sphere0.intersects(ray) {
+            if let Some(i1) = self.sphere1.intersects(ray) {
+                let lens_side: Intersection;
+
+                // note the inversion of the first intersecting sphere
+                if i0.t.unwrap() < i1.t.unwrap() {
+                    lens_side = i1;
+                } else {
+                    lens_side = i0;
+                }
+
+                return Some(lens_side);
+            }
+        }
+
+        None
+    }
+}
