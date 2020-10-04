@@ -5,7 +5,7 @@ use crate::geometry::{Intersectable, Intersection, Ray};
 use crate::geometry::plane::Plane;
 
 /// An geometrical axis-aligned bounding box.
-#[derive(Debug, Default, Deserialize, Serialize)]
+#[derive(Clone, Copy, Debug, Default, Deserialize, Serialize)]
 pub struct Aabb {
     /// The minimum position of the aabb.
     pub min: Vec3,
@@ -143,6 +143,6 @@ impl Intersectable<Ray> for Aabb {
             normal = Vec3::unit_z();
         }
         
-        Some(Intersection::new(position, normal))
+        Some(Intersection::new(position, normal, t_min))
     }
 }

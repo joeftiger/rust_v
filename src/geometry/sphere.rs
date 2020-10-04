@@ -43,6 +43,6 @@ impl Intersectable<Ray> for Sphere {
         let position = ray.at(t);
         let normal = (position - self.center).normalized();
 
-        Some(Intersection::new(position, normal))
+        Some(Intersection::new(position, normal, t))
     }
 }

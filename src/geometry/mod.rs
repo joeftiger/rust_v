@@ -5,9 +5,11 @@ use ultraviolet::Vec3;
 use crate::geometry::aabb::Aabb;
 
 pub mod aabb;
+pub mod triangle;
+pub mod lens;
+pub mod mesh;
 pub mod plane;
 pub mod sphere;
-pub mod triangle;
 
 /// An intersection consists of a position and a normal, therefore allowing calculations like
 /// reflection and refraction.
@@ -15,13 +17,15 @@ pub mod triangle;
 pub struct Intersection {
     pub position: Option<Vec3>,
     pub normal: Option<Vec3>,
+    pub t: Option<f32>,
 }
 
 impl Intersection {
-    pub fn new(position: Vec3, normal: Vec3) -> Self {
+    pub fn new(position: Vec3, normal: Vec3, t: f32) -> Self {
         Self {
             position: Some(position),
             normal: Some(normal),
+            t: Some(t),
         }
     }
 }

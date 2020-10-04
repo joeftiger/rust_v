@@ -50,7 +50,7 @@ impl Intersectable<Ray> for Plane {
             normal = -normal;
         }
 
-        Some(Intersection::new(position, normal))
+        Some(Intersection::new(position, normal, t))
     }
 }
 
