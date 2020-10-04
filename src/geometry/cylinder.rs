@@ -19,10 +19,15 @@ impl Cylinder {
 
 impl Boxable for Cylinder {
     fn bounding_box(&self) -> Option<Aabb> {
-        let scale = self.height / 2.0 + f32::sqrt(2.0 * self.radius * self.radius);
-        let offset = Vec3::one() * scale;
+        let offset = Vec3::one() * self.radius;
 
-        Some(Aabb::new(self.center - offset, self.center + offset))
+        let min = self.center - self.axis * self.height / 2.0;
+        let max = self.center + self.axis * self.height / 2.0;
+        let min_original = min;
+        let min = min.min_by_component(max);
+        let max = max.max_by_component(min_original);
+
+        Some(Aabb::new(min - offset, max + offset))
     }
 }
 
