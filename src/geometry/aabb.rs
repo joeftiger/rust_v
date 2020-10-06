@@ -1,8 +1,9 @@
 use ultraviolet::Vec3;
 use serde::{Deserialize, Serialize};
 
-use crate::geometry::{Intersectable, Intersection, Ray};
+use crate::geometry::{Intersectable, Intersection};
 use crate::geometry::plane::Plane;
+use crate::geometry::ray::Ray;
 
 /// An geometrical axis-aligned bounding box.
 #[derive(Clone, Copy, Debug, Default, Deserialize, Serialize)]
@@ -110,11 +111,11 @@ impl Intersectable<&Self> for Aabb {
     }
 }
 
-impl Intersectable<Ray> for Aabb {
+impl<T: Ray> Intersectable<T> for Aabb {
     #[inline]
-    fn intersects(&self, ray: Ray) -> Option<Intersection> {
-        let t1 = (self.min - ray.origin) / ray.direction;
-        let t2 = (self.max - ray.origin) / ray.direction;
+    fn intersects(&self, ray: T) -> Option<Intersection> {
+        let t1 = (self.min - ray.origin()) / ray.direction();
+        let t2 = (self.max - ray.origin()) / ray.direction();
 
         let t_min_vec = t1.min_by_component(t2);
         let t_max_vec = t1.max_by_component(t2);

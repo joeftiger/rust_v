@@ -1,7 +1,8 @@
 use ultraviolet::Vec3;
-use crate::geometry::{Boxable, Intersectable, Ray, Intersection};
+use crate::geometry::{Boxable, Intersectable, Intersection};
 use crate::geometry::aabb::Aabb;
 use crate::math;
+use crate::geometry::ray::{NormalRay, Ray};
 
 // A geometrical cylinder.
 pub struct Cylinder {
@@ -31,10 +32,10 @@ impl Boxable for Cylinder {
     }
 }
 
-impl Intersectable<Ray> for Cylinder {
-    fn intersects(&self, ray: Ray) -> Option<Intersection> {
-        let dir = ray.direction;
-        let oc = ray.origin - self.center;
+impl<T: Ray> Intersectable<T> for Cylinder {
+    fn intersects(&self, ray: T) -> Option<Intersection> {
+        let dir = ray.direction();
+        let oc = ray.origin() - self.center;
 
         let dir_parallel = self.axis.dot(dir);
         let oc_parallel = self.axis.dot(oc);

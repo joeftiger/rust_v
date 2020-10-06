@@ -1,5 +1,3 @@
-use std::ops::Mul;
-
 use ultraviolet::Vec3;
 
 use crate::geometry::aabb::Aabb;
@@ -10,6 +8,7 @@ pub mod triangle;
 pub mod lens;
 pub mod mesh;
 pub mod plane;
+pub mod ray;
 pub mod sphere;
 
 /// An intersection consists of a position and a normal, therefore allowing calculations like
@@ -72,9 +71,10 @@ pub trait CeilFloorExt {
 /// use rust_v::geometry::aabb::Aabb;
 /// use ultraviolet::Vec3;
 /// use rust_v::geometry::{Ray, Intersectable};
+/// use rust_v::geometry::ray::NormalRay;
 ///
 /// let aabb = Aabb::new(-Vec3::one(), Vec3::one());
-/// let ray = Ray::new(-Vec3::unit_x() * 2, Vec3::unit_x());
+/// let ray = NormalRay::new(-Vec3::unit_x() * 2, Vec3::unit_x());
 /// let intersection = aabb.intersects(&ray);
 ///
 /// assert!(intersection.is_some());
@@ -114,14 +114,6 @@ impl AngularExt<Self> for Vec3 {
     }
 }
 
-impl AngularExt<Ray> for Vec3 {
-    #[inline]
-    #[must_use]
-    fn angle_to(&self, other: Ray) -> f32 {
-        self.angle_to(other.direction)
-    }
-}
-
 impl CeilFloorExt for Vec3 {
     fn ceil(&self) -> Self {
         Self {
@@ -152,55 +144,3 @@ impl InversibleExt for Vec3 {
     }
 }
 
-#[derive(Copy, Clone, Debug, Default)]
-pub struct Ray {
-    pub origin: Vec3,
-    pub direction: Vec3,
-}
-
-impl Ray {
-    pub fn new(origin: Vec3, direction: Vec3) -> Self {
-        Self {
-            origin,
-            direction: direction.normalized(),
-        }
-    }
-
-    #[inline]
-    #[must_use]
-    pub fn at(self, t: f32) -> Vec3 {
-        self.origin + self.direction * t
-    }
-
-    #[inline]
-    #[must_use]
-    pub fn distance(self, p: Vec3) -> f32 {
-        (p - self.origin).mag()
-    }
-}
-
-impl AngularExt<Self> for Ray {
-    #[inline]
-    #[must_use]
-    fn angle_to(&self, other: Ray) -> f32 {
-        self.direction.angle_to(other.direction)
-    }
-}
-
-impl AngularExt<Vec3> for Ray {
-    #[inline]
-    #[must_use]
-    fn angle_to(&self, other: Vec3) -> f32 {
-        self.direction.angle_to(other)
-    }
-}
-
-impl Mul<f32> for Ray {
-    type Output = Vec3;
-
-    #[inline]
-    #[must_use]
-    fn mul(self, rhs: f32) -> Self::Output {
-        self.at(rhs)
-    }
-}

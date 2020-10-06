@@ -2,8 +2,9 @@ use ultraviolet::Vec3;
 use serde::{Deserialize, Serialize};
 
 use crate::geometry::aabb::Aabb;
-use crate::geometry::{Boxable, Intersectable, Ray, Intersection};
+use crate::geometry::{Boxable, Intersectable, Intersection};
 use std::ops::IndexMut;
+use crate::geometry::ray::Ray;
 
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -128,8 +129,8 @@ impl Boxable for Mesh {
 }
 
 // TODO: IMPLEMENT
-impl Intersectable<Ray> for Mesh {
-    fn intersects(&self, ray: Ray) -> Option<Intersection> {
+impl<T: Ray> Intersectable<T> for Mesh {
+    fn intersects(&self, ray: T) -> Option<Intersection> {
         None
     }
 }

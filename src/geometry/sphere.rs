@@ -1,7 +1,8 @@
 use ultraviolet::Vec3;
 use serde::{Deserialize, Serialize};
 
-use crate::geometry::{Aabb, Boxable, Intersectable, Intersection, Ray};
+use crate::geometry::{Aabb, Boxable, Intersectable, Intersection};
+use crate::geometry::ray::Ray;
 
 /// A geometrical sphere.
 #[derive(Debug, Default, Deserialize, Serialize)]
@@ -26,12 +27,12 @@ impl Boxable for Sphere {
     }
 }
 
-impl Intersectable<Ray> for Sphere {
-    fn intersects(&self, ray: Ray) -> Option<Intersection> {
-        let oc = ray.origin - self.center;
+impl<T: Ray> Intersectable<T> for Sphere {
+    fn intersects(&self, ray: T) -> Option<Intersection> {
+        let oc = ray.origin() - self.center;
 
-        let a = ray.direction.mag_sq();
-        let b = 2.0 * oc.dot(ray.direction);
+        let a = ray.direction().mag_sq();
+        let b = 2.0 * oc.dot(ray.direction());
         let c = oc.mag_sq() - self.radius * self.radius;
         let discriminant = b * b - 4.0 * a * c;
 

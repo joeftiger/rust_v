@@ -3,8 +3,9 @@ use std::ops::Index;
 use ultraviolet::Vec3;
 use serde::{Deserialize, Serialize};
 
-use crate::geometry::{Boxable, Intersectable, Intersection, Ray};
+use crate::geometry::{Boxable, Intersectable, Intersection};
 use crate::geometry::aabb::Aabb;
+use crate::geometry::ray::{NormalRay, Ray};
 
 /// A geometrical triangle.
 ///
@@ -46,13 +47,13 @@ impl Boxable for Triangle {
     }
 }
 
-impl Intersectable<Ray> for Triangle {
+impl<T: Ray> Intersectable<T> for Triangle {
     // According to the Möller–Trumbore intersection algorithm (Wikipedia)
-    fn intersects(&self, ray: Ray) -> Option<Intersection> {
+    fn intersects(&self, ray: T) -> Option<Intersection> {
         let edge1 = self[1] - self[0];
         let edge2 = self[2] - self[0];
 
-        let h = ray.direction.cross(edge2);
+        let h = ray.direction().cross(edge2);
 
         let a = edge1.dot(h);
         if a.abs() <= f32::EPSILON {
@@ -60,7 +61,7 @@ impl Intersectable<Ray> for Triangle {
         }
 
         let f = 1.0 / a;
-        let s = ray.origin - self[0];
+        let s = ray.origin() - self[0];
 
         let u = f * s.dot(h);
         if u < 0.0 || u > 1.0 {
@@ -68,7 +69,7 @@ impl Intersectable<Ray> for Triangle {
         }
 
         let q = s.cross(edge1);
-        let v = f * ray.direction.dot(q);
+        let v = f * ray.direction().dot(q);
         if v < 0.0 || v > 1.0 {
             return None;
         }
@@ -82,7 +83,7 @@ impl Intersectable<Ray> for Triangle {
 
         let position = ray.at(t);
         let mut normal = triangle_normal;
-        if normal.dot(ray.direction) < 0.0 {
+        if normal.dot(ray.direction()) < 0.0 {
             normal = -normal;
         }
 

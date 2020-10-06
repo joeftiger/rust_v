@@ -1,7 +1,8 @@
 use ultraviolet::Vec3;
 use serde::{Deserialize, Serialize};
 
-use crate::geometry::{Aabb, AngularExt, Boxable, Intersectable, Intersection, Ray};
+use crate::geometry::{Aabb, AngularExt, Boxable, Intersectable, Intersection};
+use crate::geometry::ray::Ray;
 
 /// A geometrical plane.
 #[derive(Debug, Default, Deserialize, Serialize)]
@@ -56,14 +57,14 @@ impl Boxable for Plane {
     }
 }
 
-impl Intersectable<Ray> for Plane {
-    fn intersects(&self, ray: Ray) -> Option<Intersection> {
-        let denom = self.normal.dot(ray.direction);
+impl<T: Ray> Intersectable<T> for Plane {
+    fn intersects(&self, ray: T) -> Option<Intersection> {
+        let denom = self.normal.dot(ray.direction());
         if denom.abs() <= f32::EPSILON {
             return None;
         }
 
-        let t = -(self.normal.dot(ray.origin) + self.d) / denom;
+        let t = -(self.normal.dot(ray.origin()) + self.d) / denom;
         if t <= f32::EPSILON {
             return None;
         }
