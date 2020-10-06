@@ -6,10 +6,11 @@ use clap::{App, Arg};
 use ultraviolet::Vec3;
 use serde_json::json;
 
-use rust_v::geometry::{Intersectable, Ray};
+use rust_v::geometry::{Intersectable};
 use rust_v::geometry::aabb::Aabb;
 use std::fs::{File, Permissions, OpenOptions, remove_dir, create_dir, remove_file};
 use std::io::{Write, Read};
+use rust_v::geometry::ray::NormalRay;
 
 const INPUT: &str = "input_file";
 const OUTPUT: &str = "output_file";
@@ -19,7 +20,7 @@ fn main() {
     // let app = init_help();
     // let _matches = app.get_matches();
 
-    // quick_bench();
+    quick_bench();
     test_save_load_aabb();
 }
 
@@ -68,13 +69,13 @@ fn quick_bench() {
 
     println!("Warming up for 5 s...");
     while now.elapsed().as_secs() < 5 {
-        let min = -Vec3::new(fastrand::f32(), fastrand::f32(), rand::random());
-        let max = Vec3::new(fastrand::f32(), fastrand::f32(), rand::random());
+        let min = -Vec3::new(fastrand::f32(), fastrand::f32(), fastrand::f32());
+        let max = Vec3::new(fastrand::f32(), fastrand::f32(), fastrand::f32());
         let aabb = Aabb::new(min, max);
 
-        let origin = -Vec3::new(fastrand::f32(), fastrand::f32(), rand::random()) * 2.0;
-        let direction = Vec3::new(fastrand::f32(), fastrand::f32(), rand::random());
-        let ray = Ray::new(origin, direction);
+        let origin = -Vec3::new(fastrand::f32(), fastrand::f32(), fastrand::f32()) * 2.0;
+        let direction = Vec3::new(fastrand::f32(), fastrand::f32(), fastrand::f32());
+        let ray = NormalRay::new(origin, direction);
 
         let _hit = aabb.intersects(ray).is_some();
     }
@@ -85,14 +86,14 @@ fn quick_bench() {
     let now = Instant::now();
 
     while now.elapsed().as_secs() < SECONDS {
-        let min = -Vec3::new(fastrand::f32(), fastrand::f32(), rand::random());
-        let max = Vec3::new(fastrand::f32(), fastrand::f32(), rand::random());
+        let min = -Vec3::new(fastrand::f32(), fastrand::f32(), fastrand::f32());
+        let max = Vec3::new(fastrand::f32(), fastrand::f32(), fastrand::f32());
         let aabb = Aabb::new(min, max);
 
-        let origin = -Vec3::new(fastrand::f32(), fastrand::f32(), rand::random()) * 2.0;
-        let direction = Vec3::new(fastrand::f32(), fastrand::f32(), rand::random());
+        let origin = -Vec3::new(fastrand::f32(), fastrand::f32(), fastrand::f32()) * 2.0;
+        let direction = Vec3::new(fastrand::f32(), fastrand::f32(), fastrand::f32());
 
-        let ray = Ray::new(origin, direction);
+        let ray = NormalRay::new(origin, direction);
         if aabb.intersects(ray).is_some() {
             hits += 1;
         }
