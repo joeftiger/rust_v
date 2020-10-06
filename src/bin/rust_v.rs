@@ -68,12 +68,12 @@ fn quick_bench() {
 
     println!("Warming up for 5 s...");
     while now.elapsed().as_secs() < 5 {
-        let min = -Vec3::new(rand::random(), rand::random(), rand::random());
-        let max = Vec3::new(rand::random(), rand::random(), rand::random());
+        let min = -Vec3::new(fastrand::f32(), fastrand::f32(), rand::random());
+        let max = Vec3::new(fastrand::f32(), fastrand::f32(), rand::random());
         let aabb = Aabb::new(min, max);
 
-        let origin = -Vec3::new(rand::random(), rand::random(), rand::random()) * 2.0;
-        let direction = Vec3::new(rand::random(), rand::random(), rand::random());
+        let origin = -Vec3::new(fastrand::f32(), fastrand::f32(), rand::random()) * 2.0;
+        let direction = Vec3::new(fastrand::f32(), fastrand::f32(), rand::random());
         let ray = Ray::new(origin, direction);
 
         let _hit = aabb.intersects(ray).is_some();
@@ -85,12 +85,12 @@ fn quick_bench() {
     let now = Instant::now();
 
     while now.elapsed().as_secs() < SECONDS {
-        let min = -Vec3::new(rand::random(), rand::random(), rand::random());
-        let max = Vec3::new(rand::random(), rand::random(), rand::random());
+        let min = -Vec3::new(fastrand::f32(), fastrand::f32(), rand::random());
+        let max = Vec3::new(fastrand::f32(), fastrand::f32(), rand::random());
         let aabb = Aabb::new(min, max);
 
-        let origin = -Vec3::new(rand::random(), rand::random(), rand::random()) * 2.0;
-        let direction = Vec3::new(rand::random(), rand::random(), rand::random());
+        let origin = -Vec3::new(fastrand::f32(), fastrand::f32(), rand::random()) * 2.0;
+        let direction = Vec3::new(fastrand::f32(), fastrand::f32(), rand::random());
 
         let ray = Ray::new(origin, direction);
         if aabb.intersects(ray).is_some() {
