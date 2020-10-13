@@ -8,7 +8,7 @@ pub struct NormalRay {
     pub direction: Vec3,
 }
 
-pub trait Ray: Copy + Clone + Debug + Default {
+pub trait Ray {
     #[must_use]
     fn at(&self, t: f32) -> Vec3;
 

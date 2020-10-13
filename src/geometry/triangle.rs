@@ -49,7 +49,7 @@ impl Boxable for Triangle {
 
 impl<T: Ray> Intersectable<T> for Triangle {
     // According to the Möller–Trumbore intersection algorithm (Wikipedia)
-    fn intersects(&self, ray: T) -> Option<Intersection> {
+    fn intersects(&self, ray: &T) -> Option<Intersection> {
         let edge1 = self[1] - self[0];
         let edge2 = self[2] - self[0];
 

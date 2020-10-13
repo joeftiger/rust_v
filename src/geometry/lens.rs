@@ -31,7 +31,7 @@ impl Boxable for SimpleLens {
 }
 
 impl<T: Ray> Intersectable<T> for SimpleLens {
-    fn intersects(&self, ray: T) -> Option<Intersection> {
+    fn intersects(&self, ray: &T) -> Option<Intersection> {
         if let Some(i0) = self.sphere0.intersects(ray) {
             if let Some(i1) = self.sphere1.intersects(ray) {
                 let lens_side: Intersection;
@@ -69,7 +69,7 @@ impl Boxable for PlanoConvexLens {
 }
 
 impl<T: Ray> Intersectable<T> for PlanoConvexLens {
-    fn intersects(&self, ray: T) -> Option<Intersection> {
+    fn intersects(&self, ray: &T) -> Option<Intersection> {
         if let Some(is) = self.sphere.intersects(ray) {
         }
 

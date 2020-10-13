@@ -33,7 +33,7 @@ impl Boxable for Cylinder {
 }
 
 impl<T: Ray> Intersectable<T> for Cylinder {
-    fn intersects(&self, ray: T) -> Option<Intersection> {
+    fn intersects(&self, ray: &T) -> Option<Intersection> {
         let dir = ray.direction();
         let oc = ray.origin() - self.center;
 

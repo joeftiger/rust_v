@@ -77,7 +77,7 @@ fn quick_bench() {
         let direction = Vec3::new(fastrand::f32(), fastrand::f32(), fastrand::f32());
         let ray = NormalRay::new(origin, direction);
 
-        let _hit = aabb.intersects(ray).is_some();
+        let _hit = aabb.intersects(&ray).is_some();
     }
 
     println!("Benchmarking for {} s...", SECONDS);
@@ -94,7 +94,7 @@ fn quick_bench() {
         let direction = Vec3::new(fastrand::f32(), fastrand::f32(), fastrand::f32());
 
         let ray = NormalRay::new(origin, direction);
-        if aabb.intersects(ray).is_some() {
+        if aabb.intersects(&ray).is_some() {
             hits += 1;
         }
         casts += 1;

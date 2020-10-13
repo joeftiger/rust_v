@@ -81,7 +81,7 @@ pub trait CeilFloorExt {
 /// ```
 pub trait Intersectable<T> {
     #[must_use]
-    fn intersects(&self, intersector: T) -> Option<Intersection>;
+    fn intersects(&self, intersector: &T) -> Option<Intersection>;
 }
 
 /// Allows an implementation to be put in a "box" (aabb), if available.

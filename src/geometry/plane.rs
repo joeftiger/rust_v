@@ -58,7 +58,7 @@ impl Boxable for Plane {
 }
 
 impl<T: Ray> Intersectable<T> for Plane {
-    fn intersects(&self, ray: T) -> Option<Intersection> {
+    fn intersects(&self, ray: &T) -> Option<Intersection> {
         let denom = self.normal.dot(ray.direction());
         if denom.abs() <= f32::EPSILON {
             return None;

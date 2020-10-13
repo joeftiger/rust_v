@@ -96,7 +96,7 @@ impl Aabb {
     }
 }
 
-impl Intersectable<&Self> for Aabb {
+impl Intersectable<Self> for Aabb {
     #[inline]
     #[must_use]
     fn intersects(&self, other: &Self) -> Option<Intersection> {
@@ -113,7 +113,7 @@ impl Intersectable<&Self> for Aabb {
 
 impl<T: Ray> Intersectable<T> for Aabb {
     #[inline]
-    fn intersects(&self, ray: T) -> Option<Intersection> {
+    fn intersects(&self, ray: &T) -> Option<Intersection> {
         let t1 = (self.min - ray.origin()) / ray.direction();
         let t2 = (self.max - ray.origin()) / ray.direction();
 

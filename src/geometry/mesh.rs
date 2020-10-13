@@ -130,7 +130,7 @@ impl Boxable for Mesh {
 
 // TODO: IMPLEMENT
 impl<T: Ray> Intersectable<T> for Mesh {
-    fn intersects(&self, ray: T) -> Option<Intersection> {
+    fn intersects(&self, ray: &T) -> Option<Intersection> {
         None
     }
 }

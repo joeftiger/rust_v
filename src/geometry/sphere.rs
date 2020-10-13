@@ -28,7 +28,7 @@ impl Boxable for Sphere {
 }
 
 impl<T: Ray> Intersectable<T> for Sphere {
-    fn intersects(&self, ray: T) -> Option<Intersection> {
+    fn intersects(&self, ray: &T) -> Option<Intersection> {
         let oc = ray.origin() - self.center;
 
         let a = ray.direction().mag_sq();
