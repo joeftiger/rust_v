@@ -83,7 +83,7 @@ impl CustomWindow {
             }
 
             let image = self.renderer.get_image();
-            self.window.set_image(image, "Rendering");
+            self.window.set_image(image, "Rendering").unwrap();
         }
     }
 }
