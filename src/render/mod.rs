@@ -112,7 +112,11 @@ pub struct Scene {
 pub trait Renderer {
     fn render(&self) -> RgbImage;
 
-    fn render_pass(&self) -> RgbImage;
+    fn render_pass(&self);
+
+    fn reset(&self);
+
+    fn get_image(&self) -> RgbImage;
 
     fn get_scene(&mut self) -> &mut Scene;
     // fn get_camera(&self) -> None;
@@ -155,7 +159,15 @@ impl Renderer for RgbRenderer {
         RgbImage::new(dim.width, dim.height)
     }
 
-    fn render_pass(&self) -> RgbImage {
+    fn render_pass(&self) {
+        unimplemented!()
+    }
+
+    fn reset(&self) {
+        unimplemented!()
+    }
+
+    fn get_image(&self) -> RgbImage {
         unimplemented!()
     }
 
