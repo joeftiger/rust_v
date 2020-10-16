@@ -1,9 +1,9 @@
 use image::{ImageBuffer, Rgb, Rgba, RgbImage};
+use ultraviolet::Vec3;
 
 use crate::geometry::Intersectable;
-use crate::render::objects::SceneObject;
-use ultraviolet::Vec3;
 use crate::geometry::ray::NormalRay;
+use crate::render::objects::SceneObject;
 
 pub mod material;
 mod objects;

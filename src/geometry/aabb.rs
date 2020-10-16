@@ -1,5 +1,5 @@
-use ultraviolet::Vec3;
 use serde::{Deserialize, Serialize};
+use ultraviolet::Vec3;
 
 use crate::geometry::{Intersectable, Intersection};
 use crate::geometry::plane::Plane;

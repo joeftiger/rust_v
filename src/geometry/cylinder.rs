@@ -1,8 +1,9 @@
 use ultraviolet::Vec3;
+
 use crate::geometry::{Boxable, Intersectable, Intersection};
 use crate::geometry::aabb::Aabb;
-use crate::math;
 use crate::geometry::ray::{NormalRay, Ray};
+use crate::math;
 
 // A geometrical cylinder.
 pub struct Cylinder {

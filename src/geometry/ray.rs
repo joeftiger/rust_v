@@ -1,6 +1,8 @@
-use ultraviolet::vec::Vec3;
-use crate::geometry::AngularExt;
 use std::fmt::Debug;
+
+use ultraviolet::vec::Vec3;
+
+use crate::geometry::AngularExt;
 
 #[derive(Copy, Clone, Debug, Default)]
 pub struct NormalRay {

@@ -2,9 +2,9 @@ use std::time::{Duration, Instant};
 
 use show_image::{make_window, Window};
 use show_image::KeyCode::*;
+use ultraviolet::{Rotor3, Vec3};
 
 use crate::render::Renderer;
-use ultraviolet::{Vec3, Rotor3};
 
 /// The rotating angle speed in radians
 const ROTATING_ANGLE_DEG: f32 = 22.5;

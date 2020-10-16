@@ -1,7 +1,7 @@
 use std::ops::Index;
 
-use ultraviolet::Vec3;
 use serde::{Deserialize, Serialize};
+use ultraviolet::Vec3;
 
 use crate::geometry::{Boxable, Intersectable, Intersection};
 use crate::geometry::aabb::Aabb;

@@ -1,11 +1,11 @@
-use ultraviolet::Vec3;
-use serde::{Deserialize, Serialize};
-
-use crate::geometry::aabb::Aabb;
-use crate::geometry::{Boxable, Intersectable, Intersection};
 use std::ops::IndexMut;
-use crate::geometry::ray::Ray;
 
+use serde::{Deserialize, Serialize};
+use ultraviolet::Vec3;
+
+use crate::geometry::{Boxable, Intersectable, Intersection};
+use crate::geometry::aabb::Aabb;
+use crate::geometry::ray::Ray;
 
 #[derive(Debug, Deserialize, Serialize)]
 pub enum DrawMode {

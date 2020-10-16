@@ -1,8 +1,8 @@
-use crate::geometry::sphere::Sphere;
 use crate::geometry::{Boxable, Intersectable, Intersection};
 use crate::geometry::aabb::Aabb;
 use crate::geometry::plane::Plane;
 use crate::geometry::ray::Ray;
+use crate::geometry::sphere::Sphere;
 
 /// A geometrical simple lens consists of the intersection of two spheres.
 pub struct SimpleLens {

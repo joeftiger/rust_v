@@ -1,6 +1,7 @@
-use crate::geometry::{Intersectable, Boxable, Ray, Intersection};
-use crate::geometry::aabb::Aabb;
 use std::borrow::Borrow;
+
+use crate::geometry::{Boxable, Intersectable, Intersection, Ray};
+use crate::geometry::aabb::Aabb;
 
 pub struct CustomShape<T> {
     base: T,
