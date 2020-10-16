@@ -1,6 +1,6 @@
 extern crate clap;
 
-use std::time::Instant;
+use std::time::{Instant, Duration};
 
 use clap::{App, Arg};
 use ultraviolet::Vec3;
@@ -11,6 +11,8 @@ use rust_v::geometry::aabb::Aabb;
 use std::fs::{File, Permissions, OpenOptions, remove_dir, create_dir, remove_file};
 use std::io::{Write, Read};
 use rust_v::geometry::ray::NormalRay;
+use rust_v::render::{RgbRenderer, Renderer, Scene};
+use show_image::{make_window, KeyCode};
 
 const INPUT: &str = "input_file";
 const OUTPUT: &str = "output_file";
@@ -20,8 +22,24 @@ fn main() {
     // let app = init_help();
     // let _matches = app.get_matches();
 
-    quick_bench();
-    test_save_load_aabb();
+    test_show_image();
+    // quick_bench();
+    // test_save_load_aabb();
+}
+
+fn test_show_image() {
+    let image = RgbRenderer::dummy_render();
+
+    let window = make_window("Image").unwrap();
+    window.set_image(image, "test image").unwrap();
+
+    while let Ok(event) = window.wait_key(Duration::from_millis(100)) {
+        if let Some(event) = event {
+            if event.key == KeyCode::Escape {
+                break;
+            }
+        }
+    }
 }
 
 fn test_save_load_aabb() {
@@ -102,8 +120,6 @@ fn quick_bench() {
 
     println!("{} hits", hits);
     println!("{} casts/s", casts / SECONDS);
-
-
 }
 
 fn init_help<'a, 'b>() -> App<'a, 'b> {
