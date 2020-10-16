@@ -1,4 +1,4 @@
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 use show_image::{make_window, Window};
 use show_image::KeyCode::*;
@@ -9,6 +9,8 @@ use ultraviolet::{Vec3, Rotor3};
 /// The rotating angle speed in radians
 const ROTATING_ANGLE_DEG: f32 = 22.5;
 const ROTATING_ANGLE: f32 = ROTATING_ANGLE_DEG * 0.017_453_292; // latter is PI / 180
+
+const RENDER_TIME_MS: u64 = 250;
 
 pub struct CustomWindow {
     window: Window,
@@ -62,16 +64,26 @@ impl CustomWindow {
                 }
 
                 // apply rotation
-                let cam_info = &mut self.renderer.get_scene().camera.camera_info;
+                let camera = &mut self.renderer.get_scene().camera;
                 if let Some(rotation) = rotation {
-                    let mut distance = cam_info.position - cam_info.center;
+                    let mut distance = camera.camera_info.position - camera.camera_info.center;
                     distance.rotate_by(rotation);
 
-                    cam_info.position = cam_info.center + distance;
+                    camera.camera_info.position = camera.camera_info.center + distance;
+
+                    // IMPORTANT
+                    camera.update();
+                    self.renderer.reset();
                 }
             }
 
+            let start = Instant::now();
+            while (Instant::now() - start) < Duration::from_millis(RENDER_TIME_MS) {
+                self.renderer.render_pass();
+            }
 
+            let image = self.renderer.get_image();
+            self.window.set_image(image, "Rendering");
         }
     }
 }
