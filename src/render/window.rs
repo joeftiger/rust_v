@@ -43,7 +43,7 @@ impl CustomWindow {
 
             // handle rendering
             let start = Instant::now();
-            while start.elapsed().as_millis() < RENDER_TIME_MS {
+            while start.elapsed() < dt {
                 self.renderer.render_pass();
             }
 
