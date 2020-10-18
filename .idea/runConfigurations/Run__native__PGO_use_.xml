@@ -7,9 +7,10 @@
     <option name="backtrace" value="SHORT" />
     <option name="workingDirectory" value="file://$PROJECT_DIR$" />
     <envs>
-      <env name="RUSTFLAGS" value="-Ctarget-cpu=native -Cprofile-use=$PROJECT_DIR$/pgo-data/pgo-data.profdata" />
+      <env name="RUSTFLAGS" value="-Ctarget-cpu=native -Cprofile-use=/tmp/pgo-data.profdata" />
     </envs>
     <method v="2">
+      <option name="ToolBeforeRunTask" enabled="true" actionId="Tool_External Tools_PGO" />
       <option name="CARGO.BUILD_TASK_PROVIDER" enabled="true" />
     </method>
   </configuration>
