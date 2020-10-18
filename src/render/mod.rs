@@ -1,9 +1,8 @@
-use image::{ImageBuffer, Rgb, Rgba, RgbImage};
+use image::{Rgb, Rgba, RgbImage};
 use ultraviolet::Vec3;
 
-use crate::geometry::Intersectable;
-use crate::geometry::ray::NormalRay;
 use crate::render::objects::SceneObject;
+use crate::geometry::ray::Ray;
 
 pub mod material;
 mod objects;
@@ -83,11 +82,11 @@ impl Camera {
         self.lower_left = lower_left;
     }
 
-    pub fn primary_ray(&self, x: u32, y: u32) -> NormalRay {
+    pub fn primary_ray(&self, x: u32, y: u32) -> Ray {
         let origin = self.camera_info.position;
         let direction = self.lower_left + (x as f32) * self.x_dir + (y as f32) * self.y_dir - origin;
 
-        NormalRay::new(origin, direction)
+        Ray::new(origin, direction)
     }
 }
 

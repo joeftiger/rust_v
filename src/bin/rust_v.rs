@@ -10,20 +10,20 @@ use rust_v::geometry::{Intersectable};
 use rust_v::geometry::aabb::Aabb;
 use std::fs::{File, Permissions, OpenOptions, remove_dir, create_dir, remove_file};
 use std::io::{Write, Read};
-use rust_v::geometry::ray::NormalRay;
 use rust_v::render::{RgbRenderer, Renderer, Scene};
 use show_image::{make_window, KeyCode};
+use rust_v::geometry::ray::Ray;
 
 const INPUT: &str = "input_file";
 const OUTPUT: &str = "output_file";
 const VERBOSE: &str = "VERBOSE";
 
 fn main() {
-    // let app = init_help();
+    let app = init_help();
     // let _matches = app.get_matches();
 
-    test_show_image();
-    // quick_bench();
+    // test_show_image();
+    quick_bench();
     // test_save_load_aabb();
 }
 
@@ -93,7 +93,7 @@ fn quick_bench() {
 
         let origin = -Vec3::new(fastrand::f32(), fastrand::f32(), fastrand::f32()) * 2.0;
         let direction = Vec3::new(fastrand::f32(), fastrand::f32(), fastrand::f32());
-        let ray = NormalRay::new(origin, direction);
+        let ray = Ray::new(origin, direction);
 
         let _hit = aabb.intersects(&ray).is_some();
     }
@@ -111,7 +111,7 @@ fn quick_bench() {
         let origin = -Vec3::new(fastrand::f32(), fastrand::f32(), fastrand::f32()) * 2.0;
         let direction = Vec3::new(fastrand::f32(), fastrand::f32(), fastrand::f32());
 
-        let ray = NormalRay::new(origin, direction);
+        let ray = Ray::new(origin, direction);
         if aabb.intersects(&ray).is_some() {
             hits += 1;
         }
@@ -132,14 +132,14 @@ fn init_help<'a, 'b>() -> App<'a, 'b> {
                 // .short("i")
                 // .long("input")
                 .help("The input file to use")
-                .required(true),
+                // .required(true),
         )
         .arg(
             Arg::with_name(OUTPUT)
                 // .short("o")
                 // .long("output")
                 .help("The output file to save in (png)")
-                .required(true),
+                // .required(true),
         )
         .arg(
             Arg::with_name(VERBOSE)

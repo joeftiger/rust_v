@@ -111,11 +111,11 @@ impl Intersectable<Self> for Aabb {
     }
 }
 
-impl<T: Ray> Intersectable<T> for Aabb {
+impl Intersectable<Ray> for Aabb {
     #[inline]
-    fn intersects(&self, ray: &T) -> Option<Intersection> {
-        let t1 = (self.min - ray.origin()) / ray.direction();
-        let t2 = (self.max - ray.origin()) / ray.direction();
+    fn intersects(&self, ray: &Ray) -> Option<Intersection> {
+        let t1 = (self.min - ray.origin) / ray.direction;
+        let t2 = (self.max - ray.origin) / ray.direction;
 
         let t_min_vec = t1.min_by_component(t2);
         let t_max_vec = t1.max_by_component(t2);
