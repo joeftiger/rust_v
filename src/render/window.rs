@@ -2,7 +2,7 @@ use std::time::{Duration, Instant};
 
 use show_image::{make_window, Window, KeyCode};
 use show_image::KeyCode::*;
-use ultraviolet::{Rotor3, Vec3};
+use ultraviolet::Rotor3;
 
 use crate::render::Renderer;
 
