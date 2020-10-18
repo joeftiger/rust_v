@@ -1,9 +1,6 @@
 use std::cmp::Ordering;
 use std::ops::Index;
 
-use crate::util::sorted_vec::SortedVec;
-use std::slice::SliceIndex;
-
 #[derive(Clone, Default)]
 pub struct LightWave {
     pub wavelength_nm: f32,
@@ -45,22 +42,21 @@ impl Ord for LightWave {
 }
 
 pub struct CoefficientSpectrum<const SAMPLES: usize> {
-    pub samples: usize,
     data: [LightWave; SAMPLES],
 }
 
 impl<const SAMPLES: usize> CoefficientSpectrum<SAMPLES> {
     pub fn new(data: [LightWave; SAMPLES]) -> Self {
-        Self { samples: SAMPLES, data }
+        Self { data }
     }
 
     /// Returns the closest next lower index of the given wavelength (if not empty).
     /// O(log2(n))
     fn index_of_next_lower_wavelength(&self, wavelength_nm: f32) -> Option<usize> {
         let mut left = 0;
-        let mut right = self.samples - 1;
+        let mut right = self.data.len() - 1;
 
-        if self.samples == 1 {
+        if self.data.len() == 1 {
             return Some(0);
         }
 
@@ -81,12 +77,12 @@ impl<const SAMPLES: usize> CoefficientSpectrum<SAMPLES> {
 
     /// Returns the closest next upper index of the given wavelength (if not empty).
     /// O(log2(n))
-    pub fn index_of_next_upper(&self, wavelength_nm: f32) -> Option<usize> {
-        let last_index = self.samples - 1;
+    pub fn index_of_next_upper_wavelength(&self, wavelength_nm: f32) -> Option<usize> {
+        let last_index = self.data.len() - 1;
         let mut left = 0;
         let mut right = last_index;
 
-        if self.samples == 1 {
+        if self.data.len() == 1 {
             return Some(0);
         }
 
@@ -110,7 +106,7 @@ impl<const SAMPLES: usize> CoefficientSpectrum<SAMPLES> {
         if let Some(min_index) = self
             .index_of_next_lower_wavelength(wavelength_nm)
         {
-            if min_index + 1 >= self.samples {
+            if min_index + 1 >= self.data.len() {
                 return Some(LightWave::new(wavelength_nm, self[min_index].radiance));
             }
 
@@ -127,15 +123,15 @@ impl<const SAMPLES: usize> CoefficientSpectrum<SAMPLES> {
 
     /// Uses polynomial interpolation in lagrange form for given wave length.
     pub fn perp_radiance(&self, wavelength_nm: f32) -> Option<LightWave> {
-        if self.samples == 0 {
+        if self.data.len() == 0 {
             return None;
         }
 
         let mut radiance = 0.0;
-        for i in 0..self.samples {
+        for i in 0..self.data.len() {
             let mut product = 1.0;
 
-            for j in 0..self.samples {
+            for j in 0..self.data.len() {
                 if i != j {
                     product *= (wavelength_nm - self[j].wavelength_nm) / (self[i].wavelength_nm / self[j].wavelength_nm);
                 }
@@ -145,6 +141,20 @@ impl<const SAMPLES: usize> CoefficientSpectrum<SAMPLES> {
         }
 
         Some(LightWave::new(wavelength_nm, radiance))
+    }
+
+    /// Whether the whole spectrum is zero (<= epsilon)
+    pub fn is_black(&self) -> bool {
+        self.data.iter().all(|lw| lw.radiance <= f32::EPSILON)
+    }
+
+    /// Whether the whole spectrum is constant (delta <= epsilon)
+    pub fn is_const(&self) -> bool {
+        assert!(!self.data.is_empty());
+
+        let reference = self.data[0].radiance;
+
+        self.data.iter().all(|lw| f32::abs(lw.radiance - reference) <= f32::EPSILON)
     }
 }
 
