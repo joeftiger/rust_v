@@ -3,6 +3,7 @@ use std::fmt::Debug;
 use ultraviolet::vec::Vec3;
 
 use crate::geometry::AngularExt;
+use crate::Float;
 
 #[derive(Copy, Clone, Debug, Default)]
 pub struct Ray {
@@ -20,21 +21,21 @@ impl Ray {
 
     #[inline]
     #[must_use]
-    pub fn at(&self, t: f32) -> Vec3 {
-        self.origin + self.direction * t
+    pub fn at(&self, t: Float) -> Vec3 {
+        self.origin + self.direction * t as f32
     }
 
     #[inline]
     #[must_use]
-    pub fn distance(&self, p: Vec3) -> f32 {
-        (p - self.origin).mag()
+    pub fn distance(&self, p: Vec3) -> Float {
+        (p - self.origin).mag() as Float
     }
 }
 
 impl AngularExt<Self> for Ray {
     #[inline]
     #[must_use]
-    fn angle_to(&self, other: Self) -> f32 {
+    fn angle_to(&self, other: Self) -> Float {
         self.direction.angle_to(other.direction)
     }
 }

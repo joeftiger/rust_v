@@ -6,6 +6,7 @@ use ultraviolet::Vec3;
 use crate::geometry::{Boxable, Intersectable, Intersection};
 use crate::geometry::aabb::Aabb;
 use crate::geometry::ray::Ray;
+use crate::Float;
 
 /// A geometrical triangle.
 ///
@@ -55,12 +56,12 @@ impl Intersectable<Ray> for Triangle {
 
         let h = ray.direction.cross(edge2);
 
-        let a = edge1.dot(h);
-        if a.abs() <= f32::EPSILON {
+        let a = edge1.dot(h) as Float;
+        if a.abs() <= Float::EPSILON {
             return None;
         }
 
-        let f = 1.0 / a;
+        let f = 1.0 / a as f32;
         let s = ray.origin - self[0];
 
         let u = f * s.dot(h);
@@ -74,8 +75,8 @@ impl Intersectable<Ray> for Triangle {
             return None;
         }
 
-        let t = f * edge2.dot(q);
-        if t <= f32::EPSILON {
+        let t = (f * edge2.dot(q)) as Float;
+        if t <= Float::EPSILON {
             return None;
         }
 

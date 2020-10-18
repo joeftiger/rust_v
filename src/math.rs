@@ -1,6 +1,8 @@
-pub fn solve_quadratic(a: f32, b: f32, c: f32) -> Vec<f32> {
-    if a.abs() <= f32::EPSILON {
-        if b.abs() <= f32::EPSILON {
+use crate::Float;
+
+pub fn solve_quadratic(a: Float, b: Float, c: Float) -> Vec<Float> {
+    if a.abs() <= Float::EPSILON {
+        if b.abs() <= Float::EPSILON {
             return vec![];
         }
         return vec![-c / b];
@@ -11,7 +13,7 @@ pub fn solve_quadratic(a: f32, b: f32, c: f32) -> Vec<f32> {
         return vec![];
     }
 
-    let a_x1 = -0.5 * (b * f32::copysign(discrimant.sqrt(), b));
+    let a_x1 = -0.5 * (b * Float::copysign(discrimant.sqrt(), b));
 
     vec![a_x1 / a, c / a_x1]
 }

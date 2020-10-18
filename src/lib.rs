@@ -8,3 +8,5 @@ pub mod structure;
 pub mod util;
 pub mod math;
 pub mod render;
+
+type Float = f64;
