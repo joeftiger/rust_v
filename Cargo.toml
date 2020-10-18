@@ -19,11 +19,13 @@ ultraviolet = { version = "^0.7.1", features = ["serde"] }
 #criterion = "^0.3.3"
 
 [profile.release]
+codegen-units = 1
 opt-level = 3
 lto = true
+incremental = true
 
 [profile.dev.package."*"]
-opt-level = 3
 
 [profile.release.package."*"]
+codegen-units = 1
 opt-level = 3
