@@ -5,8 +5,8 @@ use crate::geometry::ray::Ray;
 use crate::geometry::{Boxable, Intersectable, Intersection, InversibleExt};
 
 pub struct Cube {
-    to_local: Mat4,
-    to_world: Mat4,
+    world_to_local: Mat4,
+    local_to_world: Mat4,
 }
 
 impl Cube {
@@ -21,7 +21,7 @@ impl Cube {
         let R_inv = Mat4::from_euler_angles(roll, pitch, yaw);
         let T_inv = Mat4::from_translation(translation_inv);
 
-        let to_world = T_inv * R_inv * S_inv;
+        let local_to_world = T_inv * R_inv * S_inv;
 
         // to local space
         let size = size_inv.inversed();
@@ -31,17 +31,20 @@ impl Cube {
         let R = Mat4::from_euler_angles(-roll, -pitch, -yaw);
         let T = Mat4::from_translation(translation);
 
-        let to_local = T * R * S;
+        let world_to_local = T * R * S;
 
-        Self { to_local, to_world }
+        Self {
+            world_to_local,
+            local_to_world,
+        }
     }
 }
 
 impl Boxable for Cube {
     fn bounding_box(&self) -> Option<Aabb> {
         let unit = unit_aabb();
-        let min = (self.to_world * unit.min.into_homogeneous_vector()).xyz();
-        let max = (self.to_world * unit.max.into_homogeneous_vector()).xyz();
+        let min = (self.local_to_world * unit.min.into_homogeneous_vector()).xyz();
+        let max = (self.local_to_world * unit.max.into_homogeneous_vector()).xyz();
         let tmp = min;
 
         let min = min.min_by_component(max);
@@ -53,12 +56,13 @@ impl Boxable for Cube {
 
 impl Intersectable<Ray> for Cube {
     fn intersects(&self, ray: &Ray) -> Option<Intersection> {
-        let origin = (self.to_local * ray.origin.into_homogeneous_point()).xyz();
-        let direction = (self.to_local * ray.direction.into_homogeneous_vector()).xyz();
+        let origin = (self.world_to_local * ray.origin.into_homogeneous_point()).xyz();
+        let direction = (self.world_to_local * ray.direction.into_homogeneous_vector()).xyz();
 
         if let Some(i) = intersects_unit_aabb(&Ray::new(origin, direction)) {
-            let position = (self.to_world * i.position.unwrap().into_homogeneous_point()).xyz();
-            let normal = (self.to_world * i.normal.unwrap().into_homogeneous_vector()).xyz();
+            let position =
+                (self.local_to_world * i.position.unwrap().into_homogeneous_point()).xyz();
+            let normal = (self.local_to_world * i.normal.unwrap().into_homogeneous_vector()).xyz();
             let t = i.t.unwrap();
 
             return Some(Intersection::new(position, normal, t));
