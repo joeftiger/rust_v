@@ -4,6 +4,7 @@ use crate::geometry::aabb::Aabb;
 use crate::Float;
 
 pub mod aabb;
+pub mod cube;
 pub mod cylinder;
 pub mod triangle;
 pub mod lens;
