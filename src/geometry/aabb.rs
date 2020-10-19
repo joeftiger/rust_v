@@ -121,6 +121,13 @@ impl Aabb {
         self.max - self.min
     }
 
+    /// Calculate the center
+    #[inline]
+    #[must_use]
+    pub fn center(&self) -> Vec3 {
+        (self.max + self.min) / 2.0
+    }
+
     pub fn x_plane_min(&self) -> Plane {
         Plane::new(self.max.x as Float, -Vec3::unit_x())
     }
