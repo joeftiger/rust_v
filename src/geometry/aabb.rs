@@ -4,7 +4,6 @@ use ultraviolet::Vec3;
 use crate::geometry::plane::Plane;
 use crate::geometry::ray::Ray;
 use crate::geometry::{Intersectable, Intersection};
-use crate::Float;
 
 /// Creates a unit Aabb with size `(-Vec3::one(), Vec3::one())`.
 pub fn unit_aabb() -> Aabb {
@@ -21,14 +20,8 @@ pub fn intersects_unit_aabb(ray: &Ray) -> Option<Intersection> {
     let t_min_vec = t1.min_by_component(t2);
     let t_max_vec = t1.max_by_component(t2);
 
-    let t_min = Float::max(
-        t_min_vec.z as Float,
-        Float::max(t_min_vec.y as Float, t_min_vec.x as Float),
-    );
-    let t_max = Float::min(
-        t_max_vec.z as Float,
-        Float::min(t_max_vec.y as Float, t_max_vec.x as Float),
-    );
+    let t_min = f32::max(t_min_vec.z, f32::max(t_min_vec.y, t_min_vec.x));
+    let t_max = f32::min(t_max_vec.z, f32::min(t_max_vec.y, t_max_vec.x));
 
     if t_max < 0.0 || t_max < t_min {
         return None;
@@ -37,15 +30,15 @@ pub fn intersects_unit_aabb(ray: &Ray) -> Option<Intersection> {
     let position = ray.at(t_min);
     let normal: Vec3;
 
-    if (position.x + 1.0) as Float <= Float::EPSILON {
+    if (position.x + 1.0) <= f32::EPSILON {
         normal = -Vec3::unit_x();
-    } else if (position.x - 1.0) as Float <= Float::EPSILON {
+    } else if (position.x - 1.0) <= f32::EPSILON {
         normal = Vec3::unit_x();
-    } else if (position.y + 1.0) as Float <= Float::EPSILON {
+    } else if (position.y + 1.0) <= f32::EPSILON {
         normal = -Vec3::unit_y();
-    } else if (position.y - 1.0) as Float <= Float::EPSILON {
+    } else if (position.y - 1.0) <= f32::EPSILON {
         normal = Vec3::unit_y();
-    } else if (position.z + 1.0) as Float <= Float::EPSILON {
+    } else if (position.z + 1.0) <= f32::EPSILON {
         normal = -Vec3::unit_z();
     } else {
         normal = Vec3::unit_z();
@@ -108,10 +101,9 @@ impl Aabb {
     /// Calculates the volume.
     #[inline]
     #[must_use]
-    pub fn volume(&self) -> Float {
+    pub fn volume(&self) -> f32 {
         // max is guaranteed to be greater-or-equal to min.
-        ((self.max.x - self.min.x) * (self.max.y - self.min.y) * (self.max.z - self.min.z).abs())
-            as Float
+        (self.max.x - self.min.x) * (self.max.y - self.min.y) * (self.max.z - self.min.z).abs()
     }
 
     /// Calculates the size.
@@ -129,27 +121,27 @@ impl Aabb {
     }
 
     pub fn x_plane_min(&self) -> Plane {
-        Plane::new(self.max.x as Float, -Vec3::unit_x())
+        Plane::new(self.max.x, -Vec3::unit_x())
     }
 
     pub fn x_plane_max(&self) -> Plane {
-        Plane::new(self.max.x as Float, Vec3::unit_x())
+        Plane::new(self.max.x, Vec3::unit_x())
     }
 
     pub fn y_plane_min(&self) -> Plane {
-        Plane::new(self.max.y as Float, -Vec3::unit_y())
+        Plane::new(self.max.y, -Vec3::unit_y())
     }
 
     pub fn y_plane_max(&self) -> Plane {
-        Plane::new(self.max.y as Float, Vec3::unit_y())
+        Plane::new(self.max.y, Vec3::unit_y())
     }
 
     pub fn z_plane_min(&self) -> Plane {
-        Plane::new(self.max.z as Float, -Vec3::unit_z())
+        Plane::new(self.max.z, -Vec3::unit_z())
     }
 
     pub fn z_plane_max(&self) -> Plane {
-        Plane::new(self.max.z as Float, Vec3::unit_z())
+        Plane::new(self.max.z, Vec3::unit_z())
     }
 }
 
@@ -177,14 +169,8 @@ impl Intersectable<Ray> for Aabb {
         let t_min_vec = t1.min_by_component(t2);
         let t_max_vec = t1.max_by_component(t2);
 
-        let t_min = Float::max(
-            t_min_vec.z as Float,
-            Float::max(t_min_vec.y as Float, t_min_vec.x as Float),
-        );
-        let t_max = Float::min(
-            t_max_vec.z as Float,
-            Float::min(t_max_vec.y as Float, t_max_vec.x as Float),
-        );
+        let t_min = f32::max(t_min_vec.z, f32::max(t_min_vec.y, t_min_vec.x));
+        let t_max = f32::min(t_max_vec.z, f32::min(t_max_vec.y, t_max_vec.x));
 
         if t_max < 0.0 || t_max < t_min {
             return None;
@@ -193,15 +179,15 @@ impl Intersectable<Ray> for Aabb {
         let position = ray.at(t_min);
         let normal: Vec3;
 
-        if (position.x - self.min.x) as Float <= Float::EPSILON {
+        if (position.x - self.min.x) <= f32::EPSILON {
             normal = -Vec3::unit_x();
-        } else if (position.x - self.max.x) as Float <= Float::EPSILON {
+        } else if (position.x - self.max.x) <= f32::EPSILON {
             normal = Vec3::unit_x();
-        } else if (position.y - self.min.y) as Float <= Float::EPSILON {
+        } else if (position.y - self.min.y) <= f32::EPSILON {
             normal = -Vec3::unit_y();
-        } else if (position.y - self.max.y) as Float <= Float::EPSILON {
+        } else if (position.y - self.max.y) <= f32::EPSILON {
             normal = Vec3::unit_y();
-        } else if (position.z - self.min.z) as Float <= Float::EPSILON {
+        } else if (position.z - self.min.z) <= f32::EPSILON {
             normal = -Vec3::unit_z();
         } else {
             normal = Vec3::unit_z();

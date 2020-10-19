@@ -9,5 +9,3 @@ pub mod physics;
 pub mod render;
 pub mod structure;
 pub mod util;
-
-type Float = f32;

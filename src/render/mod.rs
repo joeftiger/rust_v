@@ -3,7 +3,6 @@ use ultraviolet::Vec3;
 
 use crate::render::objects::SceneObject;
 use crate::geometry::ray::Ray;
-use crate::Float;
 
 pub mod material;
 mod objects;
@@ -32,11 +31,11 @@ pub struct CameraInfo {
     /// The up-direction of the camera
     pub up: Vec3,
     /// field of view in y-direction (in radians)
-    pub fovy: Float,
+    pub fovy: f32,
 }
 
 impl CameraInfo {
-    pub fn new(position: Vec3, center: Vec3, up: Vec3, fovy: Float) -> Self {
+    pub fn new(position: Vec3, center: Vec3, up: Vec3, fovy: f32) -> Self {
         Self { position, center, up, fovy }
     }
 }
@@ -71,7 +70,7 @@ impl Camera {
         let w = self.image_dimension.width as f32;
         let h = self.image_dimension.height as f32;
 
-        let height = 2.0 * dist * Float::tan(0.5 * self.camera_info.fovy) as f32;
+        let height = 2.0 * dist * f32::tan(0.5 * self.camera_info.fovy);
         let width = w * height / h;
 
         let x_dir = view.cross(self.camera_info.up).normalized() * width / height;

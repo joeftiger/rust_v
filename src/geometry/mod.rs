@@ -1,7 +1,6 @@
 use ultraviolet::Vec3;
 
 use crate::geometry::aabb::Aabb;
-use crate::Float;
 
 pub mod aabb;
 pub mod cube;
@@ -19,11 +18,11 @@ pub mod sphere;
 pub struct Intersection {
     pub position: Option<Vec3>,
     pub normal: Option<Vec3>,
-    pub t: Option<Float>,
+    pub t: Option<f32>,
 }
 
 impl Intersection {
-    pub fn new(position: Vec3, normal: Vec3, t: Float) -> Self {
+    pub fn new(position: Vec3, normal: Vec3, t: f32) -> Self {
         Self {
             position: Some(position),
             normal: Some(normal),
@@ -42,12 +41,12 @@ impl Intersection {
 /// let v2 = Vec3::unit_y();
 /// let angle = v1.angle_to(v2);
 ///
-/// assert_eq!(angle, 90 * 180 / Float::PI);  // 90 degrees in radians
+/// assert_eq!(angle, 90 * 180 / f32::PI);  // 90 degrees in radians
 /// ```
 pub trait AngularExt<T> {
     /// Returns the angle to the other in radians.
     #[must_use]
-    fn angle_to(&self, other: T) -> Float;
+    fn angle_to(&self, other: T) -> f32;
 }
 
 /// A trait that allows the implementation to ceil / floor itself, such that e.g.:
@@ -111,8 +110,8 @@ pub trait InversibleExt {
 impl AngularExt<Self> for Vec3 {
     #[inline]
     #[must_use]
-    fn angle_to(&self, other: Self) -> Float {
-        Float::acos((self.dot(other) / (self.mag() * other.mag())) as Float)
+    fn angle_to(&self, other: Self) -> f32 {
+        f32::acos(self.dot(other) / (self.mag() * other.mag()))
     }
 }
 
