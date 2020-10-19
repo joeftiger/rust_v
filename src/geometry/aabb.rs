@@ -118,7 +118,7 @@ impl Aabb {
     #[inline]
     #[must_use]
     pub fn size(&self) -> Vec3 {
-        self.max.abs() - self.min.abs()
+        self.max - self.min
     }
 
     pub fn x_plane_min(&self) -> Plane {
