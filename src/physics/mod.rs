@@ -1,6 +1,6 @@
 use std::ops::{Add, AddAssign, Div, DivAssign, Index, IndexMut, Mul, MulAssign, Sub, SubAssign};
 
-use ultraviolet::Mat3;
+use ultraviolet::{Mat3, Vec3};
 
 use crate::physics::rgb::SRGB;
 use crate::physics::xyz::XYZ;
@@ -32,6 +32,13 @@ pub fn srgb_to_linear(val: f32) -> f32 {
     }
 }
 
+pub fn srgbs_to_linear(val: Vec3) -> Vec3 {
+    debug_assert!(val.component_min() >= 0.0);
+    debug_assert!(val.component_max() <= 1.0);
+
+    val.map(srgb_to_linear)
+}
+
 pub fn linear_to_srgb(val: f32) -> f32 {
     debug_assert!(val >= 0.0);
     debug_assert!(val <= 1.0);
@@ -40,6 +47,13 @@ pub fn linear_to_srgb(val: f32) -> f32 {
     } else {
         1.055 * val.powf(1.0 / 2.4) - 0.055
     }
+}
+
+pub fn linears_to_srgb(val: Vec3) -> Vec3 {
+    debug_assert!(val.component_min() >= 0.0);
+    debug_assert!(val.component_max() <= 1.0);
+
+    val.map(linear_to_srgb)
 }
 
 pub trait Color: Add + AddAssign + Sub + SubAssign + Mul + MulAssign + Mul<f32> + MulAssign<f32> + Div + DivAssign + Div<f32> + DivAssign<f32> + PartialEq + Index<usize> + IndexMut<usize> + Sized {
