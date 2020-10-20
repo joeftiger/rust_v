@@ -3,9 +3,10 @@ use std::ops::Index;
 use serde::{Deserialize, Serialize};
 use ultraviolet::Vec3;
 
-use crate::geometry::{Boxable, Intersectable, Intersection};
 use crate::geometry::aabb::Aabb;
 use crate::geometry::ray::Ray;
+use crate::geometry::{Boxable, Intersectable, Intersection};
+use crate::util::floats;
 
 /// A geometrical triangle.
 ///
@@ -20,7 +21,9 @@ pub struct Triangle {
 impl Triangle {
     pub fn new(vertex0: Vec3, vertex1: Vec3, vertex2: Vec3) -> Self {
         Self {
-            vertex0, vertex1, vertex2,
+            vertex0,
+            vertex1,
+            vertex2,
         }
     }
 }
@@ -33,7 +36,7 @@ impl Index<usize> for Triangle {
             0 => &self.vertex0,
             1 => &self.vertex1,
             2 => &self.vertex2,
-            _ =>  panic!("Index out of range. Valid inputs are in the range of [0, 1, 2]")
+            _ => panic!("Index out of range. Valid inputs are in the range of [0, 1, 2]"),
         }
     }
 }
@@ -56,7 +59,7 @@ impl Intersectable<Ray> for Triangle {
         let h = ray.direction.cross(edge2);
 
         let a = edge1.dot(h);
-        if a.abs() <= f32::EPSILON {
+        if floats::approx_zero(a) {
             return None;
         }
 
@@ -75,7 +78,7 @@ impl Intersectable<Ray> for Triangle {
         }
 
         let t = f * edge2.dot(q);
-        if t <= f32::EPSILON {
+        if floats::lt_epsilon(t) {
             return None;
         }
 

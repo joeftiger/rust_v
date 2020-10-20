@@ -1,8 +1,8 @@
 use ultraviolet::Vec3;
 
-use crate::geometry::{Boxable, Intersectable, Intersection};
 use crate::geometry::aabb::Aabb;
 use crate::geometry::ray::Ray;
+use crate::geometry::{Boxable, Intersectable, Intersection};
 use crate::math;
 
 // A geometrical cylinder.
@@ -15,7 +15,12 @@ pub struct Cylinder {
 
 impl Cylinder {
     pub fn new(center: Vec3, axis: Vec3, radius: f32, height: f32) -> Self {
-        Self { center, axis, radius, height }
+        Self {
+            center,
+            axis,
+            radius,
+            height,
+        }
     }
 }
 

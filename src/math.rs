@@ -1,6 +1,8 @@
+use crate::util::floats;
+
 pub fn solve_quadratic(a: f32, b: f32, c: f32) -> Vec<f32> {
-    if a.abs() <= f32::EPSILON {
-        if b.abs() <= f32::EPSILON {
+    if floats::approx_zero(a) {
+        if floats::approx_zero(b) {
             return vec![];
         }
         return vec![-c / b];

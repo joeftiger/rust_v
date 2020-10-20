@@ -4,6 +4,7 @@ use ultraviolet::Vec3;
 use crate::geometry::plane::Plane;
 use crate::geometry::ray::Ray;
 use crate::geometry::{Intersectable, Intersection};
+use crate::util::floats;
 
 /// Creates a unit Aabb with size `(-Vec3::one(), Vec3::one())`.
 pub fn unit_aabb() -> Aabb {
@@ -30,15 +31,15 @@ pub fn intersects_unit_aabb(ray: &Ray) -> Option<Intersection> {
     let position = ray.at(t_min);
     let normal: Vec3;
 
-    if (position.x + 1.0) <= f32::EPSILON {
+    if floats::approx_equal(position.x, 1.0) {
         normal = -Vec3::unit_x();
-    } else if (position.x - 1.0) <= f32::EPSILON {
+    } else if floats::approx_equal(position.x, 1.0) {
         normal = Vec3::unit_x();
-    } else if (position.y + 1.0) <= f32::EPSILON {
+    } else if floats::approx_equal(position.y, 1.0) {
         normal = -Vec3::unit_y();
-    } else if (position.y - 1.0) <= f32::EPSILON {
+    } else if floats::approx_equal(position.y, 1.0) {
         normal = Vec3::unit_y();
-    } else if (position.z + 1.0) <= f32::EPSILON {
+    } else if floats::approx_equal(position.z, 1.0) {
         normal = -Vec3::unit_z();
     } else {
         normal = Vec3::unit_z();
@@ -179,15 +180,15 @@ impl Intersectable<Ray> for Aabb {
         let position = ray.at(t_min);
         let normal: Vec3;
 
-        if (position.x - self.min.x) <= f32::EPSILON {
+        if floats::approx_equal(position.x, self.min.x) {
             normal = -Vec3::unit_x();
-        } else if (position.x - self.max.x) <= f32::EPSILON {
+        } else if floats::approx_equal(position.x, self.max.x) {
             normal = Vec3::unit_x();
-        } else if (position.y - self.min.y) <= f32::EPSILON {
+        } else if floats::approx_equal(position.y, self.min.y) {
             normal = -Vec3::unit_y();
-        } else if (position.y - self.max.y) <= f32::EPSILON {
+        } else if floats::approx_equal(position.y, self.max.y) {
             normal = Vec3::unit_y();
-        } else if (position.z - self.min.z) <= f32::EPSILON {
+        } else if floats::approx_equal(position.z, self.min.z) {
             normal = -Vec3::unit_z();
         } else {
             normal = Vec3::unit_z();
