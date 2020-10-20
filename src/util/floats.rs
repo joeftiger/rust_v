@@ -63,3 +63,11 @@ pub fn lt_epsilon_tolerance(a: f32, zero_tolerance: f32) -> bool {
 pub fn lt_epsilon(a: f32) -> bool {
     lt_epsilon_tolerance(a, DEFAULT_ZERO_TOLERANCE)
 }
+
+#[inline(always)]
+#[must_use]
+pub fn fast_clamp(mut f: f32, min: f32, max: f32) -> f32 {
+    f = fast_max(f, min);
+    f = fast_min(f, max);
+    f
+}

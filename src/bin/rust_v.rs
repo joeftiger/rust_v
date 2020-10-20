@@ -4,13 +4,12 @@ use std::time::{Instant, Duration};
 
 use clap::{App, Arg};
 use ultraviolet::Vec3;
-use serde_json::json;
 
 use rust_v::geometry::{Intersectable};
 use rust_v::geometry::aabb::Aabb;
-use std::fs::{File, Permissions, OpenOptions, remove_dir, create_dir, remove_file};
+use std::fs::{OpenOptions, remove_dir, create_dir, remove_file};
 use std::io::{Write, Read};
-use rust_v::render::{RgbRenderer, Renderer, Scene};
+use rust_v::render::{RgbRenderer};
 use show_image::{make_window, KeyCode};
 use rust_v::geometry::ray::Ray;
 
@@ -20,11 +19,11 @@ const VERBOSE: &str = "VERBOSE";
 
 fn main() {
     let app = init_help();
-    // let _matches = app.get_matches();
+    let _matches = app.get_matches();
 
-    // test_show_image();
+    test_show_image();
     quick_bench();
-    // test_save_load_aabb();
+    test_save_load_aabb();
 }
 
 fn test_show_image() {

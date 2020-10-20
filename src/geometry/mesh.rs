@@ -131,6 +131,6 @@ impl Boxable for Mesh {
 // TODO: IMPLEMENT
 impl Intersectable<Ray> for Mesh {
     fn intersects(&self, ray: &Ray) -> Option<Intersection> {
-        None
+        unimplemented!()
     }
 }
