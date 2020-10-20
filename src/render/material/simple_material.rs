@@ -19,7 +19,7 @@ impl SimpleMaterial {
             shininess,
             mirror,
             refractiveness,
-            transmissive
+            transmissive,
         }
     }
 }

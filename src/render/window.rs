@@ -1,6 +1,6 @@
 use std::time::{Duration, Instant};
 
-use show_image::{make_window, Window, KeyCode};
+use show_image::{KeyCode, make_window, Window};
 use show_image::KeyCode::*;
 use ultraviolet::Rotor3;
 

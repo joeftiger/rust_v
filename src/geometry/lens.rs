@@ -70,8 +70,7 @@ impl Boxable for PlanoConvexLens {
 
 impl Intersectable<Ray> for PlanoConvexLens {
     fn intersects(&self, ray: &Ray) -> Option<Intersection> {
-        if let Some(is) = self.sphere.intersects(ray) {
-        }
+        if let Some(is) = self.sphere.intersects(ray) {}
 
         // TODO: IMPLEMENT
         unimplemented!();

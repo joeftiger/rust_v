@@ -1,8 +1,8 @@
 use ultraviolet::{Mat4, Vec3, Vec4};
 
-use crate::geometry::aabb::{intersects_unit_aabb, unit_aabb, Aabb};
-use crate::geometry::ray::Ray;
 use crate::geometry::{Boxable, Intersectable, Intersection, InversibleExt};
+use crate::geometry::aabb::{Aabb, intersects_unit_aabb, unit_aabb};
+use crate::geometry::ray::Ray;
 
 pub struct Cube {
     world_to_local: Mat4,

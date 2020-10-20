@@ -2,7 +2,7 @@ use std::ops::{Add, AddAssign, Div, DivAssign, Index, IndexMut, Mul, MulAssign, 
 
 use ultraviolet::Vec3;
 
-use crate::physics::{Color, srgb_to_xyz, srgb_to_linear};
+use crate::physics::{Color, srgb_to_linear, srgb_to_xyz};
 use crate::physics::xyz::XYZ;
 use crate::util::floats::{approx_equal, approx_zero, fast_clamp, fast_max};
 
@@ -48,7 +48,7 @@ impl Color for SRGB {
         let v = Vec3::new(
             srgb_to_linear(self.r),
             srgb_to_linear(self.g),
-            srgb_to_linear(self.b)
+            srgb_to_linear(self.b),
         );
         XYZ::from(srgb_to_xyz() * v)
     }

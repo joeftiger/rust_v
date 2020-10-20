@@ -1,8 +1,8 @@
 use image::{Rgb, Rgba, RgbImage};
 use ultraviolet::Vec3;
 
-use crate::render::objects::SceneObject;
 use crate::geometry::ray::Ray;
+use crate::render::objects::SceneObject;
 
 pub mod material;
 mod objects;

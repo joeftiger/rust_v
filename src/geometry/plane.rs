@@ -1,8 +1,8 @@
 use serde::{Deserialize, Serialize};
 use ultraviolet::Vec3;
 
-use crate::geometry::ray::Ray;
 use crate::geometry::{Aabb, AngularExt, Boxable, Intersectable, Intersection};
+use crate::geometry::ray::Ray;
 use crate::util::floats;
 
 /// A geometrical plane.

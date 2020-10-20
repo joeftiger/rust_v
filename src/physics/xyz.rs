@@ -1,9 +1,10 @@
 use std::ops::{Add, AddAssign, Div, DivAssign, Index, IndexMut, Mul, MulAssign, Sub, SubAssign};
 
-use crate::physics::{Color, xyz_to_srgb, srgb_to_linear, linear_to_srgb};
+use ultraviolet::Vec3;
+
+use crate::physics::{Color, linear_to_srgb, srgb_to_linear, xyz_to_srgb};
 use crate::physics::rgb::SRGB;
 use crate::util::floats::{approx_equal, approx_zero, fast_clamp};
-use ultraviolet::Vec3;
 
 #[derive(Clone, Default)]
 pub struct XYZ {

@@ -1,17 +1,17 @@
 extern crate clap;
 
-use std::time::{Instant, Duration};
+use std::fs::{create_dir, OpenOptions, remove_dir, remove_file};
+use std::io::{Read, Write};
+use std::time::{Duration, Instant};
 
 use clap::{App, Arg};
+use show_image::{KeyCode, make_window};
 use ultraviolet::Vec3;
 
-use rust_v::geometry::{Intersectable};
+use rust_v::geometry::Intersectable;
 use rust_v::geometry::aabb::Aabb;
-use std::fs::{OpenOptions, remove_dir, create_dir, remove_file};
-use std::io::{Write, Read};
-use rust_v::render::{RgbRenderer};
-use show_image::{make_window, KeyCode};
 use rust_v::geometry::ray::Ray;
+use rust_v::render::RgbRenderer;
 
 const INPUT: &str = "input_file";
 const OUTPUT: &str = "output_file";
@@ -131,14 +131,14 @@ fn init_help<'a, 'b>() -> App<'a, 'b> {
                 // .short("i")
                 // .long("input")
                 .help("The input file to use")
-                // .required(true),
+            // .required(true),
         )
         .arg(
             Arg::with_name(OUTPUT)
                 // .short("o")
                 // .long("output")
                 .help("The output file to save in (png)")
-                // .required(true),
+            // .required(true),
         )
         .arg(
             Arg::with_name(VERBOSE)

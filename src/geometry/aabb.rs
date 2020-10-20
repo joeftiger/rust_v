@@ -1,9 +1,9 @@
 use serde::{Deserialize, Serialize};
 use ultraviolet::Vec3;
 
+use crate::geometry::{Intersectable, Intersection};
 use crate::geometry::plane::Plane;
 use crate::geometry::ray::Ray;
-use crate::geometry::{Intersectable, Intersection};
 use crate::util::floats;
 
 /// Creates a unit Aabb with size `(-Vec3::one(), Vec3::one())`.
