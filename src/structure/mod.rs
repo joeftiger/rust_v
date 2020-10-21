@@ -4,11 +4,12 @@ use crate::geometry::aabb::Aabb;
 use crate::geometry::{Boxable, Intersection};
 use crate::render::Scene;
 use crate::geometry::ray::Ray;
+use crate::render::objects::SceneObject;
 
 pub mod kd_tree;
 pub mod uniform_spatial_partition;
 
-fn global_bounding_box<T: Boxable>(objects: &Vec<T>) -> Option<Aabb> {
+fn global_bounding_box(objects: &Vec<Box<dyn SceneObject>>) -> Option<Aabb> {
     if objects.is_empty() {
         return None;
     }
@@ -34,7 +35,7 @@ fn global_bounding_box<T: Boxable>(objects: &Vec<T>) -> Option<Aabb> {
     Some(aabb)
 }
 
-fn average_cell_size<T: Boxable>(objects: &Vec<T>) -> Option<Vec3> {
+fn average_cell_size(objects: &Vec<Box<dyn SceneObject>>) -> Option<Vec3> {
     if objects.is_empty() {
         return None;
     }
@@ -56,7 +57,7 @@ fn average_cell_size<T: Boxable>(objects: &Vec<T>) -> Option<Vec3> {
     Some(cell_size / objects.len() as f32)
 }
 
-pub trait AccelerationStructure {
+pub trait AccelerationStructure<'obj> {
     /// Accelerates the ray tracing through the given scene
-    fn accelerate(&self, ray: &Ray, scene: &Scene) -> Option<Intersection>;
+    fn accelerate(&self, ray: &Ray, scene: &'obj Scene) -> Option<Intersection>;
 }

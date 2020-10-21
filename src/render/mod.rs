@@ -5,7 +5,7 @@ use crate::geometry::ray::Ray;
 use crate::render::objects::SceneObject;
 
 pub mod material;
-mod objects;
+pub mod objects;
 pub mod window;
 pub mod renderer;
 
@@ -108,8 +108,8 @@ impl Camera {
 
 #[derive(Default)]
 pub struct Scene {
-    objects: Vec<Box<dyn SceneObject>>,
-    camera: Camera,
+    pub objects: Vec<Box<dyn SceneObject>>,
+    pub camera: Camera,
 }
 
 unsafe impl Send for Scene {}

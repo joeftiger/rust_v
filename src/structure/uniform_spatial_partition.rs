@@ -1,22 +1,26 @@
 use ultraviolet::Vec3;
 
-use crate::geometry::{Boxable, CeilFloorExt, Intersectable};
+use crate::geometry::{Boxable, CeilFloorExt, Intersectable, Intersection};
 use crate::geometry::aabb::Aabb;
-use crate::structure::{average_cell_size, global_bounding_box};
+use crate::structure::{average_cell_size, global_bounding_box, AccelerationStructure};
+use crate::geometry::ray::Ray;
+use crate::render::Scene;
+use crate::render::objects::SceneObject;
 
 #[derive(Default)]
-struct SpatialCell<'a, T: Boxable> {
+struct SpatialCell<T> {
     bounding_box: Aabb,
-    objects: Vec<&'a T>,
+    objects: Vec<T>,
 }
 
-struct SpatialPartition<'a, T: Boxable> {
-    grid: Vec<Vec<Vec<SpatialCell<'a, T>>>>,
+struct SpatialPartition<'obj> {
+    grid: Vec<Vec<Vec<SpatialCell<&'obj Box<dyn SceneObject>>>>>,
     cell_size: Vec3,
 }
 
-impl<'a, T: Boxable> SpatialPartition<'a, T> {
-    pub fn new_averaged(boxables: &'a Vec<T>) -> SpatialPartition<'a, T> {
+impl<'obj> SpatialPartition<'obj> {
+    pub fn new_averaged(scene: &'obj Scene) -> Self {
+        let boxables = &scene.objects;
         let global_box = global_bounding_box(boxables).unwrap();
         let cell_size = average_cell_size(boxables).unwrap();
 
@@ -30,7 +34,7 @@ impl<'a, T: Boxable> SpatialPartition<'a, T> {
             + Vec3::unit_z() * cell_size.z;
 
         // create grid
-        let mut grid: Vec<Vec<Vec<SpatialCell<T>>>> = Vec::with_capacity(cell_size.x as usize);
+        let mut grid: Vec<Vec<Vec<SpatialCell<&'obj Box<dyn SceneObject>>>>> = Vec::with_capacity(cell_size.x as usize);
 
         for x in 0..fitting_cells.x as i32 {
             let mut grid_y = Vec::with_capacity(cell_size.y as usize);
@@ -46,7 +50,7 @@ impl<'a, T: Boxable> SpatialPartition<'a, T> {
 
                     let bounding_box = Aabb::new(min, max);
 
-                    // add objects inside the cell boundinx box
+                    // add objects inside the cell bounding box
                     let mut objects = vec![];
                     for o in boxables {
                         if o.bounding_box()
@@ -72,5 +76,11 @@ impl<'a, T: Boxable> SpatialPartition<'a, T> {
         }
 
         Self { grid, cell_size }
+    }
+}
+
+impl<'obj> AccelerationStructure<'obj> for SpatialPartition<'obj> {
+    fn accelerate(&self, ray: &Ray, scene: &'obj Scene) -> Option<Intersection> {
+        unimplemented!()
     }
 }
