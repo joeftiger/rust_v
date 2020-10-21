@@ -30,10 +30,10 @@ fn test_show_image() {
     let camera = Camera::new(CameraInfo::default(), Size::new(1280, 720));
     let scene = Scene::new(Vec::new(), camera);
     let renderer = DummyRgbRenderer::new(scene);
-    let mut window = CustomWindow::new("Dummy RGB Renderer", Box::new(renderer))
+    let mut window = CustomWindow::new("Dummy RGB Renderer", renderer)
         .expect("Failed to create window");
 
-    window.take_control();
+    window.start_rendering();
 }
 
 fn test_save_load_aabb() {
