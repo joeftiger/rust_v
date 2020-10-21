@@ -2,10 +2,10 @@ use ultraviolet::Vec3;
 
 use crate::geometry::{Boxable, CeilFloorExt, Intersectable, Intersection};
 use crate::geometry::aabb::Aabb;
-use crate::structure::{average_cell_size, global_bounding_box, AccelerationStructure};
 use crate::geometry::ray::Ray;
-use crate::render::Scene;
 use crate::render::objects::SceneObject;
+use crate::render::Scene;
+use crate::acceleration_structure::{AccelerationStructure, average_cell_size, global_bounding_box};
 
 #[derive(Default)]
 struct SpatialCell<T> {
@@ -79,8 +79,46 @@ impl<'obj> SpatialPartition<'obj> {
     }
 }
 
+// TODO: This is a naive implementation: Make more performant
 impl<'obj> AccelerationStructure<'obj> for SpatialPartition<'obj> {
     fn accelerate(&self, ray: &Ray, scene: &'obj Scene) -> Option<Intersection> {
-        unimplemented!()
+        let mut intersections = Vec::new();
+
+        for x in &self.grid {
+            for y in x {
+                for spatial_cell in y {
+                    // hits spatial cell?
+                    if spatial_cell.bounding_box.intersects(ray).is_some() {
+                        for o in &spatial_cell.objects {
+                            // hits object aabb?
+                            if let Some(o_aabb) = o.bounding_box() {
+                                if o_aabb.intersects(ray).is_some() {
+                                    // hits object itself?
+                                    if let Some(o_intersection) = o.intersects(ray) {
+                                        intersections.push(o_intersection);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        if intersections.is_empty() {
+            return None;
+        }
+
+
+        let i = intersections
+            .iter()
+            .min_by(|i0, i1| i0.t.unwrap().partial_cmp(&i1.t.unwrap()).unwrap())
+            .unwrap();
+        let clone = Intersection::new(
+            i.position.unwrap(),
+            i.normal.unwrap(),
+            i.t.unwrap(),
+        );
+        Some(clone)
     }
 }
