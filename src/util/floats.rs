@@ -39,9 +39,7 @@ pub fn approx_equal_tolerance(a: f32, b: f32, zero_tolerance: f32) -> bool {
     if distance <= zero_tolerance {
         true
     } else {
-        let a_abs = a.abs();
-        let b_abs = b.abs();
-        let largest = fast_max(1.0, fast_max(a_abs, b_abs));
+        let largest = fast_max(1.0, fast_max(a.abs(), b.abs()));
         distance <= largest * f32::EPSILON
     }
 }
@@ -66,8 +64,6 @@ pub fn lt_epsilon(a: f32) -> bool {
 
 #[inline(always)]
 #[must_use]
-pub fn fast_clamp(mut f: f32, min: f32, max: f32) -> f32 {
-    f = fast_max(f, min);
-    f = fast_min(f, max);
-    f
+pub fn fast_clamp(f: f32, min: f32, max: f32) -> f32 {
+    fast_min(max, fast_max(min, f))
 }
