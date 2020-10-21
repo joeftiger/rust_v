@@ -1,4 +1,4 @@
-use image::{Rgb, Rgba, RgbImage};
+use image::{ImageBuffer, Rgb, RgbImage, Rgba};
 use ultraviolet::Vec3;
 
 use crate::geometry::ray::Ray;
@@ -9,14 +9,17 @@ mod objects;
 pub mod window;
 
 #[derive(Default)]
-pub struct ImageDimension {
+pub struct Size {
     /// Image width in pixels.
     pub width: u32,
     /// Image height in pixels.
     pub height: u32,
 }
 
-impl ImageDimension {
+unsafe impl Send for Size {}
+unsafe impl Sync for Size {}
+
+impl Size {
     pub fn new(width: u32, height: u32) -> Self {
         Self { width, height }
     }
@@ -34,16 +37,24 @@ pub struct CameraInfo {
     pub fovy: f32,
 }
 
+unsafe impl Send for CameraInfo {}
+unsafe impl Sync for CameraInfo {}
+
 impl CameraInfo {
     pub fn new(position: Vec3, center: Vec3, up: Vec3, fovy: f32) -> Self {
-        Self { position, center, up, fovy }
+        Self {
+            position,
+            center,
+            up,
+            fovy,
+        }
     }
 }
 
 #[derive(Default)]
 pub struct Camera {
     pub camera_info: CameraInfo,
-    pub image_dimension: ImageDimension,
+    pub image_size: Size,
 
     // private fields
     x_dir: Vec3,
@@ -51,11 +62,14 @@ pub struct Camera {
     lower_left: Vec3,
 }
 
+unsafe impl Send for Camera {}
+unsafe impl Sync for Camera {}
+
 impl Camera {
-    pub fn new(camera_info: CameraInfo, image_dimension: ImageDimension) -> Self {
+    pub fn new(camera_info: CameraInfo, image_dimension: Size) -> Self {
         let mut camera = Self::default();
         camera.camera_info = camera_info;
-        camera.image_dimension = image_dimension;
+        camera.image_size = image_dimension;
         camera.update();
 
         camera
@@ -67,8 +81,8 @@ impl Camera {
         let view = dir.normalized();
         let dist = dir.mag();
 
-        let w = self.image_dimension.width as f32;
-        let h = self.image_dimension.height as f32;
+        let w = self.image_size.width as f32;
+        let h = self.image_size.height as f32;
 
         let height = 2.0 * dist * f32::tan(0.5 * self.camera_info.fovy);
         let width = w * height / h;
@@ -84,22 +98,11 @@ impl Camera {
 
     pub fn primary_ray(&self, x: u32, y: u32) -> Ray {
         let origin = self.camera_info.position;
-        let direction = self.lower_left + (x as f32) * self.x_dir + (y as f32) * self.y_dir - origin;
+        let direction =
+            self.lower_left + (x as f32) * self.x_dir + (y as f32) * self.y_dir - origin;
 
         Ray::new(origin, direction)
     }
-}
-
-
-pub enum ColourMode {
-    RGB,
-    Spectral,
-}
-
-pub enum MonteCarlo {
-    Random,
-    Importance,
-    HeroWaveLength,
 }
 
 #[derive(Default)]
@@ -108,69 +111,118 @@ pub struct Scene {
     camera: Camera,
 }
 
-pub trait Renderer {
-    fn render(&self) -> RgbImage;
+unsafe impl Send for Scene {}
+unsafe impl Sync for Scene {}
 
-    fn render_pass(&self);
+impl Scene {
+    pub fn new(objects: Vec<Box<dyn SceneObject>>, camera: Camera) -> Self {
+        Self { objects, camera }
+    }
+}
 
-    fn reset(&self);
+pub trait Renderer: Send + Sync {
+    fn render(&mut self) -> RgbImage;
+
+    fn render_pass(&mut self) -> bool;
+
+    fn reset(&mut self);
 
     fn get_image(&self) -> RgbImage;
 
     fn get_scene(&mut self) -> &mut Scene;
-    // fn get_camera(&self) -> None;
+
+    fn get_camera(&mut self) -> &mut Camera;
 }
 
-pub struct RgbRenderer {
+pub struct DummyRgbRenderer {
     scene: Scene,
+    image: RgbImage,
+    progress: (u32, u32),
 }
 
-impl RgbRenderer {
+impl DummyRgbRenderer {
     pub fn new(scene: Scene) -> Self {
-        Self { scene }
+        let image_size = &scene.camera.image_size;
+        let image = RgbImage::new(image_size.width, image_size.height);
+        let progress = (0, 0);
+
+        Self {
+            scene,
+            image,
+            progress,
+        }
+    }
+
+    fn render_pixel(&self, xy: (u32, u32)) -> Rgb<u8> {
+        let r = fastrand::u8(..255);
+        let g = fastrand::u8(..255);
+        let b = fastrand::u8(..255);
+        Rgb::from([r, g, b])
+    }
+
+    fn reset_progress(&mut self) {
+        self.progress = (0, 0);
+    }
+
+    fn inc_progress(&mut self) -> bool {
+        let size = (self.image.width(), self.image.height());
+
+        let mut progress = self.progress;
+        progress.0 += 1;
+
+        if progress.0 >= size.0 {
+            progress.0 = 0;
+            progress.1 += 1;
+        }
+
+        self.progress = progress;
+
+        self.is_progress_done()
+    }
+
+    fn is_progress_done(&self) -> bool {
+        self.progress.1 >= self.image.height() || self.progress.0 >= self.image.width()
     }
 }
 
-impl RgbRenderer {
-    pub fn dummy_render() -> RgbImage {
-        let width = 640;
-        let height = 480;
-        let mut image = RgbImage::new(width, height);
+impl Renderer for DummyRgbRenderer {
+    fn render(&mut self) -> RgbImage {
+        self.reset_progress();
 
-        for x in (width / 2 - 4)..(width / 2 + 4) {
-            for y in (height / 2 - 16)..(height / 2 + 16) {
-                image.put_pixel(x, y, Rgb([255, 0, 0]));
-            }
-        }
-        for x in (width / 2 - 16)..(width / 2 + 16) {
-            for y in (height / 2 - 4)..(height / 2 + 4) {
-                image.put_pixel(x, y, Rgb([0, 0, 255]));
+        loop {
+            if !self.render_pass() {
+                break;
             }
         }
 
-        image
-    }
-}
-
-impl Renderer for RgbRenderer {
-    fn render(&self) -> RgbImage {
-        let dim = &self.scene.camera.image_dimension;
-        RgbImage::new(dim.width, dim.height)
+        self.get_image()
     }
 
-    fn render_pass(&self) {
-        unimplemented!()
+    fn render_pass(&mut self) -> bool {
+        if !self.is_progress_done() {
+            let (x, y) = self.progress;
+            let pixel = self.render_pixel(self.progress);
+            self.image.put_pixel(x, y, pixel);
+            self.inc_progress()
+        } else {
+            true
+        }
     }
 
-    fn reset(&self) {
-        unimplemented!()
+    fn reset(&mut self) {
+        self.image = RgbImage::new(self.image.width(), self.image.height());
+        self.reset_progress();
     }
 
     fn get_image(&self) -> RgbImage {
-        unimplemented!()
+        self.image.clone()
     }
 
     fn get_scene(&mut self) -> &mut Scene {
         &mut self.scene
+    }
+
+    fn get_camera(&mut self) -> &mut Camera {
+        &mut self.scene.camera
     }
 }

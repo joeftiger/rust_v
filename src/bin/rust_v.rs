@@ -1,17 +1,17 @@
 extern crate clap;
 
-use std::fs::{create_dir, OpenOptions, remove_dir, remove_file};
+use std::fs::{create_dir, remove_dir, remove_file, OpenOptions};
 use std::io::{Read, Write};
 use std::time::{Duration, Instant};
 
 use clap::{App, Arg};
-use show_image::{KeyCode, make_window};
 use ultraviolet::Vec3;
 
-use rust_v::geometry::Intersectable;
 use rust_v::geometry::aabb::Aabb;
 use rust_v::geometry::ray::Ray;
-use rust_v::render::RgbRenderer;
+use rust_v::geometry::Intersectable;
+use rust_v::render::window::CustomWindow;
+use rust_v::render::{Camera, CameraInfo, DummyRgbRenderer, Scene, Size};
 
 const INPUT: &str = "input_file";
 const OUTPUT: &str = "output_file";
@@ -22,23 +22,18 @@ fn main() {
     let _matches = app.get_matches();
 
     test_show_image();
-    quick_bench();
-    test_save_load_aabb();
+    // quick_bench();
+    // test_save_load_aabb();
 }
 
 fn test_show_image() {
-    let image = RgbRenderer::dummy_render();
+    let camera = Camera::new(CameraInfo::default(), Size::new(1280, 720));
+    let scene = Scene::new(Vec::new(), camera);
+    let renderer = DummyRgbRenderer::new(scene);
+    let mut window = CustomWindow::new("Dummy RGB Renderer", Box::new(renderer))
+        .expect("Failed to create window");
 
-    let window = make_window("Image").unwrap();
-    window.set_image(image, "test image").unwrap();
-
-    while let Ok(event) = window.wait_key(Duration::from_millis(100)) {
-        if let Some(event) = event {
-            if event.key == KeyCode::Escape {
-                break;
-            }
-        }
-    }
+    window.take_control();
 }
 
 fn test_save_load_aabb() {
@@ -130,15 +125,13 @@ fn init_help<'a, 'b>() -> App<'a, 'b> {
             Arg::with_name(INPUT)
                 // .short("i")
                 // .long("input")
-                .help("The input file to use")
-            // .required(true),
+                .help("The input file to use"), // .required(true),
         )
         .arg(
             Arg::with_name(OUTPUT)
                 // .short("o")
                 // .long("output")
-                .help("The output file to save in (png)")
-            // .required(true),
+                .help("The output file to save in (png)"), // .required(true),
         )
         .arg(
             Arg::with_name(VERBOSE)
