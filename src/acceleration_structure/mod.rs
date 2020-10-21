@@ -1,7 +1,7 @@
 use ultraviolet::Vec3;
 
 use crate::geometry::aabb::Aabb;
-use crate::geometry::{Boxable, Intersection, Intersectable};
+use crate::geometry::{Intersection, Intersectable};
 use crate::render::Scene;
 use crate::geometry::ray::Ray;
 use crate::render::objects::SceneObject;
@@ -15,6 +15,8 @@ fn check_intersection(ray: &Ray, object: &Box<dyn SceneObject>) -> Option<Inters
         if aabb.intersects(ray).is_some() {
             return object.intersects(ray);
         }
+    } else {
+        return object.intersects(ray);
     }
 
     None
