@@ -5,7 +5,7 @@ use crate::geometry::aabb::Aabb;
 use crate::geometry::ray::Ray;
 use crate::render::objects::SceneObject;
 use crate::render::Scene;
-use crate::acceleration_structure::{AccelerationStructure, average_cell_size, global_bounding_box};
+use crate::acceleration_structure::{AccelerationStructure, average_cell_size, global_bounding_box, check_intersection};
 
 #[derive(Default)]
 struct SpatialCell<T> {
@@ -91,13 +91,8 @@ impl<'obj> AccelerationStructure<'obj> for SpatialPartition<'obj> {
                     if spatial_cell.bounding_box.intersects(ray).is_some() {
                         for o in &spatial_cell.objects {
                             // hits object aabb?
-                            if let Some(o_aabb) = o.bounding_box() {
-                                if o_aabb.intersects(ray).is_some() {
-                                    // hits object itself?
-                                    if let Some(o_intersection) = o.intersects(ray) {
-                                        intersections.push(o_intersection);
-                                    }
-                                }
+                            if let Some(i) = check_intersection(ray, o) {
+                                intersections.push(i);
                             }
                         }
                     }
