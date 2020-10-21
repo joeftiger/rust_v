@@ -11,7 +11,8 @@ use rust_v::geometry::aabb::Aabb;
 use rust_v::geometry::ray::Ray;
 use rust_v::geometry::Intersectable;
 use rust_v::render::window::CustomWindow;
-use rust_v::render::{Camera, CameraInfo, DummyRgbRenderer, Scene, Size};
+use rust_v::render::{Camera, CameraInfo, Scene, Size};
+use rust_v::render::renderer::DummyRgbRenderer;
 
 const INPUT: &str = "input_file";
 const OUTPUT: &str = "output_file";

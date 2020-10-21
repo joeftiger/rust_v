@@ -4,7 +4,7 @@ use show_image::KeyCode::*;
 use show_image::{make_window, make_window_full, KeyCode, Window, WindowOptions, KeyboardEvent};
 use ultraviolet::Rotor3;
 
-use crate::render::Renderer;
+use crate::render::renderer::Renderer;
 
 const ROTATING_ANGLE_DEG: f32 = 22.5;
 const ROTATING_ANGLE_RAD: f32 = (ROTATING_ANGLE_DEG as f64 * 0.017_453_292_519_943_295) as f32; // latter is PI / 180
