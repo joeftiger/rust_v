@@ -1,7 +1,9 @@
 use ultraviolet::Vec3;
 
 use crate::geometry::aabb::Aabb;
-use crate::geometry::Boxable;
+use crate::geometry::{Boxable, Intersection};
+use crate::render::Scene;
+use crate::geometry::ray::Ray;
 
 pub mod kd_tree;
 pub mod uniform_spatial_partition;
@@ -52,4 +54,9 @@ fn average_cell_size<T: Boxable>(objects: &Vec<T>) -> Option<Vec3> {
     }
 
     Some(cell_size / objects.len() as f32)
+}
+
+pub trait AccelerationStructure {
+    /// Accelerates the ray tracing through the given scene
+    fn accelerate(&self, ray: &Ray, scene: &Scene) -> Option<Intersection>;
 }
