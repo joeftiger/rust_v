@@ -6,6 +6,7 @@ use crate::physics::{Color, linear_to_srgb, srgb_to_linear, xyz_to_srgb_mat, lin
 use crate::physics::rgb::SRGB;
 use crate::util::floats::{approx_equal, approx_zero, fast_clamp};
 
+// TODO: IS this representation wrong? I find Yxy in the internet as well
 #[derive(Clone, Default)]
 pub struct XYZ {
     pub x: f32,
@@ -15,6 +16,9 @@ pub struct XYZ {
 
 impl XYZ {
     pub fn new(x: f32, y: f32, z: f32) -> Self {
+        debug_assert!(!x.is_nan());
+        debug_assert!(!y.is_nan());
+        debug_assert!(!z.is_nan());
         Self { x, y, z }
     }
 

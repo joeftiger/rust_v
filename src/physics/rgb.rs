@@ -2,9 +2,9 @@ use std::ops::{Add, AddAssign, Div, DivAssign, Index, IndexMut, Mul, MulAssign, 
 
 use ultraviolet::Vec3;
 
-use crate::physics::{Color, srgb_to_linear, srgb_to_xyz_mat, srgbs_to_linear};
+use crate::physics::{Color, srgb_to_xyz_mat, srgbs_to_linear};
 use crate::physics::xyz::XYZ;
-use crate::util::floats::{approx_equal, approx_zero, fast_clamp, fast_max};
+use crate::util::floats::{approx_equal, approx_zero, fast_clamp};
 
 #[derive(Clone, Default)]
 pub struct SRGB {
@@ -15,6 +15,9 @@ pub struct SRGB {
 
 impl SRGB {
     pub fn new(r: f32, g: f32, b: f32) -> Self {
+        debug_assert!(!r.is_nan());
+        debug_assert!(!g.is_nan());
+        debug_assert!(!b.is_nan());
         Self { r, g, b }.clamp(0.0, 1.0)
     }
 
@@ -139,13 +142,12 @@ impl Div for SRGB {
         let g = self.g / rhs.g;
         let b = self.b / rhs.b;
 
-        Self { r, g, b }
+        Self::new(r, g, b)
     }
 }
 
 impl DivAssign for SRGB {
     fn div_assign(&mut self, rhs: Self) {
-        debug_assert!(!rhs.is_nan());
         self.r /= rhs.r;
         self.g /= rhs.g;
         self.b /= rhs.b;

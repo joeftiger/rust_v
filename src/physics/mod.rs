@@ -12,22 +12,29 @@ pub mod xyz;
 
 /// Returns the XYZ to sRGB matrix
 pub fn xyz_to_srgb_mat() -> Mat3 {
-    Mat3::from([3.2404542, -1.5371385, -0.4985314,
-        -0.9692660, 1.8760108, 0.0415560,
-        0.0556434, -0.2040259, 1.0572252])
+    // https://en.wikipedia.org/wiki/SRGB#The_forward_transformation_(CIE_XYZ_to_sRGB)
+    Mat3::new(
+        Vec3::new(3.24096994, -0.96924364, 0.05563008),
+        Vec3::new(-1.53738318, 1.8759675, -0.20397696),
+        Vec3::new(-0.49861076, 0.04155506, 1.05697151)
+    )
 }
 
 /// Returns the sRGB to XYZ matrix
 pub fn srgb_to_xyz_mat() -> Mat3 {
-    Mat3::from([0.4124564, 0.3575761, 0.1804375,
-        0.2126729, 0.7151522, 0.0721750,
-        0.0193339, 0.1191920, 0.9503041])
+    // https://en.wikipedia.org/wiki/SRGB#The_reverse_transformation
+    Mat3::new(
+        Vec3::new(0.41239080, 0.21263901, 0.01933082),
+        Vec3::new(0.35758434, 0.71516868, 0.07219232),
+        Vec3::new(0.18048079, 0.07219232, 0.95053215)
+    )
 }
 
 /// Converts sRGB to linear
 pub fn srgb_to_linear(val: f32) -> f32 {
     debug_assert!(val >= 0.0);
     debug_assert!(val <= 1.0);
+    // https://entropymine.com/imageworsener/srgbformula/
     if val <= 0.040_448_237 {
         val / 12.92
     } else {
@@ -39,7 +46,6 @@ pub fn srgb_to_linear(val: f32) -> f32 {
 pub fn srgbs_to_linear(val: Vec3) -> Vec3 {
     debug_assert!(val.component_min() >= 0.0);
     debug_assert!(val.component_max() <= 1.0);
-
     val.map(srgb_to_linear)
 }
 
@@ -47,6 +53,7 @@ pub fn srgbs_to_linear(val: Vec3) -> Vec3 {
 pub fn linear_to_srgb(val: f32) -> f32 {
     debug_assert!(val >= 0.0);
     debug_assert!(val <= 1.0);
+    // https://entropymine.com/imageworsener/srgbformula/
     if val <= 0.003_130_668_5 {
         val * 12.92
     } else {
@@ -58,7 +65,6 @@ pub fn linear_to_srgb(val: f32) -> f32 {
 pub fn linears_to_srgb(val: Vec3) -> Vec3 {
     debug_assert!(val.component_min() >= 0.0);
     debug_assert!(val.component_max() <= 1.0);
-
     val.map(linear_to_srgb)
 }
 
