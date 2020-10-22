@@ -3,6 +3,7 @@ use ultraviolet::Vec3;
 
 pub mod aabb;
 pub mod cube;
+pub mod cylinder;
 pub mod intersection;
 pub mod lens;
 pub mod ray;
