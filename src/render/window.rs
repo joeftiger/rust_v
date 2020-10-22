@@ -50,10 +50,10 @@ pub struct CustomWindow<T: Renderer> {
 
 impl<T: Renderer> CustomWindow<T> {
     pub fn new(name: impl Into<String>, mut renderer: T) -> Result<Self, String> {
-        let size = &renderer.get_camera().image_size;
+        let camera = renderer.get_camera();
         let options = WindowOptions::default()
             .set_name(name.into())
-            .set_size([size.width, size.height]);
+            .set_size([camera.width, camera.height]);
 
         let cw = Self {
             window: make_window_full(options)?,
@@ -151,12 +151,11 @@ impl<T: Renderer> CustomWindow<T> {
     /// Updates the camera rotation and resets the renderer
     fn update_camera_rotation(&mut self, rotation: Rotor3) {
         let camera = &mut self.renderer.get_scene().camera;
-        let info = &mut camera.camera_info;
 
-        let mut distance = info.position - info.center;
+        let mut distance = camera.position - camera.center;
         distance.rotate_by(rotation);
 
-        info.position = info.center + distance;
+        camera.position = camera.center + distance;
 
         // IMPORTANT
         camera.update();

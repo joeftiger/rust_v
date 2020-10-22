@@ -27,8 +27,8 @@ pub struct DummyRgbRenderer {
 
 impl DummyRgbRenderer {
     pub fn new(scene: Scene) -> Self {
-        let image_size = &scene.camera.image_size;
-        let image = RgbImage::new(image_size.width, image_size.height);
+        let camera = &scene.camera;
+        let image = RgbImage::new(camera.width, camera.height);
         let progress = (0, 0);
 
         Self {
@@ -121,8 +121,8 @@ pub struct RgbRenderer<T> {
 
 impl<T: AccelerationStructure> RgbRenderer<T> {
     pub fn new(scene: Scene, accelerator: T) -> Self {
-        let image_size = &scene.camera.image_size;
-        let image = RgbImage::new(image_size.width, image_size.height);
+        let camera = &scene.camera;
+        let image = RgbImage::new(camera.width, camera.height);
         let progress = (0, 0);
 
         Self {
@@ -138,15 +138,22 @@ impl<T: AccelerationStructure> RgbRenderer<T> {
 
         let i = self.accelerator.accelerate(&ray, &self.scene);
 
-        if i.0.is_some() && i.1.is_some() {
-            let srgb = (i.1.unwrap().to_vec() * 255.0).floor();
-            let rgb = [
-                srgb.x as u8,
-                srgb.y as u8,
-                srgb.z as u8
-            ];
+        if let Some(intersection) = i.0 {
+            if let Some(SRGB) = i.1 {
+                let srgb = (SRGB.to_vec() * 255.0).floor();
+                let rgb = [
+                    srgb.x as u8,
+                    srgb.y as u8,
+                    srgb.z as u8
+                ];
 
-            Rgb::from(rgb)
+                println!("{:?}", intersection);
+                println!("{:?}", SRGB);
+
+                Rgb::from(rgb)
+            } else {
+                Rgb::from([255, 255, 255])
+            }
         } else {
             Rgb::from([0, 0, 0])
         }
