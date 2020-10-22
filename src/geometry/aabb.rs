@@ -31,6 +31,18 @@ impl Aabb {
         self.min.x <= self.max.x && self.min.y <= self.max.y && self.min.z <= self.max.z
     }
 
+    #[inline]
+    #[must_use]
+    pub fn size(&self) -> Vec3 {
+        self.max - self.min
+    }
+
+    #[inline]
+    #[must_use]
+    pub fn center(&self) -> Vec3 {
+        (self.max + self.min) / 2.0
+    }
+
     /// Creates the inner join / intersection of both aabbs.
     pub fn inner_join(&self, other: &Self) -> Self {
         let min = self.min.max_by_component(other.min);
