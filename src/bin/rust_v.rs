@@ -11,8 +11,8 @@ use rust_v::geometry::aabb::Aabb;
 use rust_v::geometry::ray::Ray;
 use rust_v::geometry::Intersectable;
 use rust_v::render::window::CustomWindow;
-use rust_v::render::{Camera, CameraInfo, Scene, Size};
-use rust_v::render::renderer::{DummyRgbRenderer, RgbRenderer};
+use rust_v::render::{Camera, Scene};
+use rust_v::render::renderer::{RgbRenderer};
 use rust_v::acceleration_structure::no_acceleration::NoAcceleration;
 use rust_v::geometry::sphere::Sphere;
 use rust_v::render::objects::sphere_object::SphereObject;
@@ -32,13 +32,20 @@ fn main() {
     // test_save_load_aabb();
 }
 
+// FIXME: Sphere is not rendering correctly. WTF
 fn test_show_image() {
     let objects: Vec<Box<dyn SceneObject>> = vec![
         Box::new(SphereObject::new(Sphere::default(), SRGB::new(1.0, 0.0, 0.0))),
     ];
 
-    let info = CameraInfo::new(-2.0 * Vec3::unit_x(), Vec3::zero(), Vec3::unit_z(), 90.0);
-    let camera = Camera::new(info, Size::new(1280, 720));
+    let camera = Camera::new(
+        -2.0 * Vec3::unit_x(),
+        Vec3::zero(),
+        Vec3::unit_y(),
+        120.0,
+        1280,
+        720
+    );
 
     let scene = Scene::new(objects, camera);
     let accelerator = NoAcceleration();
