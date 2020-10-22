@@ -4,6 +4,7 @@ use ultraviolet::{Mat3, Vec3};
 
 use crate::physics::rgb::SRGB;
 use crate::physics::xyz::XYZ;
+use serde::export::fmt::Debug;
 
 pub mod cie;
 pub mod light;
@@ -68,7 +69,7 @@ pub fn linears_to_srgb(val: Vec3) -> Vec3 {
     val.map(linear_to_srgb)
 }
 
-pub trait Color: Add + AddAssign + Sub + SubAssign + Mul + MulAssign + Mul<f32> + MulAssign<f32> + Div + DivAssign + Div<f32> + DivAssign<f32> + PartialEq + Index<usize> + IndexMut<usize> + Sized {
+pub trait Color: Add + AddAssign + Sub + SubAssign + Mul + MulAssign + Mul<f32> + MulAssign<f32> + Div + DivAssign + Div<f32> + DivAssign<f32> + PartialEq + Index<usize> + IndexMut<usize> + Sized + Debug {
 
     /// Whether this color is black. Some computations can be omitted, if the color is black.
     fn is_black(&self) -> bool;

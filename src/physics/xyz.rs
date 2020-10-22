@@ -7,7 +7,7 @@ use crate::physics::rgb::SRGB;
 use crate::util::floats::{approx_equal, approx_zero, fast_clamp};
 
 // TODO: IS this representation wrong? I find Yxy in the internet as well
-#[derive(Clone, Default)]
+#[derive(Clone, Debug, Default)]
 pub struct XYZ {
     pub x: f32,
     pub y: f32,

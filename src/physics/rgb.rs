@@ -6,7 +6,7 @@ use crate::physics::{Color, srgb_to_xyz_mat, srgbs_to_linear};
 use crate::physics::xyz::XYZ;
 use crate::util::floats::{approx_equal, approx_zero, fast_clamp};
 
-#[derive(Clone, Default)]
+#[derive(Clone, Debug, Default)]
 pub struct SRGB {
     pub r: f32,
     pub g: f32,
