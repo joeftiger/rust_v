@@ -1,8 +1,9 @@
 use image::{Rgb, RgbImage};
 
-use crate::render::{Camera, Scene};
 use crate::acceleration_structure::AccelerationStructure;
 use crate::acceleration_structure::no_acceleration::NoAcceleration;
+use crate::geometry::CeilFloorExt;
+use crate::render::{Camera, Scene};
 
 pub trait Renderer: Send + Sync {
     fn render(&mut self) -> RgbImage;
@@ -135,10 +136,17 @@ impl<T: AccelerationStructure> RgbRenderer<T> {
     fn render_pixel(&self, xy: (u32, u32)) -> Rgb<u8> {
         let ray = self.scene.camera.primary_ray(xy.0, xy.1);
 
-        let intersection = self.accelerator.accelerate(&ray, &self.scene);
+        let i = self.accelerator.accelerate(&ray, &self.scene);
 
-        if intersection.is_some() {
-            Rgb::from([1, 1, 1])
+        if i.0.is_some() && i.1.is_some() {
+            let srgb = (i.1.unwrap().to_vec() * 255.0).floor();
+            let rgb = [
+                srgb.x as u8,
+                srgb.y as u8,
+                srgb.z as u8
+            ];
+
+            Rgb::from(rgb)
         } else {
             Rgb::from([0, 0, 0])
         }
