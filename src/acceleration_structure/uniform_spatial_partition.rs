@@ -6,6 +6,7 @@ use crate::geometry::ray::Ray;
 use crate::render::objects::SceneObject;
 use crate::render::Scene;
 use crate::acceleration_structure::{AccelerationStructure, average_cell_size, global_bounding_box, check_intersection};
+use crate::physics::rgb::SRGB;
 
 #[derive(Default)]
 struct SpatialCell<T> {
@@ -81,7 +82,7 @@ impl<'obj> SpatialPartition<'obj> {
 
 // TODO: This is a naive implementation: Make more performant
 impl<'obj> AccelerationStructure for SpatialPartition<'obj> {
-    fn accelerate(&self, ray: &Ray, scene: &Scene) -> Option<Intersection> {
+    fn accelerate(&self, ray: &Ray, scene: &Scene) -> (Option<Intersection>, Option<SRGB>) {
         let mut intersections = Vec::new();
 
         for x in &self.grid {
@@ -89,10 +90,10 @@ impl<'obj> AccelerationStructure for SpatialPartition<'obj> {
                 for spatial_cell in y {
                     // hits spatial cell?
                     if spatial_cell.bounding_box.intersects(ray).is_some() {
-                        for o in &spatial_cell.objects {
+                        for object in &spatial_cell.objects {
                             // hits object aabb?
-                            if let Some(i) = check_intersection(ray, o) {
-                                intersections.push(i);
+                            if let Some(i) = check_intersection(ray, object) {
+                                intersections.push((i, object));
                             }
                         }
                     }
@@ -101,19 +102,22 @@ impl<'obj> AccelerationStructure for SpatialPartition<'obj> {
         }
 
         if intersections.is_empty() {
-            return None;
+            return (None, None);
         }
 
 
         let i = intersections
             .iter()
-            .min_by(|i0, i1| i0.t.unwrap().partial_cmp(&i1.t.unwrap()).unwrap())
+            .min_by(|i0, i1| i0.0.t.unwrap().partial_cmp(&i1.0.t.unwrap()).unwrap())
             .unwrap();
-        let clone = Intersection::new(
-            i.position.unwrap(),
-            i.normal.unwrap(),
-            i.t.unwrap(),
+
+        let intersection = Intersection::new(
+            i.0.position.unwrap(),
+            i.0.normal.unwrap(),
+            i.0.t.unwrap(),
         );
-        Some(clone)
+        let srgb = i.1.material();
+
+        (Some(intersection), Some(srgb))
     }
 }

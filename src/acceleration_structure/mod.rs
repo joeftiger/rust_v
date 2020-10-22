@@ -5,6 +5,7 @@ use crate::geometry::{Intersection, Intersectable};
 use crate::render::Scene;
 use crate::geometry::ray::Ray;
 use crate::render::objects::SceneObject;
+use crate::physics::rgb::SRGB;
 
 pub mod kd_tree;
 pub mod uniform_spatial_partition;
@@ -72,5 +73,5 @@ fn average_cell_size(objects: &[Box<dyn SceneObject>]) -> Option<Vec3> {
 
 pub trait AccelerationStructure: Send + Sync {
     /// Accelerates the ray tracing through the given scene
-    fn accelerate(&self, ray: &Ray, scene: &Scene) -> Option<Intersection>;
+    fn accelerate(&self, ray: &Ray, scene: &Scene) -> (Option<Intersection>, Option<SRGB>);
 }
