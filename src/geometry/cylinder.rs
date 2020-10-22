@@ -6,6 +6,7 @@ use crate::geometry::ray::Ray;
 use crate::math;
 
 // A geometrical cylinder.
+#[derive(Debug)]
 pub struct Cylinder {
     pub center: Vec3,
     pub axis: Vec3,
