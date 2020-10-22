@@ -80,8 +80,8 @@ impl<'obj> SpatialPartition<'obj> {
 }
 
 // TODO: This is a naive implementation: Make more performant
-impl<'obj> AccelerationStructure<'obj> for SpatialPartition<'obj> {
-    fn accelerate(&self, ray: &Ray, scene: &'obj Scene) -> Option<Intersection> {
+impl<'obj> AccelerationStructure for SpatialPartition<'obj> {
+    fn accelerate(&self, ray: &Ray, scene: &Scene) -> Option<Intersection> {
         let mut intersections = Vec::new();
 
         for x in &self.grid {

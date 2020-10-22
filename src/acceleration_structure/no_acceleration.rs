@@ -5,8 +5,8 @@ use crate::render::Scene;
 
 pub struct NoAcceleration();
 
-impl<'obj> AccelerationStructure<'obj> for NoAcceleration {
-    fn accelerate(&self, ray: &Ray, scene: &'obj Scene) -> Option<Intersection> {
+impl AccelerationStructure for NoAcceleration {
+    fn accelerate(&self, ray: &Ray, scene: &Scene) -> Option<Intersection> {
         let mut intersections = Vec::new();
 
         for object in &scene.objects {

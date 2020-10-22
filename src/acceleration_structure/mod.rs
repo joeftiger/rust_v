@@ -70,7 +70,7 @@ fn average_cell_size(objects: &[Box<dyn SceneObject>]) -> Option<Vec3> {
     Some(cell_size / objects.len() as f32)
 }
 
-pub trait AccelerationStructure<'obj> {
+pub trait AccelerationStructure: Send + Sync {
     /// Accelerates the ray tracing through the given scene
-    fn accelerate(&self, ray: &Ray, scene: &'obj Scene) -> Option<Intersection>;
+    fn accelerate(&self, ray: &Ray, scene: &Scene) -> Option<Intersection>;
 }
