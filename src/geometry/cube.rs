@@ -9,6 +9,12 @@ pub struct Cube {
     local_to_world: Mat4,
 }
 
+impl Default for Cube {
+    fn default() -> Self {
+        Self::new(Aabb::default(), 0.0, 0.0, 0.0)
+    }
+}
+
 impl Cube {
     #[allow(non_snake_case)]
     pub fn new(aabb: Aabb, roll: f32, pitch: f32, yaw: f32) -> Self {

@@ -8,7 +8,7 @@ use crate::util::floats;
 
 /// Creates a unit Aabb with size `(-Vec3::one(), Vec3::one())`.
 pub fn unit_aabb() -> Aabb {
-    Aabb::new(-Vec3::one(), Vec3::one())
+    Aabb::default()
 }
 
 /// # Summary
@@ -49,7 +49,7 @@ pub fn intersects_unit_aabb(ray: &Ray) -> Option<Intersection> {
 }
 
 /// An geometrical axis-aligned bounding box.
-#[derive(Clone, Copy, Debug, Default, Deserialize, Serialize)]
+#[derive(Clone, Copy, Debug, Deserialize, Serialize)]
 pub struct Aabb {
     /// The minimum position of the aabb.
     pub min: Vec3,
@@ -143,6 +143,12 @@ impl Aabb {
 
     pub fn z_plane_max(&self) -> Plane {
         Plane::new(self.max.z, Vec3::unit_z())
+    }
+}
+
+impl Default for Aabb {
+    fn default() -> Self {
+        Self::new(-Vec3::one(), Vec3::one())
     }
 }
 

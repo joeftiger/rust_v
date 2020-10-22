@@ -3,6 +3,7 @@ use crate::geometry::aabb::Aabb;
 use crate::geometry::plane::Plane;
 use crate::geometry::ray::Ray;
 use crate::geometry::sphere::Sphere;
+use ultraviolet::Vec3;
 
 /// A geometrical simple lens consists of the intersection of two spheres.
 pub struct SimpleLens {
@@ -17,6 +18,13 @@ impl SimpleLens {
 
     pub fn is_symmetric(&self) -> bool {
         f32::abs(self.sphere0.radius - self.sphere1.radius) <= f32::EPSILON
+    }
+}
+
+impl Default for SimpleLens {
+    fn default() -> Self {
+        let offset = Vec3::new(0.1, 0.0, 0.0);
+        Self::new(Sphere::new(-offset, 1.0), Sphere::new(offset, 1.0))
     }
 }
 

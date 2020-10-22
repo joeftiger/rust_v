@@ -4,7 +4,7 @@ use ultraviolet::vec::Vec3;
 
 use crate::geometry::AngularExt;
 
-#[derive(Copy, Clone, Debug, Default)]
+#[derive(Copy, Clone, Debug)]
 pub struct Ray {
     pub origin: Vec3,
     pub direction: Vec3,
@@ -28,6 +28,12 @@ impl Ray {
     #[must_use]
     pub fn distance(&self, p: Vec3) -> f32 {
         (p - self.origin).mag()
+    }
+}
+
+impl Default for Ray {
+    fn default() -> Self {
+        Self::new(Vec3::zero(), Vec3::unit_x())
     }
 }
 

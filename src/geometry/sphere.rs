@@ -5,7 +5,7 @@ use crate::geometry::{Aabb, Boxable, Intersectable, Intersection};
 use crate::geometry::ray::Ray;
 
 /// A geometrical sphere.
-#[derive(Debug, Default, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct Sphere {
     /// The center of the sphere.
     pub center: Vec3,
@@ -16,6 +16,12 @@ pub struct Sphere {
 impl Sphere {
     pub fn new(center: Vec3, radius: f32) -> Self {
         Sphere { center, radius }
+    }
+}
+
+impl Default for Sphere {
+    fn default() -> Self {
+        Self::new(Vec3::zero(), 1.0)
     }
 }
 

@@ -24,6 +24,12 @@ impl Cylinder {
     }
 }
 
+impl Default for Cylinder {
+    fn default() -> Self {
+        Self::new(Vec3::zero(), Vec3::unit_z(), 1.0, 2.0)
+    }
+}
+
 impl Boxable for Cylinder {
     fn bounding_box(&self) -> Option<Aabb> {
         let offset = Vec3::one() * self.radius;

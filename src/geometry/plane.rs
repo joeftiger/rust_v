@@ -6,7 +6,7 @@ use crate::geometry::ray::Ray;
 use crate::util::floats;
 
 /// A geometrical plane.
-#[derive(Debug, Default, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct Plane {
     /// The distance of the plane into the normal direction.
     pub d: f32,
@@ -37,6 +37,12 @@ impl Plane {
         let angle = self.normal.angle_to(v);
 
         angle.cos() * v.mag()
+    }
+}
+
+impl Default for Plane {
+    fn default() -> Self {
+        Self::new(1.0, Vec3::unit_z())
     }
 }
 

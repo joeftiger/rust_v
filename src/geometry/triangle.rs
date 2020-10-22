@@ -11,7 +11,7 @@ use crate::util::floats;
 /// A geometrical triangle.
 ///
 /// The vertices are also accessible through the `Index<usize>` trait.
-#[derive(Debug, Default, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct Triangle {
     pub vertex0: Vec3,
     pub vertex1: Vec3,
@@ -25,6 +25,12 @@ impl Triangle {
             vertex1,
             vertex2,
         }
+    }
+}
+
+impl Default for Triangle {
+    fn default() -> Self {
+        Self::new(Vec3::unit_x(), Vec3::unit_y(), Vec3::unit_z())
     }
 }
 
