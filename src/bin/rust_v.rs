@@ -12,7 +12,12 @@ use rust_v::geometry::ray::Ray;
 use rust_v::geometry::Intersectable;
 use rust_v::render::window::CustomWindow;
 use rust_v::render::{Camera, CameraInfo, Scene, Size};
-use rust_v::render::renderer::DummyRgbRenderer;
+use rust_v::render::renderer::{DummyRgbRenderer, RgbRenderer};
+use rust_v::acceleration_structure::no_acceleration::NoAcceleration;
+use rust_v::geometry::sphere::Sphere;
+use rust_v::render::objects::sphere_object::SphereObject;
+use rust_v::physics::rgb::SRGB;
+use rust_v::render::objects::SceneObject;
 
 const INPUT: &str = "input_file";
 const OUTPUT: &str = "output_file";
@@ -28,10 +33,18 @@ fn main() {
 }
 
 fn test_show_image() {
-    let camera = Camera::new(CameraInfo::default(), Size::new(1280, 720));
-    let scene = Scene::new(Vec::new(), camera);
-    let renderer = DummyRgbRenderer::new(scene);
-    let mut window = CustomWindow::new("Dummy RGB Renderer", renderer)
+    let objects: Vec<Box<dyn SceneObject>> = vec![
+        Box::new(SphereObject::new(Sphere::default(), SRGB::new(1.0, 0.0, 0.0))),
+    ];
+
+    let info = CameraInfo::new(-2.0 * Vec3::unit_x(), Vec3::zero(), Vec3::unit_z(), 90.0);
+    let camera = Camera::new(info, Size::new(1280, 720));
+
+    let scene = Scene::new(objects, camera);
+    let accelerator = NoAcceleration();
+    let renderer = RgbRenderer::new(scene, accelerator);
+
+    let mut window = CustomWindow::new("RGB Renderer", renderer)
         .expect("Failed to create window");
 
     window.start_rendering();
