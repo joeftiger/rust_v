@@ -8,8 +8,8 @@ edition = "2018"
 
 [dependencies]
 ultraviolet = ""
-image = "^0.23.10"
-show-image = { version = "^0.6.4", features = ["image", "save"] }
+image = ""
+show-image = { version = "", features = ["image", "save"] }
 
 [profile.release]
 codegen-units = 1
