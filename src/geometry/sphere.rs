@@ -3,6 +3,7 @@ use ultraviolet::Vec3;
 
 use crate::geometry::{Aabb, Boxable, Intersectable, Intersection};
 use crate::geometry::ray::Ray;
+use crate::math::solve_quadratic;
 
 /// A geometrical sphere.
 #[derive(Debug, Deserialize, Serialize)]
@@ -35,21 +36,27 @@ impl Boxable for Sphere {
 
 impl Intersectable<Ray> for Sphere {
     fn intersects(&self, ray: &Ray) -> Option<Intersection> {
+        let dir = ray.direction;
         let oc = ray.origin - self.center;
 
-        let a = ray.direction.mag_sq();
-        let b = 2.0 * oc.dot(ray.direction);
-        let c = oc.mag_sq() - self.radius * self.radius;
-        let discriminant = b * b - 4.0 * a * c;
+        let a = dir.dot(dir);
+        let b = 2.0 * dir.dot(oc);
+        let c = oc.dot(oc) - self.radius * self.radius;
 
-        if discriminant <= 0.0 {
-            return None;
+        let solutions = solve_quadratic(a, b, c);
+        let t = solutions
+            .iter()
+            .filter(|sol| **sol > 0.0)
+            .min_by(|s1, s2| s1.partial_cmp(s2).unwrap());
+
+        if let Some(t) = t {
+            let t = *t;
+            let position = ray.at(t);
+            let normal = (position - self.center).normalized();
+
+            Some(Intersection::new(position, normal, t))
+        } else {
+            None
         }
-
-        let t = -b * discriminant.sqrt() / (2.0 * a);
-        let position = ray.at(t);
-        let normal = (position - self.center).normalized();
-
-        Some(Intersection::new(position, normal, t))
     }
 }
