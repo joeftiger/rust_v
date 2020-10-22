@@ -147,9 +147,6 @@ impl<T: AccelerationStructure> RgbRenderer<T> {
                     srgb.z as u8
                 ];
 
-                println!("{:?}", intersection);
-                println!("{:?}", SRGB);
-
                 Rgb::from(rgb)
             } else {
                 Rgb::from([255, 255, 255])
