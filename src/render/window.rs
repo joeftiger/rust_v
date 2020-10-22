@@ -71,9 +71,11 @@ impl<T: Renderer> CustomWindow<T> {
         let wait_key = Duration::from_millis(1);
 
         loop {
+            println!("Entering render loop");
             if self.render_loop_or_exit(wait_key, render_time) {
                 break;
             }
+            println!("Entering input loop");
             if self.input_loop_or_exit(wait_key) {
                 break;
             }
@@ -86,8 +88,16 @@ impl<T: Renderer> CustomWindow<T> {
     /// - bool: Exit and close the window
     fn render_loop_or_exit(&mut self, wait_key: Duration, render_time: Duration) -> bool {
         while let Ok(event) = self.window.wait_key(wait_key) {
-            if self.handle_input_or_exit(event) {
-                return true;
+            if let Some(event) = event {
+                if event.key == Escape {
+                    println!("Exiting window");
+                    return true;
+                }
+
+                if let Some(rotation) = create_rotation(event.key) {
+                    println!("Updating camera");
+                    self.update_camera_rotation(rotation);
+                }
             }
 
             // handle rendering
@@ -121,31 +131,21 @@ impl<T: Renderer> CustomWindow<T> {
     /// - bool: Exit and close the window
     fn input_loop_or_exit(&mut self, wait_key: Duration) -> bool {
         while let Ok(event) = self.window.wait_key(wait_key) {
-            if self.handle_input_or_exit(event) {
-                return true;
+            if let Some(event) = event {
+                if event.key == Escape {
+                    println!("Exiting window");
+                    return true;
+                }
+
+                if let Some(rotation) = create_rotation(event.key) {
+                    println!("Updating camera");
+                    self.update_camera_rotation(rotation);
+                    return false;
+                }
             }
         }
 
         true
-    }
-
-    /// Handles the keyboard event to exit or rotate the camera according to keyboard input.
-    /// # Returns
-    /// - bool: Exit and close the window
-    fn handle_input_or_exit(&mut self, event: Option<KeyboardEvent>) -> bool {
-        if let Some(event) = event {
-            if event.key == Escape {
-                println!("Exiting window");
-                return true;
-            }
-
-            if let Some(rotation) = create_rotation(event.key) {
-                println!("Updating camera");
-                self.update_camera_rotation(rotation);
-            }
-        }
-
-        false
     }
 
     /// Updates the camera rotation and resets the renderer
