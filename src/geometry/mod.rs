@@ -145,3 +145,54 @@ impl InversibleExt for Vec3 {
     }
 }
 
+#[cfg(test)]
+mod tests {
+    use crate::geometry::sphere::Sphere;
+    use crate::geometry::ray::Ray;
+    use ultraviolet::Vec3;
+    use crate::geometry::Intersectable;
+    use crate::geometry::aabb::Aabb;
+    use crate::geometry::cube::Cube;
+    use crate::geometry::cylinder::Cylinder;
+
+    #[test]
+    fn test_aabb_default() {
+        let aabb = Aabb::default();
+        let ray = Ray::new(-2.0 * Vec3::unit_x(), Vec3::unit_x());
+
+        println!("{:?}", aabb);
+        println!("{:?}", ray);
+
+        assert!(aabb.intersects(&ray).is_some())
+    }
+
+    #[test]
+    fn test_cube_default() {
+        let cube = Cube::default();
+        let ray = Ray::new(-2.0 * Vec3::unit_x(), Vec3::unit_x());
+
+        assert!(cube.intersects(&ray).is_some())
+    }
+
+    #[test]
+    fn test_cylinder_default() {
+        let cylinder = Cylinder::default();
+        let ray = Ray::new(-2.0 * Vec3::unit_x(), Vec3::unit_x());
+
+        println!("{:?}", cylinder);
+        println!("{:?}", ray);
+
+        assert!(cylinder.intersects(&ray).is_some())
+    }
+
+    #[test]
+    fn test_sphere() {
+        let sphere = Sphere::default();
+        let ray = Ray::new(-2.0 * Vec3::unit_x(), Vec3::unit_x());
+
+        println!("{:?}", sphere);
+        println!("{:?}", ray);
+
+        assert!(sphere.intersects(&ray).is_some());
+    }
+}
