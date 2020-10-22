@@ -2,7 +2,7 @@ use rust_v::geometry::sphere::Sphere;
 use ultraviolet::Vec3;
 use rust_v::render::camera::Camera;
 use rust_v::render::scene::Scene;
-use rust_v::render::renderer::RgbRenderer;
+use rust_v::render::renderer::{RgbRenderer, Renderer};
 use rust_v::render::scene_objects::SceneObject;
 use rust_v::color::srgb::Srgb;
 use rust_v::render::window::RenderWindow;
@@ -23,9 +23,16 @@ fn main() {
         720
     );
 
-    let renderer = RgbRenderer::new(scene, camera);
+    let mut renderer = RgbRenderer::new(scene, camera);
 
-    let mut window = RenderWindow::new("Rust-V".to_string(), renderer).unwrap();
+    while !renderer.is_done() {
+        renderer.render_pass();
+    }
 
-    window.start_rendering();
+    let image = renderer.get_image();
+    image.save("./rendering.png").unwrap();
+
+    // let mut window = RenderWindow::new("Rust-V".to_string(), renderer).unwrap();
+    //
+    // window.start_rendering();
 }
