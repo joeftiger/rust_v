@@ -1,5 +1,5 @@
-use ultraviolet::Vec3;
 use crate::geometry::ray::Ray;
+use ultraviolet::Vec3;
 
 /// A camera consists of
 /// - position: camera center
@@ -36,11 +36,21 @@ impl Camera {
         let image_height = 2.0 * dist * f32::tan(0.5 * fovy * std::f32::consts::PI / 180.0);
         let image_width = w * image_height / h;
 
-        let x_dir = view.cross(up).normalized() * image_width / image_height;
-        let y_dir = x_dir.cross(view).normalized() * image_height / image_width;
+        let x_dir = view.cross(up).normalized() * image_width / w;
+        let y_dir = x_dir.cross(view).normalized() * image_height / h;
         let lower_left = center - 0.5 * w * x_dir - 0.5 * h * y_dir;
 
-        Self { position: eye, center, up, fovy, width, height, x_dir, y_dir, lower_left }
+        Self {
+            position: eye,
+            center,
+            up,
+            fovy,
+            width,
+            height,
+            x_dir,
+            y_dir,
+            lower_left,
+        }
     }
 
     pub fn primary_ray(&self, x: u32, y: u32) -> Ray {
