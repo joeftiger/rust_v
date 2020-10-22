@@ -2,19 +2,20 @@ use std::ops::{Add, AddAssign, Div, DivAssign, Index, IndexMut, Mul, MulAssign, 
 
 use ultraviolet::Vec3;
 
-use crate::physics::{Color, linear_to_srgb, srgb_to_linear, xyz_to_srgb_mat, linears_to_srgb};
-use crate::physics::rgb::SRGB;
-use crate::util::floats::{approx_equal, approx_zero, fast_clamp};
+use crate::color::{Color, xyz_to_srgb_mat, linears_to_srgb};
+use crate::floats::{approx_equal, approx_zero, fast_clamp};
+use crate::color::srgb::Srgb;
+use image::Rgb;
 
 // TODO: IS this representation wrong? I find Yxy in the internet as well
 #[derive(Clone, Debug, Default)]
-pub struct XYZ {
+pub struct Xyz {
     pub x: f32,
     pub y: f32,
     pub z: f32,
 }
 
-impl XYZ {
+impl Xyz {
     pub fn new(x: f32, y: f32, z: f32) -> Self {
         debug_assert!(!x.is_nan());
         debug_assert!(!y.is_nan());
@@ -27,7 +28,7 @@ impl XYZ {
     }
 }
 
-impl Color for XYZ {
+impl Color for Xyz {
     fn is_black(&self) -> bool {
         approx_zero(self.x) && approx_zero(self.y) && approx_zero(self.z)
     }
@@ -44,16 +45,16 @@ impl Color for XYZ {
         self.x.is_nan() || self.y.is_nan() || self.z.is_nan()
     }
 
-    fn to_rgb(&self) -> SRGB {
-        SRGB::from(linears_to_srgb(xyz_to_srgb_mat() * self.to_vec()))
+    fn to_rgb(&self) -> Srgb {
+        Srgb::from(linears_to_srgb(xyz_to_srgb_mat() * self.to_vec()))
     }
 
-    fn to_xyz(&self) -> XYZ {
+    fn to_xyz(&self) -> Xyz {
         self.clone()
     }
 }
 
-impl Add for XYZ {
+impl Add for Xyz {
     type Output = Self;
 
     fn add(self, rhs: Self) -> Self::Output {
@@ -65,7 +66,7 @@ impl Add for XYZ {
     }
 }
 
-impl AddAssign for XYZ {
+impl AddAssign for Xyz {
     fn add_assign(&mut self, rhs: Self) {
         self.x += rhs.x;
         self.y += rhs.y;
@@ -73,7 +74,7 @@ impl AddAssign for XYZ {
     }
 }
 
-impl Sub for XYZ {
+impl Sub for Xyz {
     type Output = Self;
 
     fn sub(self, rhs: Self) -> Self::Output {
@@ -85,7 +86,7 @@ impl Sub for XYZ {
     }
 }
 
-impl SubAssign for XYZ {
+impl SubAssign for Xyz {
     fn sub_assign(&mut self, rhs: Self) {
         self.x -= rhs.x;
         self.y -= rhs.y;
@@ -93,7 +94,7 @@ impl SubAssign for XYZ {
     }
 }
 
-impl Mul for XYZ {
+impl Mul for Xyz {
     type Output = Self;
 
     fn mul(self, rhs: Self) -> Self::Output {
@@ -105,7 +106,7 @@ impl Mul for XYZ {
     }
 }
 
-impl MulAssign for XYZ {
+impl MulAssign for Xyz {
     fn mul_assign(&mut self, rhs: Self) {
         self.x *= rhs.x;
         self.y *= rhs.y;
@@ -113,7 +114,7 @@ impl MulAssign for XYZ {
     }
 }
 
-impl Mul<f32> for XYZ {
+impl Mul<f32> for Xyz {
     type Output = Self;
 
     fn mul(self, rhs: f32) -> Self::Output {
@@ -126,7 +127,7 @@ impl Mul<f32> for XYZ {
     }
 }
 
-impl MulAssign<f32> for XYZ {
+impl MulAssign<f32> for Xyz {
     fn mul_assign(&mut self, rhs: f32) {
         debug_assert!(!rhs.is_nan());
         self.x *= rhs;
@@ -135,7 +136,7 @@ impl MulAssign<f32> for XYZ {
     }
 }
 
-impl Div for XYZ {
+impl Div for Xyz {
     type Output = Self;
 
     fn div(self, rhs: Self) -> Self::Output {
@@ -147,7 +148,7 @@ impl Div for XYZ {
     }
 }
 
-impl DivAssign for XYZ {
+impl DivAssign for Xyz {
     fn div_assign(&mut self, rhs: Self) {
         self.x /= rhs.x;
         self.y /= rhs.y;
@@ -155,7 +156,7 @@ impl DivAssign for XYZ {
     }
 }
 
-impl Div<f32> for XYZ {
+impl Div<f32> for Xyz {
     type Output = Self;
 
     fn div(self, rhs: f32) -> Self::Output {
@@ -168,7 +169,7 @@ impl Div<f32> for XYZ {
     }
 }
 
-impl DivAssign<f32> for XYZ {
+impl DivAssign<f32> for Xyz {
     fn div_assign(&mut self, rhs: f32) {
         self.x /= rhs;
         self.y /= rhs;
@@ -176,7 +177,7 @@ impl DivAssign<f32> for XYZ {
     }
 }
 
-impl Index<usize> for XYZ {
+impl Index<usize> for Xyz {
     type Output = f32;
 
     fn index(&self, index: usize) -> &Self::Output {
@@ -184,29 +185,29 @@ impl Index<usize> for XYZ {
             0 => &self.x,
             1 => &self.y,
             2 => &self.z,
-            _ => panic!("Index [{}] out of range for XYZ", index)
+            _ => panic!("Index [{}] out of range for Xyz", index)
         }
     }
 }
 
-impl IndexMut<usize> for XYZ {
+impl IndexMut<usize> for Xyz {
     fn index_mut(&mut self, index: usize) -> &mut Self::Output {
         match index {
             0 => &mut self.x,
             1 => &mut self.y,
             2 => &mut self.z,
-            _ => panic!("Index [{}] out of range for XYZ", index)
+            _ => panic!("Index [{}] out of range for Xyz", index)
         }
     }
 }
 
-impl PartialEq for XYZ {
+impl PartialEq for Xyz {
     fn eq(&self, other: &Self) -> bool {
         approx_equal(self.x, other.x) && approx_equal(self.y, other.y) && approx_equal(self.z, other.z)
     }
 }
 
-impl From<(f32, f32, f32)> for XYZ {
+impl From<(f32, f32, f32)> for Xyz {
     fn from(xyz: (f32, f32, f32)) -> Self {
         let x = xyz.0;
         let y = xyz.1;
@@ -215,7 +216,7 @@ impl From<(f32, f32, f32)> for XYZ {
     }
 }
 
-impl From<[f32; 3]> for XYZ {
+impl From<[f32; 3]> for Xyz {
     fn from(xyz: [f32; 3]) -> Self {
         let x = xyz[0];
         let y = xyz[1];
@@ -224,7 +225,7 @@ impl From<[f32; 3]> for XYZ {
     }
 }
 
-impl From<Vec3> for XYZ {
+impl From<Vec3> for Xyz {
     fn from(xyz: Vec3) -> Self {
         let x = xyz.x;
         let y = xyz.y;
@@ -233,8 +234,14 @@ impl From<Vec3> for XYZ {
     }
 }
 
-impl From<SRGB> for XYZ {
-    fn from(srgb: SRGB) -> Self {
+impl From<Srgb> for Xyz {
+    fn from(srgb: Srgb) -> Self {
         srgb.to_xyz()
+    }
+}
+
+impl Into<Rgb<u8>> for Xyz {
+    fn into(self) -> Rgb<u8> {
+        self.to_rgb().into()
     }
 }

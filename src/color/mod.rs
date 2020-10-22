@@ -1,14 +1,13 @@
 use std::ops::{Add, AddAssign, Div, DivAssign, Index, IndexMut, Mul, MulAssign, Sub, SubAssign};
 
 use ultraviolet::{Mat3, Vec3};
-
-use crate::physics::rgb::SRGB;
-use crate::physics::xyz::XYZ;
-use serde::export::fmt::Debug;
+use std::fmt::Debug;
+use crate::color::srgb::Srgb;
+use crate::color::xyz::Xyz;
+use image::Rgb;
 
 pub mod cie;
-pub mod light;
-pub mod rgb;
+pub mod srgb;
 pub mod xyz;
 
 /// Returns the XYZ to sRGB matrix
@@ -17,7 +16,7 @@ pub fn xyz_to_srgb_mat() -> Mat3 {
     Mat3::new(
         Vec3::new(3.24096994, -0.96924364, 0.05563008),
         Vec3::new(-1.53738318, 1.8759675, -0.20397696),
-        Vec3::new(-0.49861076, 0.04155506, 1.05697151)
+        Vec3::new(-0.49861076, 0.04155506, 1.05697151),
     )
 }
 
@@ -27,7 +26,7 @@ pub fn srgb_to_xyz_mat() -> Mat3 {
     Mat3::new(
         Vec3::new(0.41239080, 0.21263901, 0.01933082),
         Vec3::new(0.35758434, 0.71516868, 0.07219232),
-        Vec3::new(0.18048079, 0.07219232, 0.95053215)
+        Vec3::new(0.18048079, 0.07219232, 0.95053215),
     )
 }
 
@@ -69,8 +68,7 @@ pub fn linears_to_srgb(val: Vec3) -> Vec3 {
     val.map(linear_to_srgb)
 }
 
-pub trait Color: Add + AddAssign + Sub + SubAssign + Mul + MulAssign + Mul<f32> + MulAssign<f32> + Div + DivAssign + Div<f32> + DivAssign<f32> + PartialEq + Index<usize> + IndexMut<usize> + Sized + Debug {
-
+pub trait Color: Add + AddAssign + Sub + SubAssign + Mul + MulAssign + Mul<f32> + MulAssign<f32> + Div + DivAssign + Div<f32> + DivAssign<f32> + PartialEq + Index<usize> + IndexMut<usize> + Debug + Into<Rgb<u8>> {
     /// Whether this color is black. Some computations can be omitted, if the color is black.
     fn is_black(&self) -> bool;
 
@@ -81,9 +79,9 @@ pub trait Color: Add + AddAssign + Sub + SubAssign + Mul + MulAssign + Mul<f32> 
     fn has_nans(&self) -> bool;
 
     /// Converts this color to sRGB.
-    fn to_rgb(&self) -> SRGB;
+    fn to_rgb(&self) -> Srgb;
 
     /// Converts this color to XYZ.
-    fn to_xyz(&self) -> XYZ;
+    fn to_xyz(&self) -> Xyz;
 }
 

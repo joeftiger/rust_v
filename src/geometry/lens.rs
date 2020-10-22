@@ -1,57 +1,54 @@
-use crate::geometry::{Boxable, Intersectable, Intersection};
-use crate::geometry::aabb::Aabb;
-use crate::geometry::plane::Plane;
-use crate::geometry::ray::Ray;
 use crate::geometry::sphere::Sphere;
-use ultraviolet::Vec3;
+use crate::geometry::{Container, Geometry};
+use ultraviolet::{Vec3, Vec3x4, f32x4};
+use crate::geometry::ray::Ray;
+use crate::geometry::intersection::Intersection;
+use crate::geometry::aabb::Aabb;
 
-/// A geometrical simple lens consists of the intersection of two spheres.
-pub struct SimpleLens {
+pub struct BiconvexLens {
     pub sphere0: Sphere,
     pub sphere1: Sphere,
 }
 
-impl SimpleLens {
+impl BiconvexLens {
     pub fn new(sphere0: Sphere, sphere1: Sphere) -> Self {
+        debug_assert!((sphere0.center - sphere1.center).mag() < sphere0.radius.max(sphere1.radius));
+
         Self { sphere0, sphere1 }
     }
+}
 
-    pub fn is_symmetric(&self) -> bool {
-        f32::abs(self.sphere0.radius - self.sphere1.radius) <= f32::EPSILON
+impl Container<Vec3, bool> for BiconvexLens {
+    fn contains(&self, obj: Vec3) -> bool {
+        self.sphere0.contains(obj) && self.sphere1.contains(obj)
     }
 }
 
-impl Default for SimpleLens {
-    fn default() -> Self {
-        let offset = Vec3::new(0.1, 0.0, 0.0);
-        Self::new(Sphere::new(-offset, 1.0), Sphere::new(offset, 1.0))
+impl Container<Vec3x4, f32x4> for BiconvexLens {
+    fn contains(&self, obj: Vec3x4) -> f32x4 {
+        self.sphere0.contains(obj) & self.sphere1.contains(obj)
     }
 }
 
-impl Boxable for SimpleLens {
-    fn bounding_box(&self) -> Option<Aabb> {
-        let aabb0 = self.sphere0.bounding_box().unwrap();
-        let aabb1 = self.sphere1.bounding_box().unwrap();
-        let inner_join = aabb0.inner_join(&aabb1);
+impl Geometry<Ray, Intersection> for BiconvexLens {
+    fn bounding_box(&self) -> Aabb {
+        // not tight fitting, but okay enough
+        let max = self.sphere0.radius.max(self.sphere1.radius);
+        let offset = Vec3::one() * max;
+        let center = (self.sphere0.center + self.sphere1.center) / 2.0;
 
-        Some(inner_join)
+        Aabb::new(center - offset, center + offset)
     }
-}
 
-impl Intersectable<Ray> for SimpleLens {
-    fn intersects(&self, ray: &Ray) -> Option<Intersection> {
-        if let Some(i0) = self.sphere0.intersects(ray) {
-            if let Some(i1) = self.sphere1.intersects(ray) {
-                let lens_side: Intersection;
-
+    fn intersect(&self, ray: &Ray) -> Option<Intersection> {
+        if let Some(i0) = self.sphere0.intersect(ray) {
+            if let Some(i1) = self.sphere1.intersect(ray) {
                 // note the inversion of the first intersecting sphere
-                if i0.t.unwrap() < i1.t.unwrap() {
-                    lens_side = i1;
+                return if i0.t < i1.t {
+                    Some(i1)
                 } else {
-                    lens_side = i0;
+                    Some(i0)
                 }
-
-                return Some(lens_side);
             }
         }
 
@@ -59,28 +56,12 @@ impl Intersectable<Ray> for SimpleLens {
     }
 }
 
-pub struct PlanoConvexLens {
-    pub sphere: Sphere,
-    pub plane: Plane,
-}
+impl Default for BiconvexLens {
+    fn default() -> Self {
+        let offset = Vec3::unit_x() * 0.1;
+        let sphere0 = Sphere::new(-offset, 1.0);
+        let sphere1 = Sphere::new(offset, 1.0);
 
-impl PlanoConvexLens {
-    pub fn new(sphere: Sphere, plane: Plane) -> Self {
-        Self { sphere, plane }
-    }
-}
-
-impl Boxable for PlanoConvexLens {
-    fn bounding_box(&self) -> Option<Aabb> {
-        self.sphere.bounding_box()
-    }
-}
-
-impl Intersectable<Ray> for PlanoConvexLens {
-    fn intersects(&self, ray: &Ray) -> Option<Intersection> {
-        if let Some(is) = self.sphere.intersects(ray) {}
-
-        // TODO: IMPLEMENT
-        unimplemented!();
+        BiconvexLens::new(sphere0, sphere1)
     }
 }

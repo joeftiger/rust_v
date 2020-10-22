@@ -1,4 +1,7 @@
+#[allow(dead_code)]
 const CIE_SAMPLES: usize = 471;
+
+#[allow(dead_code)]
 const CIE_X_2: [f32; CIE_SAMPLES] = [
     0.0001299,
     0.000145847,
@@ -472,6 +475,8 @@ const CIE_X_2: [f32; CIE_SAMPLES] = [
     0.000001341977,
     0.000001251141,
 ];
+
+#[allow(dead_code)]
 const CIE_Y_2: [f32; CIE_SAMPLES] = [
     0.000003917,
     0.000004393581,
@@ -946,6 +951,7 @@ const CIE_Y_2: [f32; CIE_SAMPLES] = [
     0.00000045181,
 ];
 
+#[allow(dead_code)]
 const CIE_Z_2: [f32; CIE_SAMPLES] = [
     0.0006061,
     0.0006808792,

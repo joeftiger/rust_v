@@ -1,164 +1,95 @@
-use std::time::{Duration, Instant};
-
-use show_image::KeyCode::*;
-use show_image::{make_window, make_window_full, KeyCode, Window, WindowOptions, KeyboardEvent};
-use ultraviolet::Rotor3;
+use show_image::{make_window_full, Window, WindowOptions, KeyCode};
 
 use crate::render::renderer::Renderer;
+use std::time::{Duration, Instant};
 
-const ROTATING_ANGLE_DEG: f32 = 22.5;
-const ROTATING_ANGLE_RAD: f32 = (ROTATING_ANGLE_DEG as f64 * 0.017_453_292_519_943_295) as f32; // latter is PI / 180
-
+const WAIT_KEY_MS: u64 = 1;
 const RENDER_TIME_MS: u64 = 500;
 
-/// Creates a rotation from the key code according to ROTATING_ANGLE_RAD.
-/// If the key code is not associated to arrow-[left, right, up, down], None will be returned.
-fn create_rotation(key: KeyCode) -> Option<Rotor3> {
-    let mut rotation: Option<Rotor3> = None;
-
-    // rotate YAW
-    if key == ArrowLeft {
-        rotation = Some(Rotor3::from_rotation_xz(-ROTATING_ANGLE_RAD));
-    } else if key == ArrowRight {
-        rotation = Some(Rotor3::from_rotation_xz(ROTATING_ANGLE_RAD));
-    }
-
-    // rotate PITCH
-    if key == ArrowUp {
-        let r = Rotor3::from_euler_angles(0.0, ROTATING_ANGLE_RAD, 0.0);
-        if let Some(yaw) = rotation {
-            rotation = Some(yaw * r); // note the order of multiplication
-        } else {
-            rotation = Some(r);
-        }
-    } else if key == ArrowDown {
-        let r = Rotor3::from_euler_angles(0.0, -ROTATING_ANGLE_RAD, 0.0);
-        if let Some(yaw) = rotation {
-            rotation = Some(yaw * r);
-        } else {
-            rotation = Some(r);
-        }
-    }
-
-    rotation
-}
-
-pub struct CustomWindow<T: Renderer> {
+pub struct RenderWindow<T> {
     window: Window,
     renderer: T,
+    should_exit: bool,
 }
 
-impl<T: Renderer> CustomWindow<T> {
-    pub fn new(name: impl Into<String>, mut renderer: T) -> Result<Self, String> {
+impl<T: Renderer> RenderWindow<T> {
+    pub fn new(name: String, mut renderer: T) -> Result<Self, String> {
         let camera = renderer.get_camera();
         let options = WindowOptions::default()
-            .set_name(name.into())
+            .set_name(name)
             .set_size([camera.width, camera.height]);
 
-        let cw = Self {
+        Ok(Self {
             window: make_window_full(options)?,
             renderer,
-        };
-
-        Result::Ok(cw)
+            should_exit: false
+        })
     }
 
     pub fn start_rendering(&mut self) {
-        self.start_rendering_dt(Duration::from_millis(RENDER_TIME_MS))
+        self.start_rendering_dt(Duration::from_millis(RENDER_TIME_MS));
     }
 
     pub fn start_rendering_dt(&mut self, render_time: Duration) {
-        let wait_key = Duration::from_millis(1);
+        let wait_key = Duration::from_millis(WAIT_KEY_MS);
 
         loop {
-            println!("Entering render loop");
-            if self.render_loop_or_exit(wait_key, render_time) {
-                break;
+            println!("# Entering render loop");
+            self.render_loop(wait_key, render_time);
+            if self.should_exit {
+                return;
             }
-            println!("Entering input loop");
-            if self.input_loop_or_exit(wait_key) {
-                break;
+
+            println!("# Entering waiting loop");
+            self.waiting_loop(wait_key);
+            if self.should_exit {
+                return;
             }
         }
     }
 
-    /// Enters the rendering loop or exits according to keyboard input.
-    ///
-    /// # Returns
-    /// - bool: Exit and close the window
-    fn render_loop_or_exit(&mut self, wait_key: Duration, render_time: Duration) -> bool {
+    fn render_loop(&mut self, wait_key: Duration, render_time: Duration) {
+        let mut done = false;
         while let Ok(event) = self.window.wait_key(wait_key) {
             if let Some(event) = event {
-                if event.key == Escape {
-                    println!("Exiting window");
-                    return true;
-                }
-
-                if let Some(rotation) = create_rotation(event.key) {
-                    println!("Updating camera");
-                    self.update_camera_rotation(rotation);
+                if event.key == KeyCode::Escape {
+                    self.should_exit = true;
+                    return;
                 }
             }
 
-            // handle rendering
-            println!("Rendering for at most {} seconds...", render_time.as_secs_f32());
-            let start = Instant::now();
-            let mut done = false;
-            while start.elapsed() < render_time {
-                if self.renderer.render_pass() {
-                    println!("Rendering complete");
+            let now = Instant::now();
+            while now.elapsed() < render_time {
+                if self.renderer.is_done() {
                     done = true;
                     break;
                 }
-            }
-            println!("Rendered for {} seconds", start.elapsed().as_secs_f32());
 
-            // update rendering
+                self.renderer.render_pass()
+            }
+
             let image = self.renderer.get_image();
-            self.window.set_image(image, "Rendering").unwrap();
+            self.window.set_image(image, "Rendering").expect("Unable to update image in window");
 
             if done {
-                return false;
+                return;
             }
         }
-
-        true
     }
 
-    /// After the rendering is complete, enter the input loop or exit according to keyboard input.
-    ///
-    /// # Returns
-    /// - bool: Exit and close the window
-    fn input_loop_or_exit(&mut self, wait_key: Duration) -> bool {
+    fn waiting_loop(&mut self, wait_key: Duration) {
         while let Ok(event) = self.window.wait_key(wait_key) {
             if let Some(event) = event {
-                if event.key == Escape {
-                    println!("Exiting window");
-                    return true;
+                if event.key == KeyCode::Escape {
+                    self.should_exit = true;
+                    return;
                 }
 
-                if let Some(rotation) = create_rotation(event.key) {
-                    println!("Updating camera");
-                    self.update_camera_rotation(rotation);
-                    return false;
+                if event.key == KeyCode::Backspace {
+                    self.renderer.reset();
+                    return;
                 }
             }
         }
-
-        true
-    }
-
-    /// Updates the camera rotation and resets the renderer
-    fn update_camera_rotation(&mut self, rotation: Rotor3) {
-        let camera = &mut self.renderer.get_scene().camera;
-
-        let mut distance = camera.position - camera.center;
-        distance.rotate_by(rotation);
-
-        camera.position = camera.center + distance;
-
-        // IMPORTANT
-        camera.update();
-        self.renderer.reset();
     }
 }

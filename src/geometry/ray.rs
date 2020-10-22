@@ -1,46 +1,40 @@
-use std::fmt::Debug;
+use ultraviolet::{f32x4, Vec3, Vec3x4, Vec4, Vec4x4};
 
-use ultraviolet::vec::Vec3;
+macro_rules! rays {
+    ($($name:ident => $vec:ident, $rad:ident, $stokes:ident, $float:ident), +) => {
+        $(
+        pub struct $name {
+            pub origin: $vec,
+            pub direction: $vec,
+            pub radiance: $rad,
+            pub polarization: $stokes,
+        }
+        
+        impl $name {
+            pub fn new(origin: $vec, direction: $vec, radiance: $rad, polarization: $stokes) -> Self {
+                Self { origin, direction, radiance, polarization }
+            }
 
-use crate::geometry::AngularExt;
-
-#[derive(Copy, Clone, Debug)]
-pub struct Ray {
-    pub origin: Vec3,
-    pub direction: Vec3,
+            pub fn at(&self, t: $float) -> $vec {
+                self.direction.mul_add($vec::new(t, t, t), self.origin)
+            }
+        })+
+    }
 }
+
+rays!(
+    Ray => Vec3, Vec3, Vec4, f32,
+    Ray4 => Vec3x4, Vec3x4, Vec4x4, f32x4
+);
 
 impl Ray {
-    pub fn new(origin: Vec3, direction: Vec3) -> Self {
-        Self {
-            origin,
-            direction: direction.normalized(),
-        }
-    }
-
-    #[inline]
-    #[must_use]
-    pub fn at(&self, t: f32) -> Vec3 {
-        self.origin + self.direction * t
-    }
-
-    #[inline]
-    #[must_use]
-    pub fn distance(&self, p: Vec3) -> f32 {
-        (p - self.origin).mag()
+    pub fn new_simple(origin: Vec3, direction: Vec3) -> Self {
+        Self { origin, direction, radiance: Vec3::zero(), polarization: Vec4::zero() }
     }
 }
 
-impl Default for Ray {
-    fn default() -> Self {
-        Self::new(Vec3::zero(), Vec3::unit_x())
-    }
-}
-
-impl AngularExt<Self> for Ray {
-    #[inline]
-    #[must_use]
-    fn angle_to(&self, other: Self) -> f32 {
-        self.direction.angle_to(other.direction)
+impl Ray4 {
+    pub fn new_simple(origin: Vec3x4, direction: Vec3x4) -> Self {
+        Self { origin, direction, radiance: Vec3x4::zero(), polarization: Vec4x4::zero() }
     }
 }
