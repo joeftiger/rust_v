@@ -2,9 +2,9 @@ use std::ops::{Add, AddAssign, Div, DivAssign, Index, IndexMut, Mul, MulAssign, 
 
 use ultraviolet::Vec3;
 
-use crate::color::{Color, xyz_to_srgb_mat, linears_to_srgb};
-use crate::floats::{approx_equal, approx_zero, fast_clamp};
 use crate::color::srgb::Srgb;
+use crate::color::{linears_to_srgb, xyz_to_srgb_mat, Color};
+use crate::floats::{approx_equal, approx_zero, fast_clamp};
 use image::Rgb;
 
 // TODO: IS this representation wrong? I find Yxy in the internet as well
@@ -185,7 +185,7 @@ impl Index<usize> for Xyz {
             0 => &self.x,
             1 => &self.y,
             2 => &self.z,
-            _ => panic!("Index [{}] out of range for Xyz", index)
+            _ => panic!("Index [{}] out of range for Xyz", index),
         }
     }
 }
@@ -196,14 +196,16 @@ impl IndexMut<usize> for Xyz {
             0 => &mut self.x,
             1 => &mut self.y,
             2 => &mut self.z,
-            _ => panic!("Index [{}] out of range for Xyz", index)
+            _ => panic!("Index [{}] out of range for Xyz", index),
         }
     }
 }
 
 impl PartialEq for Xyz {
     fn eq(&self, other: &Self) -> bool {
-        approx_equal(self.x, other.x) && approx_equal(self.y, other.y) && approx_equal(self.z, other.z)
+        approx_equal(self.x, other.x)
+            && approx_equal(self.y, other.y)
+            && approx_equal(self.z, other.z)
     }
 }
 

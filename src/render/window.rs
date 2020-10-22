@@ -1,4 +1,4 @@
-use show_image::{make_window_full, Window, WindowOptions, KeyCode};
+use show_image::{make_window_full, KeyCode, Window, WindowOptions};
 
 use crate::render::renderer::Renderer;
 use std::time::{Duration, Instant};
@@ -22,7 +22,7 @@ impl<T: Renderer> RenderWindow<T> {
         Ok(Self {
             window: make_window_full(options)?,
             renderer,
-            should_exit: false
+            should_exit: false,
         })
     }
 
@@ -69,7 +69,9 @@ impl<T: Renderer> RenderWindow<T> {
             }
 
             let image = self.renderer.get_image();
-            self.window.set_image(image, "Rendering").expect("Unable to update image in window");
+            self.window
+                .set_image(image, "Rendering")
+                .expect("Unable to update image in window");
 
             if done {
                 return;

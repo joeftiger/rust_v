@@ -1,22 +1,22 @@
-use crate::render::scene_objects::SceneObject;
-use crate::geometry::Geometry;
-use crate::geometry::ray::Ray;
+use crate::color::srgb::Srgb;
 use crate::geometry::aabb::Aabb;
 use crate::geometry::intersection::Intersection;
-use crate::color::srgb::Srgb;
+use crate::geometry::ray::Ray;
+use crate::geometry::Geometry;
+use crate::render::scene_objects::SceneObject;
 
 pub struct SceneIntersection {
     pub intersection: Intersection,
-    pub color: Srgb
+    pub color: Srgb,
 }
 
 pub struct Scene<T> {
-    objects: Vec<T>
+    objects: Vec<T>,
 }
 
 impl<T> Scene<T> {
     pub fn new(objects: Vec<T>) -> Self {
-        Self { objects,  }
+        Self { objects }
     }
 }
 
@@ -32,7 +32,8 @@ impl<T: Geometry<Ray, Intersection>> Geometry<Ray, SceneIntersection> for Scene<
     }
 
     fn intersect(&self, ray: &Ray) -> Option<SceneIntersection> {
-        let pair = self.objects
+        let pair = self
+            .objects
             .iter()
             .map(|o| (o, o.intersect(ray)))
             .filter(|i| i.1.is_some())
@@ -44,7 +45,7 @@ impl<T: Geometry<Ray, Intersection>> Geometry<Ray, SceneIntersection> for Scene<
 
             Some(SceneIntersection {
                 intersection: pair.1,
-                color
+                color,
             })
         } else {
             None

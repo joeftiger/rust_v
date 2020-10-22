@@ -1,5 +1,5 @@
-use ultraviolet::{f32x4, Vec3, Vec3x4};
 use std::cmp::Ordering;
+use ultraviolet::{f32x4, Vec3, Vec3x4};
 
 macro_rules! intersections {
     ($($name:ident => $float:ident, $vec:ident), +) => {
@@ -27,7 +27,7 @@ impl Intersection {
     pub fn cmp(&self, other: &Self) -> Ordering {
         debug_assert!(!self.t.is_nan());
         debug_assert!(!other.t.is_nan());
-        
+
         if self.t < other.t {
             Ordering::Greater
         } else if self.t > other.t {

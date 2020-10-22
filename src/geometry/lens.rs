@@ -1,9 +1,9 @@
+use crate::geometry::aabb::Aabb;
+use crate::geometry::intersection::Intersection;
+use crate::geometry::ray::Ray;
 use crate::geometry::sphere::Sphere;
 use crate::geometry::{Container, Geometry};
-use ultraviolet::{Vec3, Vec3x4, f32x4};
-use crate::geometry::ray::Ray;
-use crate::geometry::intersection::Intersection;
-use crate::geometry::aabb::Aabb;
+use ultraviolet::{f32x4, Vec3, Vec3x4};
 
 pub struct BiconvexLens {
     pub sphere0: Sphere,
@@ -44,11 +44,7 @@ impl Geometry<Ray, Intersection> for BiconvexLens {
         if let Some(i0) = self.sphere0.intersect(ray) {
             if let Some(i1) = self.sphere1.intersect(ray) {
                 // note the inversion of the first intersecting sphere
-                return if i0.t < i1.t {
-                    Some(i1)
-                } else {
-                    Some(i0)
-                }
+                return if i0.t < i1.t { Some(i1) } else { Some(i0) };
             }
         }
 

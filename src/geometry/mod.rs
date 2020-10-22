@@ -1,11 +1,10 @@
 use crate::geometry::aabb::Aabb;
 
-pub mod ray;
 pub mod aabb;
 pub mod intersection;
-pub mod sphere;
 pub mod lens;
-
+pub mod ray;
+pub mod sphere;
 
 pub trait Container<Tin, Tout> {
     fn contains(&self, obj: Tin) -> Tout;

@@ -1,10 +1,10 @@
 use std::ops::{Add, AddAssign, Div, DivAssign, Index, IndexMut, Mul, MulAssign, Sub, SubAssign};
 
-use ultraviolet::{Mat3, Vec3};
-use std::fmt::Debug;
 use crate::color::srgb::Srgb;
 use crate::color::xyz::Xyz;
 use image::Rgb;
+use std::fmt::Debug;
+use ultraviolet::{Mat3, Vec3};
 
 pub mod cie;
 pub mod srgb;
@@ -68,7 +68,25 @@ pub fn linears_to_srgb(val: Vec3) -> Vec3 {
     val.map(linear_to_srgb)
 }
 
-pub trait Color: Add + AddAssign + Sub + SubAssign + Mul + MulAssign + Mul<f32> + MulAssign<f32> + Div + DivAssign + Div<f32> + DivAssign<f32> + PartialEq + Index<usize> + IndexMut<usize> + Debug + Into<Rgb<u8>> {
+pub trait Color:
+    Add
+    + AddAssign
+    + Sub
+    + SubAssign
+    + Mul
+    + MulAssign
+    + Mul<f32>
+    + MulAssign<f32>
+    + Div
+    + DivAssign
+    + Div<f32>
+    + DivAssign<f32>
+    + PartialEq
+    + Index<usize>
+    + IndexMut<usize>
+    + Debug
+    + Into<Rgb<u8>>
+{
     /// Whether this color is black. Some computations can be omitted, if the color is black.
     fn is_black(&self) -> bool;
 
@@ -84,4 +102,3 @@ pub trait Color: Add + AddAssign + Sub + SubAssign + Mul + MulAssign + Mul<f32> 
     /// Converts this color to XYZ.
     fn to_xyz(&self) -> Xyz;
 }
-

@@ -9,7 +9,7 @@ macro_rules! rays {
             pub radiance: $rad,
             pub polarization: $stokes,
         }
-        
+
         impl $name {
             pub fn new(origin: $vec, direction: $vec, radiance: $rad, polarization: $stokes) -> Self {
                 Self { origin, direction, radiance, polarization }
@@ -29,12 +29,22 @@ rays!(
 
 impl Ray {
     pub fn new_simple(origin: Vec3, direction: Vec3) -> Self {
-        Self { origin, direction, radiance: Vec3::zero(), polarization: Vec4::zero() }
+        Self {
+            origin,
+            direction,
+            radiance: Vec3::zero(),
+            polarization: Vec4::zero(),
+        }
     }
 }
 
 impl Ray4 {
     pub fn new_simple(origin: Vec3x4, direction: Vec3x4) -> Self {
-        Self { origin, direction, radiance: Vec3x4::zero(), polarization: Vec4x4::zero() }
+        Self {
+            origin,
+            direction,
+            radiance: Vec3x4::zero(),
+            polarization: Vec4x4::zero(),
+        }
     }
 }

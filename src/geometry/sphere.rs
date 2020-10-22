@@ -1,9 +1,9 @@
-use ultraviolet::{Vec3, Vec3x4, f32x4};
+use ultraviolet::{f32x4, Vec3, Vec3x4};
 
-use crate::geometry::{Container, Geometry};
-use crate::geometry::ray::Ray;
-use crate::geometry::intersection::Intersection;
 use crate::geometry::aabb::Aabb;
+use crate::geometry::intersection::Intersection;
+use crate::geometry::ray::Ray;
+use crate::geometry::{Container, Geometry};
 use crate::math::solve_quadratic;
 
 pub struct Sphere {

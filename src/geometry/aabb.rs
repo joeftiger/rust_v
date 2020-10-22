@@ -1,8 +1,8 @@
-use ultraviolet::{Vec3, Vec3x4, f32x4};
-use crate::geometry::{Container, Geometry};
+use crate::floats;
 use crate::geometry::intersection::Intersection;
 use crate::geometry::ray::Ray;
-use crate::floats;
+use crate::geometry::{Container, Geometry};
+use ultraviolet::{f32x4, Vec3, Vec3x4};
 
 #[derive(Clone)]
 pub struct Aabb {
@@ -28,9 +28,7 @@ impl Aabb {
     }
 
     pub fn is_valid(&self) -> bool {
-        self.min.x <= self.max.x &&
-            self.min.y <= self.max.y &&
-            self.min.z <= self.max.z
+        self.min.x <= self.max.x && self.min.y <= self.max.y && self.min.z <= self.max.z
     }
 
     /// Creates the inner join / intersection of both aabbs.
@@ -66,10 +64,26 @@ impl Container<Vec3x4, f32x4> for Aabb {
         let clamped = obj.clamped(min, max);
 
         f32x4::from([
-            if clamped[0] == obj[0] { f32::from_bits(u32::MAX) } else {0.0},
-            if clamped[1] == obj[1] { f32::from_bits(u32::MAX) } else {0.0},
-            if clamped[2] == obj[2] { f32::from_bits(u32::MAX) } else {0.0},
-            if clamped[3] == obj[3] { f32::from_bits(u32::MAX) } else {0.0}
+            if clamped[0] == obj[0] {
+                f32::from_bits(u32::MAX)
+            } else {
+                0.0
+            },
+            if clamped[1] == obj[1] {
+                f32::from_bits(u32::MAX)
+            } else {
+                0.0
+            },
+            if clamped[2] == obj[2] {
+                f32::from_bits(u32::MAX)
+            } else {
+                0.0
+            },
+            if clamped[3] == obj[3] {
+                f32::from_bits(u32::MAX)
+            } else {
+                0.0
+            },
         ])
     }
 }

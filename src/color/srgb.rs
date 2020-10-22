@@ -3,9 +3,9 @@ use std::ops::{Add, AddAssign, Div, DivAssign, Index, IndexMut, Mul, MulAssign, 
 use image::Rgb;
 use ultraviolet::Vec3;
 
-use crate::color::{Color, srgb_to_xyz_mat, srgbs_to_linear};
-use crate::floats::{approx_equal, approx_zero, fast_clamp};
 use crate::color::xyz::Xyz;
+use crate::color::{srgb_to_xyz_mat, srgbs_to_linear, Color};
+use crate::floats::{approx_equal, approx_zero, fast_clamp};
 
 #[derive(Clone, Debug, Default)]
 pub struct Srgb {
@@ -184,7 +184,7 @@ impl Index<usize> for Srgb {
             0 => &self.r,
             1 => &self.g,
             2 => &self.b,
-            _ => panic!("Index [{}] out of range for RGB", index)
+            _ => panic!("Index [{}] out of range for RGB", index),
         }
     }
 }
@@ -195,14 +195,16 @@ impl IndexMut<usize> for Srgb {
             0 => &mut self.r,
             1 => &mut self.g,
             2 => &mut self.b,
-            _ => panic!("Index [{}] out of range for RGB", index)
+            _ => panic!("Index [{}] out of range for RGB", index),
         }
     }
 }
 
 impl PartialEq for Srgb {
     fn eq(&self, other: &Self) -> bool {
-        approx_equal(self.r, other.r) && approx_equal(self.g, other.g) && approx_equal(self.b, other.b)
+        approx_equal(self.r, other.r)
+            && approx_equal(self.g, other.g)
+            && approx_equal(self.b, other.b)
     }
 }
 
@@ -237,10 +239,6 @@ impl Into<Rgb<u8>> for Srgb {
     fn into(self) -> Rgb<u8> {
         let rgb = self.to_vec() * 255.0;
 
-        Rgb::from([
-            rgb.x as u8,
-            rgb.y as u8,
-            rgb.z as u8
-        ])
+        Rgb::from([rgb.x as u8, rgb.y as u8, rgb.z as u8])
     }
 }
