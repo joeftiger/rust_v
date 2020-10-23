@@ -6,7 +6,7 @@ use crate::geometry::ray::Ray;
 use crate::geometry::Geometry;
 use crate::math::solve_quadratic;
 
-// A geometrical cylinder.
+/// A geometrical cylinder.
 #[derive(Debug)]
 pub struct Cylinder {
     pub center: Vec3,
