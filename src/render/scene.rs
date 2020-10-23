@@ -1,9 +1,9 @@
-use crate::color::srgb::Srgb;
 use crate::geometry::aabb::Aabb;
 use crate::geometry::intersection::Intersection;
 use crate::geometry::ray::Ray;
 use crate::geometry::Geometry;
 use crate::render::scene_objects::SceneObject;
+use crate::color::Srgb;
 
 pub struct SceneIntersection {
     pub intersection: Intersection,

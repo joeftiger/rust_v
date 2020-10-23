@@ -22,7 +22,6 @@ pub trait Renderer {
 
 #[allow(dead_code)]
 pub mod debug {
-    use crate::color::srgb::Srgb;
     use crate::geometry::intersection::Intersection;
     use crate::geometry::ray::Ray;
     use crate::geometry::Geometry;
@@ -31,6 +30,7 @@ pub mod debug {
     use crate::render::scene::Scene;
     use crate::render::scene_objects::SceneObject;
     use image::{Rgb, RgbImage};
+    use crate::color::Srgb;
 
     pub struct NormalRenderer<T> {
         scene: Scene<T>,
