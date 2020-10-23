@@ -38,7 +38,7 @@ impl<T: Geometry<Ray, Intersection>> Geometry<Ray, SceneIntersection> for Scene<
             .map(|o| (o, o.intersect(ray)))
             .filter(|i| i.1.is_some())
             .map(|i| (i.0, i.1.unwrap()))
-            .min_by(|i0, i1| i0.1.cmp(&i1.1));
+            .min_by(|i0, i1| i0.1.cmp_or_equal(&i1.1));
 
         if let Some(pair) = pair {
             let color = pair.0.get_color();

@@ -24,14 +24,14 @@ intersections!(
 );
 
 impl Intersection {
-    pub fn cmp(&self, other: &Self) -> Ordering {
+    pub fn cmp_or_equal(&self, other: &Self) -> Ordering {
         debug_assert!(!self.t.is_nan());
         debug_assert!(!other.t.is_nan());
 
         if self.t < other.t {
-            Ordering::Greater
-        } else if self.t > other.t {
             Ordering::Less
+        } else if self.t > other.t {
+            Ordering::Greater
         } else {
             Ordering::Equal
         }
