@@ -60,12 +60,10 @@ impl Geometry<Ray, Intersection> for Cylinder {
         // (in front of the viewer and within the cylinder's height).
         let solutions = solve_quadratic(a, b, c);
         let t = solutions
-            .iter()
-            .filter(|sol| **sol > 0.0)
+            .filter(|sol| *sol > 0.0)
             .min_by(|s1, s2| s1.partial_cmp(s2).unwrap());
 
         if let Some(t) = t {
-            let t = *t;
             let point = ray.at(t);
             let mut normal = self.axis.dot((point - self.center) / self.radius) * self.axis;
 
