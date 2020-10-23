@@ -1,9 +1,9 @@
 use std::ops::{Add, AddAssign, Div, DivAssign, Index, IndexMut, Mul, MulAssign, Sub, SubAssign};
 
+use crate::floats;
 use image::Rgb;
 use std::fmt::Debug;
 use ultraviolet::{Mat3, Vec3};
-use crate::floats;
 
 pub mod cie;
 

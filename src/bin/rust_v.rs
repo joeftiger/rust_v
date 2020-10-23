@@ -1,6 +1,7 @@
 use clap::{App, Arg};
 use ultraviolet::Vec3;
 
+use rust_v::color::Srgb;
 use rust_v::geometry::sphere::Sphere;
 use rust_v::render::camera::Camera;
 use rust_v::render::renderer::debug::NormalRenderer;
@@ -8,7 +9,6 @@ use rust_v::render::renderer::Renderer;
 use rust_v::render::scene::Scene;
 use rust_v::render::scene_objects::SceneObject;
 use rust_v::render::window::RenderWindow;
-use rust_v::color::Srgb;
 
 const LIVE_WINDOW: &str = "LIVE_WINDOW";
 

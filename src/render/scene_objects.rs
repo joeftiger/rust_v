@@ -1,8 +1,8 @@
+use crate::color::Srgb;
 use crate::geometry::aabb::Aabb;
 use crate::geometry::intersection::Intersection;
 use crate::geometry::ray::Ray;
 use crate::geometry::Geometry;
-use crate::color::Srgb;
 
 pub struct SceneObject<T> {
     shape: T,
