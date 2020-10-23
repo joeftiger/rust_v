@@ -67,3 +67,7 @@ pub fn lt_epsilon(a: f32) -> bool {
 pub fn fast_clamp(f: f32, min: f32, max: f32) -> f32 {
     fast_min(max, fast_max(min, f))
 }
+
+pub fn fast_clamp_ar(ar: &mut [f32], min: f32, max: f32) {
+    ar.iter_mut().for_each(|value| *value = fast_clamp(*value, min, max));
+}
