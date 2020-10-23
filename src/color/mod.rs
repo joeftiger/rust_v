@@ -1,14 +1,182 @@
 use std::ops::{Add, AddAssign, Div, DivAssign, Index, IndexMut, Mul, MulAssign, Sub, SubAssign};
 
-use crate::color::srgb::Srgb;
-use crate::color::xyz::Xyz;
 use image::Rgb;
 use std::fmt::Debug;
 use ultraviolet::{Mat3, Vec3};
+use crate::floats;
 
 pub mod cie;
-pub mod srgb;
-pub mod xyz;
+
+macro_rules! colors {
+    ($($name:ident => $storage:ident, $size:expr), +) => {
+        $(
+            #[derive(Clone, Debug)]
+            pub struct $name {
+                data: [$storage; $size],
+            }
+
+            impl $name {
+                pub fn new(data: [$storage; $size]) -> Self {
+                    Self { data }
+                }
+            }
+
+            impl Add for $name {
+                type Output = Self;
+
+                fn add(self, rhs: Self) -> Self::Output {
+                    let mut data = self.data;
+                    for i in 0..data.len() {
+                        data[i] += rhs.data[i];
+                    }
+
+                    Self::new(data)
+                }
+            }
+
+            impl AddAssign for $name {
+                fn add_assign(&mut self, rhs: Self) {
+                    for i in 0..self.data.len() {
+                        self.data[i] += rhs.data[i];
+                    }
+                }
+            }
+
+            impl Sub for $name {
+                type Output = Self;
+
+                fn sub(self, rhs: Self) -> Self::Output {
+                    let mut data = self.data;
+                    for i in 0..data.len() {
+                        data[i] -= rhs.data[i];
+                    }
+
+                    Self::new(data)
+                }
+            }
+
+            impl SubAssign for $name {
+                fn sub_assign(&mut self, rhs: Self) {
+                    for i in 0..self.data.len() {
+                        self.data[i] -= rhs.data[i];
+                    }
+                }
+            }
+
+            impl Mul for $name {
+                type Output = Self;
+
+                fn mul(self, rhs: Self) -> Self::Output {
+                    let mut data = self.data;
+                    for i in 0..data.len() {
+                        data[i] *= rhs.data[i];
+                    }
+
+                    Self::new(data)
+                }
+            }
+
+            impl MulAssign for $name {
+                fn mul_assign(&mut self, rhs: Self) {
+                    for i in 0..self.data.len() {
+                        self.data[i] *= rhs.data[i];
+                    }
+                }
+            }
+
+            impl Mul<f32> for $name {
+                type Output = Self;
+
+                fn mul(self, rhs: f32) -> Self::Output {
+                    let mut data = self.data;
+                    for i in 0..data.len() {
+                        data[i] = (data[i] as f32 * rhs) as $storage;
+                    }
+
+                    Self::new(data)
+                }
+            }
+
+            impl MulAssign<f32> for $name {
+                fn mul_assign(&mut self, rhs: f32) {
+                    for i in 0..self.data.len() {
+                        self.data[i] = (self.data[i] as f32 * rhs) as $storage;
+                    }
+                }
+            }
+
+            impl Div for $name {
+                type Output = Self;
+
+                fn div(self, rhs: Self) -> Self::Output {
+                    let mut data = self.data;
+                    for i in 0..data.len() {
+                        data[i] /= rhs.data[i];
+                    }
+
+                    Self::new(data)
+                }
+            }
+
+            impl DivAssign for $name {
+                fn div_assign(&mut self, rhs: Self) {
+                    for i in 0..self.data.len() {
+                        self.data[i] /= rhs.data[i];
+                    }
+                }
+            }
+
+            impl Div<f32> for $name {
+                type Output = Self;
+
+                fn div(self, rhs: f32) -> Self::Output {
+                    let mut data = self.data;
+                    for i in 0..data.len() {
+                        data[i] = (data[i] as f32 / rhs) as $storage;
+                    }
+
+                    Self::new(data)
+                }
+            }
+
+            impl DivAssign<f32> for $name {
+                fn div_assign(&mut self, rhs: f32) {
+                    for i in 0..self.data.len() {
+                        self.data[i] = (self.data[i] as f32 / rhs) as $storage;
+                    }
+                }
+            }
+
+            impl Index<usize> for $name {
+                type Output = $storage;
+
+                fn index(&self, index: usize) -> &Self::Output {
+                    &self.data[index]
+                }
+            }
+
+            impl IndexMut<usize> for $name {
+                fn index_mut(&mut self, index: usize) -> &mut Self::Output {
+                    &mut self.data[index]
+                }
+            }
+
+            impl PartialEq for $name {
+                fn eq(&self, other: &Self) -> bool {
+                    self.data.iter().zip(other.data.iter()).all(|(d0, d1)| d0 == d1)
+                }
+            }
+
+            impl Eq for $name {}
+        )+
+    }
+}
+
+#[allow(clippy::suspicious_op_assign_impl)]
+colors!(
+    Srgb => f32, 3,
+    Xyz => f32, 3
+);
 
 /// Returns the XYZ to sRGB matrix
 pub fn xyz_to_srgb_mat() -> Mat3 {
@@ -101,4 +269,95 @@ pub trait Color:
 
     /// Converts this color to XYZ.
     fn to_xyz(&self) -> Xyz;
+}
+
+impl Srgb {
+    pub fn to_vec(&self) -> Vec3 {
+        Vec3::from(self.data)
+    }
+}
+
+impl Color for Srgb {
+    fn is_black(&self) -> bool {
+        self.data.iter().all(|value| floats::approx_zero(*value))
+    }
+
+    fn clamp(&self, min: f32, max: f32) -> Self {
+        let mut data = self.data;
+        floats::fast_clamp_ar(&mut data, min, max);
+
+        Self::new(data)
+    }
+
+    fn has_nans(&self) -> bool {
+        self.data.iter().all(|value| !value.is_nan())
+    }
+
+    fn to_rgb(&self) -> Srgb {
+        self.clone()
+    }
+
+    fn to_xyz(&self) -> Xyz {
+        Xyz::from(srgb_to_xyz_mat() * srgbs_to_linear(self.to_vec()))
+    }
+}
+
+impl Into<Rgb<u8>> for Srgb {
+    fn into(self) -> Rgb<u8> {
+        let mut data = [0; 3];
+        for i in 0..data.len() {
+            data[i] = (self.data[i] * 255.0) as u8;
+        }
+
+        Rgb::from(data)
+    }
+}
+
+impl From<Vec3> for Srgb {
+    fn from(vec: Vec3) -> Self {
+        Self::new([vec.x, vec.y, vec.z])
+    }
+}
+
+impl Xyz {
+    pub fn to_vec(&self) -> Vec3 {
+        Vec3::from(self.data)
+    }
+}
+
+impl Color for Xyz {
+    fn is_black(&self) -> bool {
+        self.data.iter().all(|value| floats::approx_zero(*value))
+    }
+
+    fn clamp(&self, min: f32, max: f32) -> Self {
+        let mut data = self.data;
+        floats::fast_clamp_ar(&mut data, min, max);
+
+        Self::new(data)
+    }
+
+    fn has_nans(&self) -> bool {
+        self.data.iter().all(|value| !value.is_nan())
+    }
+
+    fn to_rgb(&self) -> Srgb {
+        Srgb::from(linears_to_srgb(xyz_to_srgb_mat() * self.to_vec()))
+    }
+
+    fn to_xyz(&self) -> Xyz {
+        self.clone()
+    }
+}
+
+impl Into<Rgb<u8>> for Xyz {
+    fn into(self) -> Rgb<u8> {
+        self.to_rgb().into()
+    }
+}
+
+impl From<Vec3> for Xyz {
+    fn from(vec: Vec3) -> Self {
+        Self::new([vec.x, vec.y, vec.z])
+    }
 }

@@ -2,7 +2,6 @@ use std::ops::{Add, AddAssign, Div, DivAssign, Index, IndexMut, Mul, MulAssign, 
 
 use ultraviolet::Vec3;
 
-use crate::color::srgb::Srgb;
 use crate::color::{linears_to_srgb, xyz_to_srgb_mat, Color};
 use crate::floats::{approx_equal, approx_zero, fast_clamp};
 use image::Rgb;
