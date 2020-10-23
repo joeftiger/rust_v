@@ -8,9 +8,10 @@ edition = "2018"
 
 [dependencies]
 clap = ""
-ultraviolet = ""
+fastrand = ""
 image = ""
 show-image = { version = "", features = ["image", "save"] }
+ultraviolet = ""
 
 [profile.release]
 codegen-units = 1
