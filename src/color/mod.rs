@@ -305,9 +305,9 @@ impl Color for Srgb {
 impl Into<Rgb<u8>> for Srgb {
     fn into(self) -> Rgb<u8> {
         let mut data = [0; 3];
-        for i in 0..data.len() {
-            data[i] = (self.data[i] * 255.0) as u8;
-        }
+        data.iter_mut()
+            .zip(self.data.iter())
+            .for_each(|(d0, d1)| *d0 = (d1 * 255.0) as u8);
 
         Rgb::from(data)
     }
