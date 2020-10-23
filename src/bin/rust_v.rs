@@ -46,16 +46,27 @@ fn init_help<'a, 'b>() -> App<'a, 'b> {
 }
 
 fn create_renderer() -> impl Renderer {
-    let objects = vec![SceneObject::new(
-        Sphere::default(),
-        Srgb::new([1.0, 0.0, 0.0]),
-    )];
+    let mut objects = Vec::new();
+    for _ in 0..20 {
+        let x = fastrand::f32() * 10.0 - 5.0;
+        let y = fastrand::f32() * 10.0 - 5.0;
+        let z = fastrand::f32() * 10.0 - 5.0;
+        let center = Vec3::new(x, y, z);
+        let radius = fastrand::f32() * 2.0;
+        let sphere = Sphere::new(center, radius);
+        let color = Srgb::from(center);
+
+        let object = SceneObject::new(sphere, color);
+
+        objects.push(object);
+    }
+
     let scene = Scene::new(objects);
     let camera = Camera::new(
-        -2.0 * Vec3::unit_x(),
+        -10.0 * Vec3::unit_x(),
         Vec3::zero(),
         Vec3::unit_z(),
-        120.0,
+        90.0,
         1280,
         720,
     );
