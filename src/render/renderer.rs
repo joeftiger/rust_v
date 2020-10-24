@@ -36,19 +36,18 @@ pub mod debug {
         scene: Scene<T>,
         camera: Camera,
         image: RgbImage,
-        progress: (u32, u32),
+        progress: u32,
     }
 
     impl<T: Geometry<Ray, Intersection>> NormalRenderer<SceneObject<T>> {
         pub fn new(scene: Scene<SceneObject<T>>, camera: Camera) -> Self {
             let image = RgbImage::new(camera.width, camera.height);
-            let progress = (0, 0);
 
             Self {
                 scene,
                 camera,
                 image,
-                progress,
+                progress: 0,
             }
         }
 
@@ -67,27 +66,17 @@ pub mod debug {
         }
 
         fn inc_progress(&mut self) {
-            let size = (self.image.width(), self.image.height());
-
-            let mut progress = self.progress;
-            progress.0 += 1;
-
-            if progress.0 >= size.0 {
-                progress.0 = 0;
-                progress.1 += 1;
-            }
-
-            self.progress = progress;
+            self.progress += 1;
         }
     }
 
     impl<T: Geometry<Ray, Intersection>> Renderer for NormalRenderer<SceneObject<T>> {
         fn is_done(&self) -> bool {
-            self.progress.1 >= self.image.height() || self.progress.0 >= self.image.width()
+            self.progress >= self.image.width() * self.image.height()
         }
 
         fn reset(&mut self) {
-            self.progress = (0, 0);
+            self.progress = 0;
         }
 
         fn render_all(&mut self) {
@@ -103,7 +92,9 @@ pub mod debug {
 
         fn render_pass(&mut self) {
             if !self.is_done() {
-                let (x, y) = self.progress;
+                let x = self.progress % self.image.width();
+                let y = self.progress / self.image.width();
+
                 let pixel = self.render(x, y);
 
                 self.image.put_pixel(x, y, pixel);
@@ -125,19 +116,18 @@ pub struct RgbRenderer<T> {
     scene: Scene<T>,
     camera: Camera,
     image: RgbImage,
-    progress: (u32, u32),
+    progress: u32,
 }
 
 impl<T: Geometry<Ray, Intersection>> RgbRenderer<SceneObject<T>> {
     pub fn new(scene: Scene<SceneObject<T>>, camera: Camera) -> Self {
         let image = RgbImage::new(camera.width, camera.height);
-        let progress = (0, 0);
 
         Self {
             scene,
             camera,
             image,
-            progress,
+            progress: 0,
         }
     }
 
@@ -154,27 +144,17 @@ impl<T: Geometry<Ray, Intersection>> RgbRenderer<SceneObject<T>> {
     }
 
     fn inc_progress(&mut self) {
-        let size = (self.image.width(), self.image.height());
-
-        let mut progress = self.progress;
-        progress.0 += 1;
-
-        if progress.0 >= size.0 {
-            progress.0 = 0;
-            progress.1 += 1;
-        }
-
-        self.progress = progress;
+        self.progress += 1;
     }
 }
 
 impl<T: Geometry<Ray, Intersection>> Renderer for RgbRenderer<SceneObject<T>> {
     fn is_done(&self) -> bool {
-        self.progress.1 >= self.image.height() || self.progress.0 >= self.image.width()
+        self.progress >= self.image.width() * self.image.height()
     }
 
     fn reset(&mut self) {
-        self.progress = (0, 0);
+        self.progress = 0;
     }
 
     fn render_all(&mut self) {
@@ -190,7 +170,9 @@ impl<T: Geometry<Ray, Intersection>> Renderer for RgbRenderer<SceneObject<T>> {
 
     fn render_pass(&mut self) {
         if !self.is_done() {
-            let (x, y) = self.progress;
+            let x = self.progress % self.image.width();
+            let y = self.progress / self.image.width();
+
             let pixel = self.render(x, y);
 
             self.image.put_pixel(x, y, pixel);
