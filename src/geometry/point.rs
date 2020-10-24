@@ -13,7 +13,7 @@ impl Geometry<Ray, Intersection> for Point {
         Aabb::new(self.position, self.position)
     }
 
-    fn intersect(&self, ray: &Ray) -> Option<Intersection> {
+    fn intersect(&self, _: &Ray) -> Option<Intersection> {
         None
     }
 }
