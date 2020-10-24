@@ -112,7 +112,7 @@ impl<T: Renderer> RenderWindow<T> {
     fn handle_input(&mut self, input: KeyCode) {
         match input {
             KeyCode::Escape => self.should_exit = true,
-            KeyCode::Backspace => self.renderer.reset(),
+            KeyCode::Backspace => self.should_update_render = true,
             KeyCode::ArrowUp => self.rotate_camera(Direction::UP),
             KeyCode::ArrowDown => self.rotate_camera(Direction::DOWN),
             KeyCode::ArrowLeft => self.rotate_camera(Direction::LEFT),
