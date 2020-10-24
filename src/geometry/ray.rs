@@ -1,30 +1,39 @@
-use ultraviolet::{f32x4, Vec3, Vec3x4, Vec4, Vec4x4};
+use crate::color::Srgb;
+use ultraviolet::{Vec3, Vec4};
 
 macro_rules! rays {
     ($($name:ident => $vec:ident, $rad:ident, $stokes:ident, $float:ident), +) => {
         $(
-        pub struct $name {
-            pub origin: $vec,
-            pub direction: $vec,
-            pub radiance: $rad,
-            pub polarization: $stokes,
-        }
-
-        impl $name {
-            pub fn new(origin: $vec, direction: $vec, radiance: $rad, polarization: $stokes) -> Self {
-                Self { origin, direction, radiance, polarization }
+            pub struct $name {
+                pub origin: $vec,
+                pub direction: $vec,
+                pub radiance: $rad,
+                pub polarization: $stokes,
             }
 
-            pub fn at(&self, t: $float) -> $vec {
-                self.direction.mul_add($vec::new(t, t, t), self.origin)
+            impl $name {
+                pub fn new(origin: $vec, direction: $vec, radiance: $rad, polarization: $stokes) -> Self {
+                    Self { origin, direction, radiance, polarization }
+                }
+
+                pub fn set_radiance(&mut self, radiance: $rad) {
+                    self.radiance = radiance;
+                }
+
+                pub fn set_polarization(&mut self, polarization: $stokes) {
+                    self.polarization = polarization;
+                }
+
+                pub fn at(&self, t: $float) -> $vec {
+                    self.direction.mul_add($vec::new(t, t, t), self.origin)
+                }
             }
-        })+
+        )+
     }
 }
 
 rays!(
-    Ray => Vec3, Vec3, Vec4, f32,
-    Ray4 => Vec3x4, Vec3x4, Vec4x4, f32x4
+    Ray => Vec3, Srgb, Vec4, f32
 );
 
 impl Ray {
@@ -32,19 +41,8 @@ impl Ray {
         Self {
             origin,
             direction,
-            radiance: Vec3::zero(),
+            radiance: Srgb::from(Vec3::zero()),
             polarization: Vec4::zero(),
-        }
-    }
-}
-
-impl Ray4 {
-    pub fn new_simple(origin: Vec3x4, direction: Vec3x4) -> Self {
-        Self {
-            origin,
-            direction,
-            radiance: Vec3x4::zero(),
-            polarization: Vec4x4::zero(),
         }
     }
 }
