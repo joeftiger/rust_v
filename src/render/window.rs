@@ -1,15 +1,26 @@
+use std::time::{Duration, Instant};
+
 use show_image::{make_window_full, KeyCode, Window, WindowOptions};
+use ultraviolet::Rotor3;
 
 use crate::render::renderer::Renderer;
-use std::time::{Duration, Instant};
 
 const WAIT_KEY_MS: u64 = 1;
 const RENDER_TIME_MS: u64 = 500;
+const ROTATION: f32 = std::f32::consts::FRAC_PI_8; // 22.5°
 
 pub struct RenderWindow<T> {
     window: Window,
     renderer: T,
     should_exit: bool,
+    should_update_render: bool,
+}
+
+enum Direction {
+    UP,
+    DOWN,
+    LEFT,
+    RIGHT,
 }
 
 impl<T: Renderer> RenderWindow<T> {
@@ -23,6 +34,7 @@ impl<T: Renderer> RenderWindow<T> {
             window: make_window_full(options)?,
             renderer,
             should_exit: false,
+            should_update_render: false,
         })
     }
 
@@ -52,10 +64,16 @@ impl<T: Renderer> RenderWindow<T> {
         let mut done = false;
         while let Ok(event) = self.window.wait_key(wait_key) {
             if let Some(event) = event {
-                if event.key == KeyCode::Escape {
-                    self.should_exit = true;
-                    return;
-                }
+                self.handle_input(event.key);
+            }
+
+            if self.should_exit {
+                return;
+            }
+
+            if self.should_update_render {
+                self.should_update_render = false;
+                self.renderer.reset();
             }
 
             let now = Instant::now();
@@ -81,17 +99,44 @@ impl<T: Renderer> RenderWindow<T> {
 
     fn waiting_loop(&mut self, wait_key: Duration) {
         while let Ok(event) = self.window.wait_key(wait_key) {
-            if let Some(event) = event {
-                if event.key == KeyCode::Escape {
-                    self.should_exit = true;
-                    return;
-                }
-
-                if event.key == KeyCode::Backspace {
-                    self.renderer.reset();
-                    return;
-                }
+            if self.should_exit || self.should_update_render {
+                return;
             }
+
+            if let Some(event) = event {
+                self.handle_input(event.key);
+            }
+        }
+    }
+
+    fn handle_input(&mut self, input: KeyCode) {
+        match input {
+            KeyCode::Escape => self.should_exit = true,
+            KeyCode::Backspace => self.renderer.reset(),
+            KeyCode::ArrowUp => self.rotate_camera(Direction::UP),
+            KeyCode::ArrowDown => self.rotate_camera(Direction::DOWN),
+            KeyCode::ArrowLeft => self.rotate_camera(Direction::LEFT),
+            KeyCode::ArrowRight => self.rotate_camera(Direction::RIGHT),
+            _ => {}
+        }
+    }
+
+    fn rotate_camera(&mut self, dir: Direction) {
+        let camera = self.renderer.get_camera();
+        let direction = camera.position - camera.center;
+
+        let new_direction = match dir {
+            Direction::LEFT => Some(direction.rotated_by(Rotor3::from_rotation_xy(-ROTATION))),
+            Direction::RIGHT => Some(direction.rotated_by(Rotor3::from_rotation_xy(ROTATION))),
+            _ => None,
+        };
+
+        if let Some(new_direction) = new_direction {
+            camera.position = camera.center + new_direction;
+
+            // important
+            camera.reset();
+            self.should_update_render = true;
         }
     }
 }
