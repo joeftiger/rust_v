@@ -21,7 +21,7 @@ macro_rules! lights {
             impl $name {
                 pub fn ray_to(&self, position: $vec) -> $ray {
                     let mut ray = $ray::new_simple(self.position, position);
-                    ray.set_radiance(self.radiance);
+                    ray.set_radiance(self.radiance.clone());
                     ray
                 }
 
