@@ -1,7 +1,7 @@
 use std::time::{Duration, Instant};
 
 use show_image::{make_window_full, KeyCode, Window, WindowOptions};
-use ultraviolet::{Bivec3, Rotor3};
+use ultraviolet::Rotor3;
 
 use crate::render::renderer::Renderer;
 
@@ -123,31 +123,20 @@ impl<T: Renderer> RenderWindow<T> {
 
     fn rotate_camera(&mut self, dir: Direction) {
         let camera = self.renderer.get_camera();
+        let direction = camera.position - camera.center;
 
-        let rotor = match dir {
-            Direction::LEFT => {
-                Rotor3::from_angle_plane(-ROTATION, Bivec3::from_normalized_axis(camera.up))
-            }
-
-            Direction::RIGHT => {
-                Rotor3::from_angle_plane(ROTATION, Bivec3::from_normalized_axis(camera.up))
-            }
-
-            Direction::UP => {
-                Rotor3::from_angle_plane(-ROTATION, Bivec3::from_normalized_axis(camera.right))
-            }
-
-            Direction::DOWN => {
-                Rotor3::from_angle_plane(ROTATION, Bivec3::from_normalized_axis(camera.right))
-            }
+        let new_direction = match dir {
+            Direction::LEFT => Some(direction.rotated_by(Rotor3::from_rotation_xy(-ROTATION))),
+            Direction::RIGHT => Some(direction.rotated_by(Rotor3::from_rotation_xy(ROTATION))),
+            _ => None,
         };
 
-        camera.forward.rotate_by(rotor);
-        camera.up.rotate_by(rotor);
-        camera.right.rotate_by(rotor);
+        if let Some(new_direction) = new_direction {
+            camera.position = camera.center + new_direction;
 
-        // important
-        camera.reset();
-        self.should_update_render = true;
+            // important
+            camera.reset();
+            self.should_update_render = true;
+        }
     }
 }
