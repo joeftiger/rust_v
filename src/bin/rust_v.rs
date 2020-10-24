@@ -46,13 +46,18 @@ fn init_help<'a, 'b>() -> App<'a, 'b> {
 }
 
 fn create_renderer() -> impl Renderer {
+    let width = 1280.0;
+    let height = 720.0;
+    let fovy = 45.0;
+    let num = 30;
+
     let mut objects = Vec::new();
-    for _ in 0..20 {
-        let x = fastrand::f32() * 10.0 - 5.0;
-        let y = fastrand::f32() * 10.0 - 5.0;
-        let z = fastrand::f32() * 10.0 - 5.0;
+    for _ in 0..num {
+        let x = fastrand::f32() * width - width / 2.0;
+        let y = fastrand::f32() * width - width / 2.0;
+        let z = fastrand::f32() * height - height / 2.0;
         let center = Vec3::new(x, y, z);
-        let radius = fastrand::f32() * 2.0;
+        let radius = fastrand::f32() * width * 4.0 / num as f32;
         let sphere = Sphere::new(center, radius);
         let color = Srgb::from(center.normalized());
 
@@ -63,12 +68,12 @@ fn create_renderer() -> impl Renderer {
 
     let scene = Scene::new(objects);
     let camera = Camera::new(
-        -15.0 * Vec3::unit_x(),
+        -width * Vec3::unit_x(),
         Vec3::zero(),
         Vec3::unit_z(),
-        45.0,
-        1280,
-        720,
+        fovy,
+        width as u32,
+        height as u32,
     );
 
     NormalRenderer::new(scene, camera)
