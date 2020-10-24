@@ -6,6 +6,7 @@ pub mod cube;
 pub mod cylinder;
 pub mod intersection;
 pub mod lens;
+pub mod point;
 pub mod ray;
 pub mod sphere;
 
