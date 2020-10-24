@@ -63,7 +63,7 @@ fn create_renderer() -> impl Renderer {
 
     let scene = Scene::new(objects);
     let camera = Camera::new(
-        -10.0 * Vec3::unit_x(),
+        -7.0 * Vec3::unit_x(),
         Vec3::zero(),
         Vec3::unit_z(),
         90.0,
