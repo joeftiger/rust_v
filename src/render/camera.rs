@@ -11,7 +11,9 @@ use ultraviolet::Vec3;
 pub struct Camera {
     pub position: Vec3,
     pub center: Vec3,
+    pub forward: Vec3,
     pub up: Vec3,
+    pub right: Vec3,
     pub fovy: f32,
     pub width: u32,
     pub height: u32,
@@ -24,26 +26,30 @@ pub struct Camera {
 
 impl Camera {
     pub fn new(position: Vec3, center: Vec3, up: Vec3, fovy: f32, width: u32, height: u32) -> Self {
-        // compute viewing direction and distance of eye to scene center
-        let view = (center - position).normalized();
-        let dist = (center - position).mag();
+        // compute orientation and distance of eye to scene center
+        let forward = (center - position).normalized();
+        let right = forward.cross(up).normalized();
+        let up = right.cross(forward).normalized();
+        let distance = (center - position).mag();
 
         // compute width & height of the image plane
         // based on the opening angle of the camera (fovy) and the distance
         // of the eye to the near plane (dist)
         let w = width as f32;
         let h = height as f32;
-        let image_height = 2.0 * dist * f32::tan(0.5 * fovy * std::f32::consts::PI / 180.0);
+        let image_height = 2.0 * distance * f32::tan(0.5 * fovy * std::f32::consts::PI / 180.0);
         let image_width = w * image_height / h;
 
-        let x_dir = view.cross(up).normalized() * image_width / w;
-        let y_dir = x_dir.cross(view).normalized() * image_height / h;
+        let x_dir = right * image_width / w;
+        let y_dir = up * image_height / h;
         let lower_left = center - 0.5 * w * x_dir - 0.5 * h * y_dir;
 
         Self {
             position,
             center,
+            forward,
             up,
+            right,
             fovy,
             width,
             height,
@@ -58,9 +64,7 @@ impl Camera {
         let direction =
             self.lower_left + (x as f32) * self.x_dir + (y as f32) * self.y_dir - origin;
 
-        let ray = Ray::new_simple(origin, direction);
-
-        ray
+        Ray::new_simple(origin, direction)
     }
 
     pub fn reset(&mut self) {
