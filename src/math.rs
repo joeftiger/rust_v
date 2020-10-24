@@ -1,5 +1,34 @@
 use crate::floats;
 
+// pub enum Solution {
+//     Zero,
+//     One(f32),
+//     Two(f32, f32)
+// }
+//
+//
+//
+// impl Iterator for Solution {
+//     type Item = f32;
+//
+//     fn next(&mut self) -> Option<Self::Item> {
+//         match self {
+//             Self::Zero => None,
+//             Self::One(found) => {
+//                 let found = *found;
+//                 *self = Self::One(found);
+//                 Some(found)
+//             }
+//             Self::Two(first, second) => {
+//                 let first = *first;
+//                 let second = *second;
+//                 *self = Self::One(second);
+//                 Some(first)
+//             }
+//         }
+//     }
+// }
+
 pub fn solve_quadratic(a: f32, b: f32, c: f32) -> Vec<f32> {
     debug_assert!(!a.is_nan());
     debug_assert!(!b.is_nan());
