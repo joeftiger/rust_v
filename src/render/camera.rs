@@ -23,10 +23,10 @@ pub struct Camera {
 }
 
 impl Camera {
-    pub fn new(eye: Vec3, center: Vec3, up: Vec3, fovy: f32, width: u32, height: u32) -> Self {
+    pub fn new(position: Vec3, center: Vec3, up: Vec3, fovy: f32, width: u32, height: u32) -> Self {
         // compute viewing direction and distance of eye to scene center
-        let view = (center - eye).normalized();
-        let dist = (center - eye).mag();
+        let view = (center - position).normalized();
+        let dist = (center - position).mag();
 
         // compute width & height of the image plane
         // based on the opening angle of the camera (fovy) and the distance
@@ -41,7 +41,7 @@ impl Camera {
         let lower_left = center - 0.5 * w * x_dir - 0.5 * h * y_dir;
 
         Self {
-            position: eye,
+            position,
             center,
             up,
             fovy,
@@ -61,5 +61,16 @@ impl Camera {
         let ray = Ray::new_simple(origin, direction);
 
         ray
+    }
+
+    pub fn reset(&mut self) {
+        *self = Self::new(
+            self.position,
+            self.center,
+            self.up,
+            self.fovy,
+            self.width,
+            self.height,
+        );
     }
 }
