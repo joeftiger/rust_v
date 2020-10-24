@@ -54,7 +54,7 @@ fn create_renderer() -> impl Renderer {
         let center = Vec3::new(x, y, z);
         let radius = fastrand::f32() * 2.0;
         let sphere = Sphere::new(center, radius);
-        let color = Srgb::from(center);
+        let color = Srgb::from(center.normalized());
 
         let object = SceneObject::new(sphere, color);
 
