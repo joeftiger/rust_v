@@ -60,11 +60,12 @@ impl Geometry<Ray, Intersection> for Cylinder {
         // (in front of the viewer and within the cylinder's height).
         let solutions = solve_quadratic(a, b, c);
         let t = solutions
-            .filter(|sol| *sol > 0.0)
+            .iter()
+            .filter(|sol| **sol > 0.0)
             .min_by(|s1, s2| s1.partial_cmp(s2).unwrap());
 
         if let Some(t) = t {
-            let point = ray.at(t);
+            let point = ray.at(*t);
             let mut normal = self.axis.dot((point - self.center) / self.radius) * self.axis;
 
             // Choose the normal's orientation to be opposite the ray's
@@ -73,7 +74,7 @@ impl Geometry<Ray, Intersection> for Cylinder {
                 normal *= -1.0;
             }
 
-            return Some(Intersection::new(t, point, normal));
+            return Some(Intersection::new(*t, point, normal));
         }
 
         None

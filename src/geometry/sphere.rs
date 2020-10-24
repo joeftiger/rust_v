@@ -52,14 +52,15 @@ impl Geometry<Ray, Intersection> for Sphere {
 
         let solutions = solve_quadratic(a, b, c);
         let t = solutions
-            .filter(|sol| *sol > 0.0)
+            .iter()
+            .filter(|sol| **sol > 0.0)
             .min_by(|s1, s2| s1.partial_cmp(s2).unwrap());
 
         if let Some(t) = t {
-            let position = ray.at(t);
+            let position = ray.at(*t);
             let normal = (position - self.center).normalized();
 
-            Some(Intersection::new(t, position, normal))
+            Some(Intersection::new(*t, position, normal))
         } else {
             None
         }
