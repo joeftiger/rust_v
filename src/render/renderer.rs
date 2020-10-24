@@ -57,9 +57,10 @@ pub mod debug {
             let si = self.scene.intersect(&ray);
 
             if let Some(si) = si {
-                let normal = si.intersection.normal;
+                let normal = si.intersection.normal.abs();
+                let color = si.color * Srgb::from(normal);
 
-                Srgb::from(normal.abs()).into()
+                color.into()
             } else {
                 Rgb::from([0, 0, 0])
             }
