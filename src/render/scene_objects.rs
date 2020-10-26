@@ -1,16 +1,17 @@
-use crate::color::Srgb;
 use crate::geometry::aabb::Aabb;
 use crate::geometry::ray::Ray;
 use crate::geometry::{Geometry, GeometryInfo, Hit};
+use crate::render::bsdf::BSDF;
 
 pub struct SceneObject {
     shape: Box<dyn Geometry>,
-    pub color: Srgb,
+    pub bsdf: Box<dyn BSDF>,
+    pub id: usize,
 }
 
 impl SceneObject {
-    pub fn new(shape: Box<dyn Geometry>, color: Srgb) -> Self {
-        Self { shape, color }
+    pub fn new(shape: Box<dyn Geometry>, bsdf: Box<dyn BSDF>) -> Self {
+        Self { shape, bsdf, id: usize::MAX }
     }
 }
 
