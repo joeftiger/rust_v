@@ -7,10 +7,19 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+# cli help/parsing etc.
 clap = ""
+# fast random types
 fastrand = ""
+# image loading / saving
 image = ""
+# num of logical / physical cpus
+num_cpus = ""
+# parallelism
+rayon = ""
+# live image of rendering
 show-image = { version = "", features = ["image", "save"] }
+# linear algebra
 ultraviolet = ""
 
 [profile.release]
