@@ -1,16 +1,15 @@
 use crate::color::Srgb;
 use crate::geometry::aabb::Aabb;
-use crate::geometry::intersection::Intersection;
 use crate::geometry::ray::Ray;
-use crate::geometry::Geometry;
+use crate::geometry::{Geometry, Hit, GeometryInfo};
 
-pub struct SceneObject<T> {
-    shape: T,
+pub struct SceneObject {
+    shape: Box<dyn Geometry>,
     color: Srgb,
 }
 
-impl<T> SceneObject<T> {
-    pub fn new(shape: T, color: Srgb) -> Self {
+impl SceneObject {
+    pub fn new(shape: Box<dyn Geometry>, color: Srgb) -> Self {
         Self { shape, color }
     }
 
@@ -19,12 +18,16 @@ impl<T> SceneObject<T> {
     }
 }
 
-impl<T: Geometry<Ray, Intersection>> Geometry<Ray, Intersection> for SceneObject<T> {
+impl Geometry for SceneObject {
     fn bounding_box(&self) -> Aabb {
         self.shape.bounding_box()
     }
 
-    fn intersect(&self, ray: &Ray) -> Option<Intersection> {
+    fn intersect(&self, ray: &Ray) -> Option<f32> {
         self.shape.intersect(ray)
+    }
+
+    fn get_info(&self, hit: Hit) -> GeometryInfo {
+        self.shape.get_info(hit)
     }
 }
