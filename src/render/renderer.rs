@@ -1,12 +1,8 @@
-use crate::geometry::intersection::Intersection;
-use crate::geometry::ray::Ray;
-use crate::geometry::Geometry;
 use crate::render::camera::Camera;
 use crate::render::scene::Scene;
-use crate::render::scene_objects::SceneObject;
 use image::{Rgb, RgbImage};
 
-pub trait Renderer {
+pub trait Renderer: Send + Sync {
     fn is_done(&self) -> bool;
 
     fn reset(&mut self);
@@ -23,24 +19,23 @@ pub trait Renderer {
 #[allow(dead_code)]
 pub mod debug {
     use crate::color::Srgb;
-    use crate::geometry::intersection::Intersection;
-    use crate::geometry::ray::Ray;
-    use crate::geometry::Geometry;
     use crate::render::camera::Camera;
     use crate::render::renderer::Renderer;
     use crate::render::scene::Scene;
-    use crate::render::scene_objects::SceneObject;
     use image::{Rgb, RgbImage};
 
-    pub struct NormalRenderer<T> {
-        scene: Scene<T>,
+    pub struct NormalRenderer {
+        scene: Scene,
         camera: Camera,
         image: RgbImage,
         progress: u32,
     }
 
-    impl<T: Geometry<Ray, Intersection>> NormalRenderer<SceneObject<T>> {
-        pub fn new(scene: Scene<SceneObject<T>>, camera: Camera) -> Self {
+    unsafe impl Send for NormalRenderer {}
+    unsafe impl Sync for NormalRenderer {}
+
+    impl NormalRenderer {
+        pub fn new(scene: Scene, camera: Camera) -> Self {
             let image = RgbImage::new(camera.width, camera.height);
 
             Self {
@@ -57,7 +52,7 @@ pub mod debug {
             let si = self.scene.intersect(&ray);
 
             if let Some(si) = si {
-                let normal = si.intersection.normal.abs();
+                let normal = si.info.normal.abs();
                 let color = si.color * Srgb::from(normal);
 
                 color.into()
@@ -71,7 +66,7 @@ pub mod debug {
         }
     }
 
-    impl<T: Geometry<Ray, Intersection>> Renderer for NormalRenderer<SceneObject<T>> {
+    impl Renderer for NormalRenderer {
         fn is_done(&self) -> bool {
             self.progress >= self.image.width() * self.image.height()
         }
@@ -113,15 +108,18 @@ pub mod debug {
     }
 }
 
-pub struct RgbRenderer<T> {
-    scene: Scene<T>,
+pub struct RgbRenderer {
+    scene: Scene,
     camera: Camera,
     image: RgbImage,
     progress: u32,
 }
 
-impl<T: Geometry<Ray, Intersection>> RgbRenderer<SceneObject<T>> {
-    pub fn new(scene: Scene<SceneObject<T>>, camera: Camera) -> Self {
+unsafe impl Send for RgbRenderer {}
+unsafe impl Sync for RgbRenderer {}
+
+impl RgbRenderer {
+    pub fn new(scene: Scene, camera: Camera) -> Self {
         let image = RgbImage::new(camera.width, camera.height);
 
         Self {
@@ -149,7 +147,7 @@ impl<T: Geometry<Ray, Intersection>> RgbRenderer<SceneObject<T>> {
     }
 }
 
-impl<T: Geometry<Ray, Intersection>> Renderer for RgbRenderer<SceneObject<T>> {
+impl Renderer for RgbRenderer {
     fn is_done(&self) -> bool {
         self.progress >= self.image.width() * self.image.height()
     }
