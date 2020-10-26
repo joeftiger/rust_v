@@ -1,4 +1,5 @@
 use std::ops::{Add, AddAssign, Div, DivAssign, Index, IndexMut, Mul, MulAssign, Sub, SubAssign};
+use std::iter::Sum;
 
 use crate::floats;
 use image::Rgb;
@@ -8,9 +9,9 @@ use ultraviolet::{Mat3, Vec3};
 pub mod cie;
 
 macro_rules! colors {
-    ($($name:ident => $storage:ident, $size:expr), +) => {
+    ($($name:ident => $storage:ident, $mul:ident, $size:expr), +) => {
         $(
-            #[derive(Clone, Debug)]
+            #[derive(Clone, Copy, Debug, Default)]
             pub struct $name {
                 data: [$storage; $size],
             }
@@ -84,23 +85,23 @@ macro_rules! colors {
                 }
             }
 
-            impl Mul<f32> for $name {
+            impl Mul<$mul> for $name {
                 type Output = Self;
 
-                fn mul(self, rhs: f32) -> Self::Output {
+                fn mul(self, rhs: $mul) -> Self::Output {
                     let mut data = self.data;
                     for i in 0..data.len() {
-                        data[i] = (data[i] as f32 * rhs) as $storage;
+                        data[i] = data[i] * rhs;
                     }
 
                     Self::new(data)
                 }
             }
 
-            impl MulAssign<f32> for $name {
-                fn mul_assign(&mut self, rhs: f32) {
+            impl MulAssign<$mul> for $name {
+                fn mul_assign(&mut self, rhs: $mul) {
                     for i in 0..self.data.len() {
-                        self.data[i] = (self.data[i] as f32 * rhs) as $storage;
+                        self.data[i] = self.data[i] * rhs;
                     }
                 }
             }
@@ -126,23 +127,23 @@ macro_rules! colors {
                 }
             }
 
-            impl Div<f32> for $name {
+            impl Div<$mul> for $name {
                 type Output = Self;
 
-                fn div(self, rhs: f32) -> Self::Output {
+                fn div(self, rhs: $mul) -> Self::Output {
                     let mut data = self.data;
                     for i in 0..data.len() {
-                        data[i] = (data[i] as f32 / rhs) as $storage;
+                        data[i] = data[i]/ rhs;
                     }
 
                     Self::new(data)
                 }
             }
 
-            impl DivAssign<f32> for $name {
-                fn div_assign(&mut self, rhs: f32) {
+            impl DivAssign<$mul> for $name {
+                fn div_assign(&mut self, rhs: $mul) {
                     for i in 0..self.data.len() {
-                        self.data[i] = (self.data[i] as f32 / rhs) as $storage;
+                        self.data[i] = self.data[i] / rhs;
                     }
                 }
             }
@@ -168,15 +169,56 @@ macro_rules! colors {
             }
 
             impl Eq for $name {}
+
+            impl Sum for $name {
+                fn sum<I: Iterator<Item = Self>>(iter: I) -> Self {
+                    iter.fold($name::default(), |a, b| a + b)
+                }
+            }
         )+
     }
 }
 
 #[allow(clippy::suspicious_op_assign_impl)]
 colors!(
-    Srgb => f32, 3,
-    Xyz => f32, 3
+    Srgb => f32, f32, 3,
+    Xyz => f32, f32, 3
 );
+
+pub trait Color:
+Add
++ AddAssign
++ Sub
++ SubAssign
++ Mul
++ MulAssign
++ Mul<f32>
++ MulAssign<f32>
++ Div
++ DivAssign
++ Div<f32>
++ DivAssign<f32>
++ PartialEq
++ Index<usize>
++ IndexMut<usize>
++ Debug
++ Into<Rgb<u8>>
+{
+    /// Whether this color is black. Some computations can be omitted, if the color is black.
+    fn is_black(&self) -> bool;
+
+    /// Clamps the color values between min and max.
+    fn clamp(&self, min: f32, max: f32) -> Self;
+
+    /// Whether this color has NaN values.
+    fn has_nans(&self) -> bool;
+
+    /// Converts this color to sRGB.
+    fn to_rgb(&self) -> Srgb;
+
+    /// Converts this color to XYZ.
+    fn to_xyz(&self) -> Xyz;
+}
 
 /// Returns the XYZ to sRGB matrix
 pub fn xyz_to_srgb_mat() -> Mat3 {
@@ -234,41 +276,6 @@ pub fn linears_to_srgb(val: Vec3) -> Vec3 {
     debug_assert!(val.component_min() >= 0.0);
     debug_assert!(val.component_max() <= 1.0);
     val.map(linear_to_srgb)
-}
-
-pub trait Color:
-    Add
-    + AddAssign
-    + Sub
-    + SubAssign
-    + Mul
-    + MulAssign
-    + Mul<f32>
-    + MulAssign<f32>
-    + Div
-    + DivAssign
-    + Div<f32>
-    + DivAssign<f32>
-    + PartialEq
-    + Index<usize>
-    + IndexMut<usize>
-    + Debug
-    + Into<Rgb<u8>>
-{
-    /// Whether this color is black. Some computations can be omitted, if the color is black.
-    fn is_black(&self) -> bool;
-
-    /// Clamps the color values between min and max.
-    fn clamp(&self, min: f32, max: f32) -> Self;
-
-    /// Whether this color has NaN values.
-    fn has_nans(&self) -> bool;
-
-    /// Converts this color to sRGB.
-    fn to_rgb(&self) -> Srgb;
-
-    /// Converts this color to XYZ.
-    fn to_xyz(&self) -> Xyz;
 }
 
 impl Srgb {
