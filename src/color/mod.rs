@@ -242,8 +242,6 @@ pub fn srgb_to_xyz_mat() -> Mat3 {
 
 /// Converts sRGB to linear
 pub fn srgb_to_linear(val: f32) -> f32 {
-    debug_assert!(val >= 0.0);
-    debug_assert!(val <= 1.0);
     // https://entropymine.com/imageworsener/srgbformula/
     if val <= 0.040_448_237 {
         val / 12.92
@@ -254,15 +252,11 @@ pub fn srgb_to_linear(val: f32) -> f32 {
 
 /// Converts sRGB to linear
 pub fn srgbs_to_linear(val: Vec3) -> Vec3 {
-    debug_assert!(val.component_min() >= 0.0);
-    debug_assert!(val.component_max() <= 1.0);
     val.map(srgb_to_linear)
 }
 
 /// Converts linelar to sRGB
 pub fn linear_to_srgb(val: f32) -> f32 {
-    debug_assert!(val >= 0.0);
-    debug_assert!(val <= 1.0);
     // https://entropymine.com/imageworsener/srgbformula/
     if val <= 0.003_130_668_5 {
         val * 12.92
@@ -273,8 +267,6 @@ pub fn linear_to_srgb(val: f32) -> f32 {
 
 /// Converts linelar to sRGB
 pub fn linears_to_srgb(val: Vec3) -> Vec3 {
-    debug_assert!(val.component_min() >= 0.0);
-    debug_assert!(val.component_max() <= 1.0);
     val.map(linear_to_srgb)
 }
 
