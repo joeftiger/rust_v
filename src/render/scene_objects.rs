@@ -5,16 +5,12 @@ use crate::geometry::{Geometry, Hit, GeometryInfo};
 
 pub struct SceneObject {
     shape: Box<dyn Geometry>,
-    color: Srgb,
+    pub color: Srgb,
 }
 
 impl SceneObject {
     pub fn new(shape: Box<dyn Geometry>, color: Srgb) -> Self {
         Self { shape, color }
-    }
-
-    pub fn get_color(&self) -> Srgb {
-        self.color.clone()
     }
 }
 
