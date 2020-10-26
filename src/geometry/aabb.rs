@@ -1,8 +1,7 @@
 use crate::floats;
-use crate::geometry::intersection::Intersection;
 use crate::geometry::ray::Ray;
-use crate::geometry::{Container, Geometry};
-use ultraviolet::{f32x4, Vec3, Vec3x4};
+use crate::geometry::{Container, Geometry, Hit, GeometryInfo};
+use ultraviolet::Vec3;
 
 #[derive(Clone)]
 pub struct Aabb {
@@ -60,7 +59,7 @@ impl Aabb {
     }
 }
 
-impl Container<Vec3, bool> for Aabb {
+impl Container for Aabb {
     fn contains(&self, obj: Vec3) -> bool {
         let clamped = obj.clamped(self.min, self.max);
 
@@ -68,44 +67,12 @@ impl Container<Vec3, bool> for Aabb {
     }
 }
 
-impl Container<Vec3x4, f32x4> for Aabb {
-    fn contains(&self, obj: Vec3x4) -> f32x4 {
-        let min = Vec3x4::splat(self.min);
-        let max = Vec3x4::splat(self.max);
-
-        let clamped = obj.clamped(min, max);
-
-        f32x4::from([
-            if clamped[0] == obj[0] {
-                f32::from_bits(u32::MAX)
-            } else {
-                0.0
-            },
-            if clamped[1] == obj[1] {
-                f32::from_bits(u32::MAX)
-            } else {
-                0.0
-            },
-            if clamped[2] == obj[2] {
-                f32::from_bits(u32::MAX)
-            } else {
-                0.0
-            },
-            if clamped[3] == obj[3] {
-                f32::from_bits(u32::MAX)
-            } else {
-                0.0
-            },
-        ])
-    }
-}
-
-impl Geometry<Ray, Intersection> for Aabb {
+impl Geometry for Aabb {
     fn bounding_box(&self) -> Aabb {
         self.clone()
     }
 
-    fn intersect(&self, ray: &Ray) -> Option<Intersection> {
+    fn intersect(&self, ray: &Ray) -> Option<f32> {
         let t1 = (self.min - ray.origin) / ray.direction;
         let t2 = (self.max - ray.origin) / ray.direction;
 
@@ -116,27 +83,33 @@ impl Geometry<Ray, Intersection> for Aabb {
         let t_max = f32::min(t_max_vec.z, f32::min(t_max_vec.y, t_max_vec.x));
 
         if t_max < 0.0 || t_max < t_min {
-            return None;
+            None
+        } else {
+            Some(t_min)
         }
+    }
 
-        let position = ray.at(t_min);
+    fn get_info(&self, hit: Hit) -> GeometryInfo {
+        let position = hit.ray.at(hit.t);
         let normal: Vec3;
 
-        if floats::approx_equal(position.x, self.min.x) {
+        if floats::approx_equal_big(position.x, self.min.x) {
             normal = -Vec3::unit_x();
-        } else if floats::approx_equal(position.x, self.max.x) {
+        } else if floats::approx_equal_big(position.x, self.max.x) {
             normal = Vec3::unit_x();
-        } else if floats::approx_equal(position.y, self.min.y) {
+        } else if floats::approx_equal_big(position.y, self.min.y) {
             normal = -Vec3::unit_y();
-        } else if floats::approx_equal(position.y, self.max.y) {
+        } else if floats::approx_equal_big(position.y, self.max.y) {
             normal = Vec3::unit_y();
-        } else if floats::approx_equal(position.z, self.min.z) {
+        } else if floats::approx_equal_big(position.z, self.min.z) {
             normal = -Vec3::unit_z();
-        } else {
+        } else if floats::approx_equal_big(position.z, self.max.z) {
             normal = Vec3::unit_z();
+        } else {
+            panic!("f32 epsilon too small!");
         }
 
-        Some(Intersection::new(t_min, position, normal))
+        GeometryInfo::new(hit.ray, hit.t, position, normal)
     }
 }
 

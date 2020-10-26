@@ -1,23 +1,73 @@
 use crate::geometry::aabb::Aabb;
-use ultraviolet::Vec3;
+use crate::geometry::ray::{Ray, Ray4};
+use ultraviolet::{f32x4, Vec3, Vec3x4};
 
 pub mod aabb;
 pub mod cube;
 pub mod cylinder;
-pub mod intersection;
 pub mod lens;
 pub mod point;
 pub mod ray;
 pub mod sphere;
 
-pub trait Container<Tin, Tout> {
-    fn contains(&self, obj: Tin) -> Tout;
+macro_rules! geometry_info {
+    ($($name:ident => $ray:ident, $float:ident, $vec:ident), +) => {
+        $(
+            #[derive(Copy, Clone)]
+            pub struct $name {
+                pub ray: $ray,
+                pub t: $float,
+                pub point: $vec,
+                pub normal: $vec,
+            }
+
+            impl $name {
+                pub fn new(ray: $ray, t: $float, point: $vec, normal: $vec) -> Self {
+                    Self { ray, t, point, normal }
+                }
+            }
+        )+
+    };
 }
 
-pub trait Geometry<Tin, Tout> {
+geometry_info!(
+    GeometryInfo => Ray, f32, Vec3,
+    GeometryInfox4 => Ray4, f32x4, Vec3x4
+);
+
+macro_rules! hits {
+    ($($name:ident => $ray:ident, $float:ident), +) => {
+        $(
+            #[derive(Copy, Clone)]
+            pub struct $name {
+                pub ray: $ray,
+                pub t: $float,
+            }
+
+            impl $name {
+                pub fn new(ray: $ray, t: $float) -> Self {
+                    Self { ray, t }
+                }
+            }
+        )+
+    };
+}
+
+hits!(
+    Hit => Ray, f32,
+    Hitx4 => Ray4, f32x4
+);
+
+pub trait Container {
+    fn contains(&self, obj: Vec3) -> bool;
+}
+
+pub trait Geometry {
     fn bounding_box(&self) -> Aabb;
 
-    fn intersect(&self, ray: &Tin) -> Option<Tout>;
+    fn intersect(&self, ray: &Ray) -> Option<f32>;
+
+    fn get_info(&self, hit: Hit) -> GeometryInfo;
 }
 
 /// A trait that allows measuring the angle between two structs.
@@ -30,7 +80,7 @@ pub trait Geometry<Tin, Tout> {
 /// let v2 = Vec3::unit_y();
 /// let angle = v1.angle_to(v2);
 ///
-/// assert_eq!(angle, 90 * 180 / f32::PI);  // 90 degrees in radians
+/// assert_eq!(angle, 90 * 180 / f32::consts::PI);  // 90 degrees in radians
 /// ```
 pub trait AngularExt<T> {
     /// Returns the angle to the other in radians.

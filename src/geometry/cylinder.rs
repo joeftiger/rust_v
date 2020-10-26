@@ -1,9 +1,8 @@
 use ultraviolet::Vec3;
 
 use crate::geometry::aabb::Aabb;
-use crate::geometry::intersection::Intersection;
 use crate::geometry::ray::Ray;
-use crate::geometry::Geometry;
+use crate::geometry::{Geometry, Hit, GeometryInfo};
 use crate::math::solve_quadratic;
 
 /// A geometrical cylinder.
@@ -32,7 +31,7 @@ impl Default for Cylinder {
     }
 }
 
-impl Geometry<Ray, Intersection> for Cylinder {
+impl Geometry for Cylinder {
     fn bounding_box(&self) -> Aabb {
         let offset = Vec3::one() * self.radius;
 
@@ -45,7 +44,7 @@ impl Geometry<Ray, Intersection> for Cylinder {
         Aabb::new(min - offset, max + offset)
     }
 
-    fn intersect(&self, ray: &Ray) -> Option<Intersection> {
+    fn intersect(&self, ray: &Ray) -> Option<f32> {
         let dir = ray.direction;
         let oc = ray.origin - self.center;
 
@@ -60,23 +59,23 @@ impl Geometry<Ray, Intersection> for Cylinder {
         // (in front of the viewer and within the cylinder's height).
         let solutions = solve_quadratic(a, b, c);
         let t = solutions
-            .iter()
-            .filter(|sol| **sol > 0.0)
+            .into_iter()
+            .filter(|sol| *sol > 0.0)
             .min_by(|s1, s2| s1.partial_cmp(s2).unwrap());
 
-        if let Some(t) = t {
-            let point = ray.at(*t);
-            let mut normal = self.axis.dot((point - self.center) / self.radius) * self.axis;
+        t
+    }
 
-            // Choose the normal's orientation to be opposite the ray's
-            // (in case the ray intersects the inside surface)
-            if normal.dot(dir) > 0.0 {
-                normal *= -1.0;
-            }
+    fn get_info(&self, hit: Hit) -> GeometryInfo {
+        let point = hit.ray.at(hit.t);
+        let mut normal = self.axis.dot((point - self.center) / self.radius) * self.axis;
 
-            return Some(Intersection::new(*t, point, normal));
+        // Choose the normal's orientation to be opposite the ray's
+        // (in case the ray intersects the inside surface)
+        if normal.dot(hit.ray.direction) > 0.0 {
+            normal *= -1.0;
         }
 
-        None
+        GeometryInfo::new(hit.ray, hit.t, point, normal)
     }
 }

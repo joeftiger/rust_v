@@ -1,10 +1,10 @@
 use ultraviolet::{Mat4, Vec3};
 
 use crate::geometry::aabb::Aabb;
-use crate::geometry::intersection::Intersection;
 use crate::geometry::ray::Ray;
-use crate::geometry::{Container, Geometry, InversibleExt};
+use crate::geometry::{Container, Geometry, InversibleExt, Hit, GeometryInfo};
 
+#[allow(dead_code)]
 pub struct Cube {
     world_to_local: Mat4,
     local_to_world: Mat4,
@@ -55,7 +55,7 @@ impl Cube {
     }
 }
 
-impl Container<Vec3, bool> for Cube {
+impl Container for Cube {
     fn contains(&self, obj: Vec3) -> bool {
         let v = self.point_to_local_space(obj);
 
@@ -63,7 +63,7 @@ impl Container<Vec3, bool> for Cube {
     }
 }
 
-impl Geometry<Ray, Intersection> for Cube {
+impl Geometry for Cube {
     fn bounding_box(&self) -> Aabb {
         unimplemented!();
 
@@ -79,18 +79,15 @@ impl Geometry<Ray, Intersection> for Cube {
         // Aabb::new(min, max)
     }
 
-    fn intersect(&self, ray: &Ray) -> Option<Intersection> {
+    fn intersect(&self, ray: &Ray) -> Option<f32> {
         let origin = self.point_to_local_space(ray.origin);
         let direction = self.point_to_local_space(ray.direction);
+        let ray = Ray::new_simple(origin, direction);
 
-        if let Some(i) = Aabb::default().intersect(&Ray::new_simple(origin, direction)) {
-            let point = self.point_to_world_space(i.point);
-            let normal =
-                (self.local_to_world.transposed() * i.normal.into_homogeneous_vector()).xyz();
+        Aabb::default().intersect(&ray)
+    }
 
-            return Some(Intersection::new(i.t, point, normal));
-        }
-
-        None
+    fn get_info(&self, _hit: Hit) -> GeometryInfo {
+        unimplemented!()
     }
 }

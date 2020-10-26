@@ -1,9 +1,8 @@
 use crate::geometry::aabb::Aabb;
-use crate::geometry::intersection::Intersection;
 use crate::geometry::ray::Ray;
 use crate::geometry::sphere::Sphere;
-use crate::geometry::{Container, Geometry};
-use ultraviolet::{f32x4, Vec3, Vec3x4};
+use crate::geometry::{Container, Geometry, Hit, GeometryInfo};
+use ultraviolet::Vec3;
 
 pub struct BiconvexLens {
     pub sphere0: Sphere,
@@ -18,19 +17,13 @@ impl BiconvexLens {
     }
 }
 
-impl Container<Vec3, bool> for BiconvexLens {
+impl Container for BiconvexLens {
     fn contains(&self, obj: Vec3) -> bool {
         self.sphere0.contains(obj) && self.sphere1.contains(obj)
     }
 }
 
-impl Container<Vec3x4, f32x4> for BiconvexLens {
-    fn contains(&self, obj: Vec3x4) -> f32x4 {
-        self.sphere0.contains(obj) & self.sphere1.contains(obj)
-    }
-}
-
-impl Geometry<Ray, Intersection> for BiconvexLens {
+impl Geometry for BiconvexLens {
     fn bounding_box(&self) -> Aabb {
         // not tight fitting, but okay enough
         let max = self.sphere0.radius.max(self.sphere1.radius);
@@ -40,15 +33,23 @@ impl Geometry<Ray, Intersection> for BiconvexLens {
         Aabb::new(center - offset, center + offset)
     }
 
-    fn intersect(&self, ray: &Ray) -> Option<Intersection> {
-        if let Some(i0) = self.sphere0.intersect(ray) {
-            if let Some(i1) = self.sphere1.intersect(ray) {
+    fn intersect(&self, ray: &Ray) -> Option<f32> {
+        if let Some(t0) = self.sphere0.intersect(ray) {
+            if let Some(t1) = self.sphere1.intersect(ray) {
                 // note the inversion of the first intersecting sphere
-                return if i0.t < i1.t { Some(i1) } else { Some(i0) };
+                if t0 < t1 {
+                    return Some(t1);
+                } else {
+                    return Some(t0);
+                }
             }
         }
 
         None
+    }
+
+    fn get_info(&self, _hit: Hit) -> GeometryInfo {
+        unimplemented!();
     }
 }
 

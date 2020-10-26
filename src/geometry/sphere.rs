@@ -1,9 +1,8 @@
-use ultraviolet::{f32x4, Vec3, Vec3x4};
+use ultraviolet::Vec3;
 
 use crate::geometry::aabb::Aabb;
-use crate::geometry::intersection::Intersection;
 use crate::geometry::ray::Ray;
-use crate::geometry::{Container, Geometry};
+use crate::geometry::{Container, Geometry, Hit, GeometryInfo};
 use crate::math::solve_quadratic;
 
 pub struct Sphere {
@@ -19,30 +18,20 @@ impl Sphere {
     }
 }
 
-impl Container<Vec3, bool> for Sphere {
+impl Container for Sphere {
     fn contains(&self, obj: Vec3) -> bool {
         (obj - self.center).mag() < self.radius
     }
 }
 
-impl Container<Vec3x4, f32x4> for Sphere {
-    fn contains(&self, obj: Vec3x4) -> f32x4 {
-        let center = Vec3x4::splat(self.center);
-        let radius = f32x4::splat(self.radius);
-
-        let inside = (obj - center).mag();
-        inside.cmp_lt(radius)
-    }
-}
-
-impl Geometry<Ray, Intersection> for Sphere {
+impl Geometry for Sphere {
     fn bounding_box(&self) -> Aabb {
         let offset = Vec3::one() * self.radius;
 
         Aabb::new(self.center - offset, self.center + offset)
     }
 
-    fn intersect(&self, ray: &Ray) -> Option<Intersection> {
+    fn intersect(&self, ray: &Ray) -> Option<f32> {
         let dir = ray.direction;
         let oc = ray.origin - self.center;
 
@@ -52,18 +41,18 @@ impl Geometry<Ray, Intersection> for Sphere {
 
         let solutions = solve_quadratic(a, b, c);
         let t = solutions
-            .iter()
-            .filter(|sol| **sol > 0.0)
+            .into_iter()
+            .filter(|sol| *sol > 0.0)
             .min_by(|s1, s2| s1.partial_cmp(s2).unwrap());
 
-        if let Some(t) = t {
-            let position = ray.at(*t);
-            let normal = (position - self.center).normalized();
+        t
+    }
 
-            Some(Intersection::new(*t, position, normal))
-        } else {
-            None
-        }
+    fn get_info(&self, hit: Hit) -> GeometryInfo {
+        let point = hit.ray.at(hit.t);
+        let normal = (point - self.center).normalized();
+
+        GeometryInfo::new(hit.ray, hit.t, point, normal)
     }
 }
 

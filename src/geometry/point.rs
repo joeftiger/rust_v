@@ -1,19 +1,28 @@
 use crate::geometry::aabb::Aabb;
-use crate::geometry::intersection::Intersection;
 use crate::geometry::ray::Ray;
-use crate::geometry::Geometry;
+use crate::geometry::{Geometry, Hit, GeometryInfo};
 use ultraviolet::Vec3;
 
 pub struct Point {
     position: Vec3,
 }
 
-impl Geometry<Ray, Intersection> for Point {
+impl Point {
+    pub fn new(position: Vec3) -> Self {
+        Self { position }
+    }
+}
+
+impl Geometry for Point {
     fn bounding_box(&self) -> Aabb {
         Aabb::new(self.position, self.position)
     }
 
-    fn intersect(&self, _: &Ray) -> Option<Intersection> {
+    fn intersect(&self, _: &Ray) -> Option<f32> {
         None
+    }
+
+    fn get_info(&self, _hit: Hit) -> GeometryInfo {
+        unimplemented!()
     }
 }
