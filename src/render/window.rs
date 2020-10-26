@@ -7,14 +7,7 @@ use crate::render::renderer::Renderer;
 
 const WAIT_KEY_MS: u64 = 1;
 const RENDER_TIME_MS: u64 = 500;
-const ROTATION: f32 = std::f32::consts::FRAC_PI_8; // 22.5°
-
-pub struct RenderWindow<T> {
-    window: Window,
-    renderer: T,
-    should_exit: bool,
-    should_update_render: bool,
-}
+const ROTATION: f32 = std::f32::consts::PI / 16.0; // 11.25°
 
 enum Direction {
     UP,
@@ -23,8 +16,18 @@ enum Direction {
     RIGHT,
 }
 
-impl<T: Renderer> RenderWindow<T> {
-    pub fn new(name: String, mut renderer: T) -> Result<Self, String> {
+pub struct RenderWindow {
+    window: Window,
+    renderer: Box<dyn Renderer>,
+    should_exit: bool,
+    should_update_render: bool,
+}
+
+unsafe impl Send for RenderWindow {}
+unsafe impl Sync for RenderWindow {}
+
+impl RenderWindow {
+    pub fn new(name: String, mut renderer: Box<dyn Renderer>) -> Result<Self, String> {
         let camera = renderer.get_camera();
         let options = WindowOptions::default()
             .set_name(name)
@@ -61,7 +64,6 @@ impl<T: Renderer> RenderWindow<T> {
     }
 
     fn render_loop(&mut self, wait_key: Duration, render_time: Duration) {
-        let mut done = false;
         while let Ok(event) = self.window.wait_key(wait_key) {
             if let Some(event) = event {
                 self.handle_input(event.key);
@@ -78,12 +80,9 @@ impl<T: Renderer> RenderWindow<T> {
 
             let now = Instant::now();
             while now.elapsed() < render_time {
-                if self.renderer.is_done() {
-                    done = true;
+                if self.try_render_pass() {
                     break;
                 }
-
-                self.renderer.render_pass()
             }
 
             let image = self.renderer.get_image();
@@ -91,9 +90,19 @@ impl<T: Renderer> RenderWindow<T> {
                 .set_image(image, "Rendering")
                 .expect("Unable to update image in window");
 
-            if done {
+            if self.renderer.is_done() {
                 return;
             }
+        }
+    }
+
+    fn try_render_pass(&mut self) -> bool {
+        if self.renderer.is_done() {
+            true
+        } else {
+            self.renderer.render_pass();
+
+            false
         }
     }
 
