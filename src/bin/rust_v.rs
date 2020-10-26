@@ -12,6 +12,7 @@ use rust_v::render::renderer::{Renderer, RgbRenderer};
 use rust_v::render::scene::Scene;
 use rust_v::render::scene_objects::SceneObject;
 use rust_v::render::window::RenderWindow;
+use rust_v::render::bsdf::Phong;
 
 const LIVE_WINDOW: &str = "LIVE_WINDOW";
 const DEMO: &str = "demo";
@@ -104,20 +105,21 @@ fn create_random_scene_camera() -> (Scene, Camera) {
         let y = fastrand::f32() * width - width / 2.0;
         let z = fastrand::f32() * height - height / 2.0;
         let center = Vec3::new(x, y, z);
-        let color = Srgb::from(center.normalized());
+        let color = Srgb::from(center);
+        let bsdf = Phong::new(color, color, color, fastrand::f32());
 
         let object;
         if fastrand::f32() < 0.5 {
             let radius = fastrand::f32() * width * 4.0 / num as f32;
             let sphere = Sphere::new(center, radius);
 
-            object = SceneObject::new(Box::new(sphere), color);
+            object = SceneObject::new(Box::new(sphere), Box::new(bsdf));
         } else {
             let size = fastrand::f32() * height / 5.0;
             let offset = Vec3::one() * size;
             let aabb = Aabb::new(center - offset, center + offset);
 
-            object = SceneObject::new(Box::new(aabb), color);
+            object = SceneObject::new(Box::new(aabb), Box::new(bsdf));
         }
 
         objects.push(object);
@@ -126,7 +128,7 @@ fn create_random_scene_camera() -> (Scene, Camera) {
     println!("Creating lights...");
     let lights = vec![Light::new(
         Vec3::zero(),
-        Box::new(Point::new(Vec3::zero())),
+        SceneObject::new(Box::new(Point::new(Vec3::zero())), Box::new(Phong::default())),
         Srgb::from(Vec3::one()),
         width * height,
     )];
