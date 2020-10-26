@@ -17,8 +17,8 @@ impl SceneIntersection {
 }
 
 pub struct Scene {
-    objects: Vec<SceneObject>,
-    lights: Vec<Light>,
+    pub objects: Vec<SceneObject>,
+    pub lights: Vec<Light>,
 }
 
 /*
