@@ -1,29 +1,60 @@
-// use ultraviolet::Vec3;
-//
-// pub trait BSDF<TNormal, TIn, TOut> {
-//     fn apply(
-//         &self,
-//         normal_in: TNormal,
-//         normal_out: TNormal,
-//         ray_in: TIn,
-//         ray_out: TIn,
-//     ) -> TOut;
-// }
-//
-// pub struct Phong {
-//     ambient: Vec3,
-//     diffuse: Vec3,
-//     specular: Vec3,
-//     shininess: f32,
-// }
-//
-// impl Phong {
-//     pub fn new(ambient: Vec3, diffuse: Vec3, specular: Vec3, shininess: f32) -> Self {
-//         Self {
-//             ambient,
-//             diffuse,
-//             specular,
-//             shininess,
-//         }
-//     }
-// }
+use ultraviolet::Vec3;
+use crate::render::scene::{Scene, SceneIntersection};
+use crate::color::Srgb;
+use crate::render::light::Light;
+
+pub trait BSDF: Send + Sync {
+    fn apply(
+        &self,
+        scene: &Scene,
+        info: SceneIntersection,
+    ) -> Srgb;
+}
+
+#[derive(Default)]
+pub struct Phong {
+    ambient: Srgb,
+    diffuse: Srgb,
+    specular: Srgb,
+    shininess: f32,
+}
+
+impl Phong {
+    pub fn new(ambient: Srgb, diffuse: Srgb, specular: Srgb, shininess: f32) -> Self {
+        Self {
+            ambient,
+            diffuse,
+            specular,
+            shininess,
+        }
+    }
+
+    fn diffuse(&self, light: &Light, point: Vec3, normal: Vec3) -> Srgb {
+        let factor = light.direction_from(point).dot(normal) * light.intensity_at(point);
+        self.diffuse * factor
+    }
+
+    fn specular(&self, light: &Light, point: Vec3, view: Vec3) -> Srgb {
+        let factor = light.direction_to(point).dot(view).powf(self.shininess) * light.intensity_at(point);
+        self.specular * factor
+    }
+}
+
+impl BSDF for Phong {
+    fn apply(&self, scene: &Scene, intersection: SceneIntersection) -> Srgb {
+        let partial = scene.lights
+            .iter()
+            .map(|light| {
+                let diffuse = self.diffuse(light, intersection.info.point, intersection.info.normal);
+                let specular = self.specular(light, intersection.info.point, intersection.info.ray.direction);
+
+                diffuse + specular
+            })
+            .sum();
+
+        let phong = self.ambient + partial;
+        println!("{:?}", phong);
+
+        phong
+    }
+}

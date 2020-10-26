@@ -53,7 +53,7 @@ pub mod debug {
 
             if let Some(si) = si {
                 let normal = si.info.normal.abs();
-                let color = si.color * Srgb::from(normal);
+                let color = Srgb::from(normal);
 
                 color.into()
             } else {
@@ -136,7 +136,10 @@ impl RgbRenderer {
         let si = self.scene.intersect(&ray);
 
         if let Some(si) = si {
-            si.color.into()
+            let obj = self.scene.get_obj(si.obj_id);
+            let color = obj.bsdf.apply(&self.scene, si);
+
+            color.into()
         } else {
             Rgb::from([0, 0, 0])
         }
