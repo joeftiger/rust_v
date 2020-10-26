@@ -1,6 +1,7 @@
 use std::cmp::Ordering;
 
 pub const DEFAULT_EPSILON: f32 = 10.0 * f32::EPSILON;
+pub const BIG_EPSILON: f32 = 1000.0 * DEFAULT_EPSILON;
 
 #[inline(always)]
 #[must_use]
@@ -54,6 +55,12 @@ pub fn approx_equal(a: f32, b: f32) -> bool {
 
 #[inline(always)]
 #[must_use]
+pub fn approx_equal_big(a: f32, b: f32) -> bool {
+    approx_equal_tolerance(a, b, BIG_EPSILON)
+}
+
+#[inline(always)]
+#[must_use]
 pub fn lt_epsilon_tolerance(a: f32, zero_tolerance: f32) -> bool {
     a < zero_tolerance
 }
@@ -79,10 +86,10 @@ pub fn fast_clamp_ar(ar: &mut [f32], min: f32, max: f32) {
 #[must_use]
 pub fn fast_cmp(a: f32, b: f32) -> Ordering {
     if a < b {
-        Ordering::Greater
+        Ordering::Less
     } else if a > b {
-        Ordering::Less
+        Ordering::Greater
     } else {
-        Ordering::Less
+        Ordering::Equal
     }
 }
