@@ -1,3 +1,5 @@
+use std::cmp::Ordering;
+
 pub const DEFAULT_EPSILON: f32 = 10.0 * f32::EPSILON;
 
 #[inline(always)]
@@ -71,4 +73,16 @@ pub fn fast_clamp(f: f32, min: f32, max: f32) -> f32 {
 pub fn fast_clamp_ar(ar: &mut [f32], min: f32, max: f32) {
     ar.iter_mut()
         .for_each(|value| *value = fast_clamp(*value, min, max));
+}
+
+#[inline(always)]
+#[must_use]
+pub fn fast_cmp(a: f32, b: f32) -> Ordering {
+    if a < b {
+        Ordering::Greater
+    } else if a > b {
+        Ordering::Less
+    } else {
+        Ordering::Less
+    }
 }
