@@ -5,26 +5,35 @@ use crate::geometry::aabb::Aabb;
 use crate::geometry::ray::Ray;
 use crate::geometry::{Geometry, GeometryInfo, Hit};
 use std::ops::Mul;
+use crate::render::scene_objects::SceneObject;
 
 pub struct Light {
     pub point: Vec3,
-    shape: Box<dyn Geometry>,
+    pub object: SceneObject,
     pub color: Srgb,
     pub intensity: f32,
 }
 
 impl Light {
-    pub fn new(point: Vec3, shape: Box<dyn Geometry>, color: Srgb, intensity: f32) -> Self {
+    pub fn new(point: Vec3, object: SceneObject, color: Srgb, intensity: f32) -> Self {
         Self {
             point,
-            shape,
+            object,
             color,
             intensity,
         }
     }
 
+    pub fn direction_from(&self, point: Vec3) -> Vec3 {
+        (self.point - point).normalized()
+    }
+
+    pub fn direction_to(&self, point: Vec3) -> Vec3 {
+        (point - self.point).normalized()
+    }
+
     pub fn ray_to(&self, point: Vec3) -> Ray {
-        Ray::new_simple(self.point, point - self.point)
+        Ray::new_simple(self.point, self.direction_to(point))
     }
 
     pub fn distance(&self, point: Vec3) -> f32 {
@@ -46,14 +55,14 @@ impl Light {
 
 impl Geometry for Light {
     fn bounding_box(&self) -> Aabb {
-        self.shape.bounding_box()
+        self.object.bounding_box()
     }
 
     fn intersect(&self, ray: &Ray) -> Option<f32> {
-        self.shape.intersect(ray)
+        self.object.intersect(ray)
     }
 
     fn get_info(&self, hit: Hit) -> GeometryInfo {
-        self.shape.get_info(hit)
+        self.object.get_info(hit)
     }
 }
