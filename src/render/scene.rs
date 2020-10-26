@@ -1,9 +1,9 @@
 use crate::color::Srgb;
+use crate::floats;
 use crate::geometry::ray::Ray;
 use crate::geometry::{Geometry, GeometryInfo, Hit};
-use crate::render::scene_objects::SceneObject;
 use crate::render::light::Light;
-use crate::floats;
+use crate::render::scene_objects::SceneObject;
 
 pub struct SceneIntersection {
     pub info: GeometryInfo,
@@ -46,14 +46,16 @@ impl Scene {
     }
 
     pub fn intersect(&self, ray: &Ray) -> Option<SceneIntersection> {
-        let object = self.objects
+        let object = self
+            .objects
             .iter()
             .map(|object| SceneFilter::new(object, object.intersect(ray)))
             .filter(|filter| filter.t.is_some())
             .map(|filter| SceneFilter::new(filter.obj, filter.t.unwrap()))
             .min_by(|a, b| floats::fast_cmp(a.t, b.t));
 
-        let light = self.lights
+        let light = self
+            .lights
             .iter()
             .map(|object| SceneFilter::new(object, object.intersect(ray)))
             .filter(|filter| filter.t.is_some())

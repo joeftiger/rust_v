@@ -2,7 +2,7 @@ use ultraviolet::{Mat4, Vec3};
 
 use crate::geometry::aabb::Aabb;
 use crate::geometry::ray::Ray;
-use crate::geometry::{Container, Geometry, InversibleExt, Hit, GeometryInfo};
+use crate::geometry::{Container, Geometry, GeometryInfo, Hit, InversibleExt};
 
 #[allow(dead_code)]
 pub struct Cube {

@@ -1,6 +1,6 @@
 use crate::floats;
 use crate::geometry::ray::Ray;
-use crate::geometry::{Container, Geometry, Hit, GeometryInfo};
+use crate::geometry::{Container, Geometry, GeometryInfo, Hit};
 use ultraviolet::Vec3;
 
 #[derive(Clone)]

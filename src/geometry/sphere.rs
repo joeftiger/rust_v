@@ -2,7 +2,7 @@ use ultraviolet::Vec3;
 
 use crate::geometry::aabb::Aabb;
 use crate::geometry::ray::Ray;
-use crate::geometry::{Container, Geometry, Hit, GeometryInfo};
+use crate::geometry::{Container, Geometry, GeometryInfo, Hit};
 use crate::math::solve_quadratic;
 
 pub struct Sphere {

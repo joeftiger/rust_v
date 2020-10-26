@@ -3,7 +3,7 @@ use ultraviolet::Vec3;
 use crate::color::Srgb;
 use crate::geometry::aabb::Aabb;
 use crate::geometry::ray::Ray;
-use crate::geometry::{Geometry, Hit, GeometryInfo};
+use crate::geometry::{Geometry, GeometryInfo, Hit};
 use std::ops::Mul;
 
 pub struct Light {
@@ -15,7 +15,12 @@ pub struct Light {
 
 impl Light {
     pub fn new(point: Vec3, shape: Box<dyn Geometry>, color: Srgb, intensity: f32) -> Self {
-        Self { point, shape, color, intensity }
+        Self {
+            point,
+            shape,
+            color,
+            intensity,
+        }
     }
 
     pub fn ray_to(&self, point: Vec3) -> Ray {

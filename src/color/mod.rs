@@ -1,5 +1,5 @@
-use std::ops::{Add, AddAssign, Div, DivAssign, Index, IndexMut, Mul, MulAssign, Sub, SubAssign};
 use std::iter::Sum;
+use std::ops::{Add, AddAssign, Div, DivAssign, Index, IndexMut, Mul, MulAssign, Sub, SubAssign};
 
 use crate::floats;
 use image::Rgb;
@@ -186,23 +186,23 @@ colors!(
 );
 
 pub trait Color:
-Add
-+ AddAssign
-+ Sub
-+ SubAssign
-+ Mul
-+ MulAssign
-+ Mul<f32>
-+ MulAssign<f32>
-+ Div
-+ DivAssign
-+ Div<f32>
-+ DivAssign<f32>
-+ PartialEq
-+ Index<usize>
-+ IndexMut<usize>
-+ Debug
-+ Into<Rgb<u8>>
+    Add
+    + AddAssign
+    + Sub
+    + SubAssign
+    + Mul
+    + MulAssign
+    + Mul<f32>
+    + MulAssign<f32>
+    + Div
+    + DivAssign
+    + Div<f32>
+    + DivAssign<f32>
+    + PartialEq
+    + Index<usize>
+    + IndexMut<usize>
+    + Debug
+    + Into<Rgb<u8>>
 {
     /// Whether this color is black. Some computations can be omitted, if the color is black.
     fn is_black(&self) -> bool;
