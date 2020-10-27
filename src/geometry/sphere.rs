@@ -52,7 +52,7 @@ impl Geometry for Sphere {
         let point = hit.ray.at(hit.t);
         let normal = (point - self.center).normalized();
 
-        GeometryInfo::new(hit.ray, hit.t, point, normal)
+        GeometryInfo::new(hit, point, normal)
     }
 }
 

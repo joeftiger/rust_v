@@ -109,7 +109,7 @@ impl Geometry for Aabb {
             panic!("f32 epsilon too small!");
         }
 
-        GeometryInfo::new(hit.ray, hit.t, position, normal)
+        GeometryInfo::new(hit, position, normal)
     }
 }
 

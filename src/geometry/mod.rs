@@ -1,6 +1,7 @@
 use crate::geometry::aabb::Aabb;
 use crate::geometry::ray::{Ray, Ray4};
 use ultraviolet::{f32x4, Vec3, Vec3x4};
+use crate::floats;
 
 pub mod aabb;
 pub mod cube;
@@ -9,31 +10,6 @@ pub mod lens;
 pub mod point;
 pub mod ray;
 pub mod sphere;
-
-macro_rules! geometry_info {
-    ($($name:ident => $ray:ident, $float:ident, $vec:ident), +) => {
-        $(
-            #[derive(Copy, Clone)]
-            pub struct $name {
-                pub ray: $ray,
-                pub t: $float,
-                pub point: $vec,
-                pub normal: $vec,
-            }
-
-            impl $name {
-                pub fn new(ray: $ray, t: $float, point: $vec, normal: $vec) -> Self {
-                    Self { ray, t, point, normal }
-                }
-            }
-        )+
-    };
-}
-
-geometry_info!(
-    GeometryInfo => Ray, f32, Vec3,
-    GeometryInfox4 => Ray4, f32x4, Vec3x4
-);
 
 macro_rules! hits {
     ($($name:ident => $ray:ident, $float:ident), +) => {
@@ -55,7 +31,33 @@ macro_rules! hits {
 
 hits!(
     Hit => Ray, f32,
-    Hitx4 => Ray4, f32x4
+    Hit4 => Ray4, f32x4
+);
+
+macro_rules! geometry_info {
+    ($($name:ident => $hit:ident, $ray:ident, $float:ident, $vec:ident, $offset_epsilon:expr), +) => {
+        $(
+            #[derive(Copy, Clone)]
+            pub struct $name {
+                pub ray: $ray,
+                pub t: $float,
+                pub point: $vec,
+                pub normal: $vec,
+                pub offset_epsilon: $float,
+            }
+
+            impl $name {
+                pub fn new(hit: $hit, point: $vec, normal: $vec) -> Self {
+                    Self { ray: hit.ray, t: hit.t, point, normal, offset_epsilon: $offset_epsilon }
+                }
+            }
+        )+
+    };
+}
+
+geometry_info!(
+    GeometryInfo => Hit, Ray, f32, Vec3, floats::DEFAULT_EPSILON,
+    GeometryInfox4 => Hit4, Ray4, f32x4, Vec3x4, f32x4::splat(floats::DEFAULT_EPSILON)
 );
 
 pub trait Container {

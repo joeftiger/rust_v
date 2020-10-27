@@ -76,6 +76,6 @@ impl Geometry for Cylinder {
             normal *= -1.0;
         }
 
-        GeometryInfo::new(hit.ray, hit.t, point, normal)
+        GeometryInfo::new(hit, point, normal)
     }
 }
