@@ -18,6 +18,7 @@ macro_rules! colors {
 
             impl $name {
                 pub fn new(data: [$storage; $size]) -> Self {
+                    debug_assert!(data.iter().all(|f| !f.is_nan()));
                     Self { data }
                 }
             }
