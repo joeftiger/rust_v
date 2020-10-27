@@ -58,12 +58,17 @@ impl Geometry for Cylinder {
         // Find the closest valid solution
         // (in front of the viewer and within the cylinder's height).
         let solutions = solve_quadratic(a, b, c);
-        let t = solutions
-            .into_iter()
-            .filter(|sol| *sol > 0.0)
-            .min_by(|s1, s2| s1.partial_cmp(s2).unwrap());
-
-        t
+        if let Some((t0, t1)) = solutions {
+            let t_min = t0.min(t1);
+            
+            if ray.t < t_min {
+                None
+            } else {
+                Some(t0.min(t1))
+            }
+        } else {
+            None
+        }
     }
 
     fn get_info(&self, hit: Hit) -> GeometryInfo {

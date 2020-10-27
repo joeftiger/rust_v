@@ -40,12 +40,17 @@ impl Geometry for Sphere {
         let c = oc.dot(oc) - self.radius * self.radius;
 
         let solutions = solve_quadratic(a, b, c);
-        let t = solutions
-            .into_iter()
-            .filter(|sol| *sol > 0.0)
-            .min_by(|s1, s2| s1.partial_cmp(s2).unwrap());
+        if let Some((t0, t1)) = solutions {
+            let t_min = t0.min(t1);
 
-        t
+            if ray.t < t_min {
+                None
+            } else {
+                Some(t0.min(t1))
+            }
+        } else {
+            None
+        }
     }
 
     fn get_info(&self, hit: Hit) -> GeometryInfo {

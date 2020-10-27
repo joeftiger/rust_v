@@ -82,7 +82,7 @@ impl Geometry for Cube {
     fn intersect(&self, ray: &Ray) -> Option<f32> {
         let origin = self.point_to_local_space(ray.origin);
         let direction = self.point_to_local_space(ray.direction);
-        let ray = Ray::new_simple(origin, direction);
+        let ray = Ray::new(origin, direction, f32::INFINITY);
 
         Aabb::default().intersect(&ray)
     }

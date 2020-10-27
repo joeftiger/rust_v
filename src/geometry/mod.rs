@@ -34,10 +34,25 @@ hits!(
     Hit4 => Ray4, f32x4
 );
 
+impl From<Ray> for Hit {
+    fn from(ray: Ray) -> Self {
+        Self::new(ray, ray.t)
+    }
+}
+
+impl From<Ray4> for Hit4 {
+    fn from(ray: Ray4) -> Self {
+        Self::new(ray, ray.t)
+    }
+}
+
 macro_rules! geometry_info {
     ($($name:ident => $hit:ident, $ray:ident, $float:ident, $vec:ident, $offset_epsilon:expr), +) => {
         $(
-            /// Consists of (`ray`, `t`, `point`, `normal`, `offset_epsilon`)
+            /// Consists of:
+            /// - ray: Ray
+            /// - t, offset_epsilon: f32
+            /// - normal: Vec3
             #[derive(Copy, Clone)]
             pub struct $name {
                 pub ray: $ray,
@@ -92,7 +107,7 @@ pub trait Geometry: Send + Sync {
 /// let v2 = Vec3::unit_y();
 /// let angle = v1.angle_to(v2);
 ///
-/// assert_eq!(angle, 90 * 180 / f32::consts::PI);  // 90 degrees in radians
+/// assert_eq!(angle, 90.0 * 180.0 / f32::consts::PI);  // 90 degrees in radians
 /// ```
 pub trait AngularExt<T> {
     /// Returns the angle to the other in radians.

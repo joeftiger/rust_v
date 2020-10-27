@@ -42,6 +42,12 @@ impl Aabb {
         (self.max + self.min) / 2.0
     }
 
+    #[inline]
+    #[must_use]
+    pub fn max_radius(&self) -> f32 {
+        (self.center() - self.min).mag()
+    }
+
     /// Creates the inner join / intersection of both aabbs.
     pub fn inner_join(&self, other: &Self) -> Self {
         let min = self.min.max_by_component(other.min);
@@ -82,7 +88,7 @@ impl Geometry for Aabb {
         let t_min = f32::max(t_min_vec.z, f32::max(t_min_vec.y, t_min_vec.x));
         let t_max = f32::min(t_max_vec.z, f32::min(t_max_vec.y, t_max_vec.x));
 
-        if t_max < 0.0 || t_max < t_min {
+        if t_max < 0.0 || t_max < t_min || ray.t < t_min {
             None
         } else {
             Some(t_min)
@@ -93,18 +99,18 @@ impl Geometry for Aabb {
         let position = hit.ray.at(hit.t);
         let normal: Vec3;
 
-        if floats::approx_equal_big(position.x, self.min.x) {
-            normal = -Vec3::unit_x();
-        } else if floats::approx_equal_big(position.x, self.max.x) {
-            normal = Vec3::unit_x();
-        } else if floats::approx_equal_big(position.y, self.min.y) {
-            normal = -Vec3::unit_y();
-        } else if floats::approx_equal_big(position.y, self.max.y) {
-            normal = Vec3::unit_y();
-        } else if floats::approx_equal_big(position.z, self.min.z) {
+        if floats::approx_equal_big(position.x, self.min.x) {           // back
             normal = -Vec3::unit_z();
-        } else if floats::approx_equal_big(position.z, self.max.z) {
+        } else if floats::approx_equal_big(position.x, self.max.x) {    // front
             normal = Vec3::unit_z();
+        } else if floats::approx_equal_big(position.y, self.min.y) {    // down
+            normal = -Vec3::unit_y();
+        } else if floats::approx_equal_big(position.y, self.max.y) {    // up
+            normal = Vec3::unit_y();
+        } else if floats::approx_equal_big(position.z, self.min.z) {    // left
+            normal = -Vec3::unit_x();
+        } else if floats::approx_equal_big(position.z, self.max.z) {    // right
+            normal = Vec3::unit_x();
         } else {
             panic!("f32 epsilon too small!");
         }
