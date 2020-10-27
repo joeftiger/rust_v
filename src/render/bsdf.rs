@@ -21,6 +21,7 @@ pub struct Phong {
 
 impl Phong {
     pub fn new(ambient: Srgb, diffuse: Srgb, specular: Srgb, shininess: f32) -> Self {
+        debug_assert!(!shininess.is_nan());
         Self {
             ambient,
             diffuse,
@@ -35,7 +36,11 @@ impl Phong {
     }
 
     fn specular(&self, light: &Light, point: Vec3, view: Vec3) -> Srgb {
-        let factor = light.direction_to(point).dot(view).powf(self.shininess) * light.intensity_at(point);
+        // FIXME: This is negative at times, lading to factor=NaN
+        let dot = light.direction_to(point).dot(view);
+
+        let factor = dot.powf(self.shininess);
+        debug_assert!(!factor.is_nan());
         self.specular * factor
     }
 }
