@@ -1,6 +1,7 @@
 use crate::render::camera::Camera;
 use crate::render::scene::Scene;
 use image::{Rgb, RgbImage};
+use ultraviolet::Vec3;
 
 pub trait Renderer: Send + Sync {
     fn is_done(&self) -> bool;
@@ -137,7 +138,7 @@ impl RgbRenderer {
 
         if let Some(si) = si {
             let obj = self.scene.get_obj(si.obj_id);
-            let color = obj.bsdf.apply(&self.scene, si);
+            let color = obj.bxdf.apply(Vec3::default(), Vec3::default());
 
             color.into()
         } else {
