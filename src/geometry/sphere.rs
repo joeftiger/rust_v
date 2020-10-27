@@ -46,7 +46,7 @@ impl Geometry for Sphere {
             if ray.t < t_min {
                 None
             } else {
-                Some(t0.min(t1))
+                Some(t_min)
             }
         } else {
             None
