@@ -1,17 +1,17 @@
 use crate::geometry::aabb::Aabb;
 use crate::geometry::ray::Ray;
 use crate::geometry::{Geometry, GeometryInfo, Hit};
-use crate::render::bsdf::BSDF;
+use crate::render::bxdf::BxDF;
 
 pub struct SceneObject {
     shape: Box<dyn Geometry>,
-    pub bsdf: Box<dyn BSDF>,
+    pub bxdf: Box<dyn BxDF>,
     pub id: usize,
 }
 
 impl SceneObject {
-    pub fn new(shape: Box<dyn Geometry>, bsdf: Box<dyn BSDF>) -> Self {
-        Self { shape, bsdf, id: usize::MAX }
+    pub fn new(shape: Box<dyn Geometry>, bxdf: Box<dyn BxDF>) -> Self {
+        Self { shape, bxdf, id: usize::MAX }
     }
 }
 
