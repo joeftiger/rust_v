@@ -37,6 +37,7 @@ hits!(
 macro_rules! geometry_info {
     ($($name:ident => $hit:ident, $ray:ident, $float:ident, $vec:ident, $offset_epsilon:expr), +) => {
         $(
+            /// Consists of (`ray`, `t`, `point`, `normal`, `offset_epsilon`)
             #[derive(Copy, Clone)]
             pub struct $name {
                 pub ray: $ray,
@@ -49,6 +50,15 @@ macro_rules! geometry_info {
             impl $name {
                 pub fn new(hit: $hit, point: $vec, normal: $vec) -> Self {
                     Self { ray: hit.ray, t: hit.t, point, normal, offset_epsilon: $offset_epsilon }
+                }
+
+                /// Creates a ray from `self.point` into the given direction, offset by `self.offset_epsilon`.
+                pub fn create_ray(&self, dir: $vec) -> $ray {
+                    let mut ray = self.ray;
+                    ray.origin = self.point + self.normal * self.offset_epsilon;
+                    ray.direction = dir;
+
+                    ray
                 }
             }
         )+
