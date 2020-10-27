@@ -3,7 +3,6 @@ use ultraviolet::Vec3;
 
 use rust_v::color::Srgb;
 use rust_v::geometry::aabb::Aabb;
-use rust_v::geometry::point::Point;
 use rust_v::geometry::sphere::Sphere;
 use rust_v::render::camera::Camera;
 use rust_v::render::light::Light;
@@ -12,7 +11,8 @@ use rust_v::render::renderer::{Renderer, RgbRenderer};
 use rust_v::render::scene::Scene;
 use rust_v::render::scene_objects::SceneObject;
 use rust_v::render::window::RenderWindow;
-use rust_v::render::bsdf::Phong;
+use rust_v::render::bxdf::LambertianReflection;
+use rust_v::cornell_box;
 
 const LIVE_WINDOW: &str = "LIVE_WINDOW";
 const DEMO: &str = "demo";
@@ -25,7 +25,7 @@ fn main() {
     let matches = app.clone().get_matches();
 
     if let Some(demo) = matches.subcommand_matches(DEMO) {
-        let (scene, camera) = create_random_scene_camera();
+        let (scene, camera) = create_cornell_box();
 
         let mut renderer: Box<dyn Renderer>;
         if demo.is_present(DEBUG_RENDERER) {
@@ -75,7 +75,7 @@ fn init_help<'a, 'b>() -> App<'a, 'b> {
     let demo = SubCommand::with_name(DEMO)
         .version("0.0.1")
         .author("Julius Oeftiger")
-        .about("A randomized demo scene")
+        .about("The cornell box demo scene")
         .arg(
             Arg::with_name(DEBUG_RENDERER)
                 .long("--debug")
@@ -92,48 +92,50 @@ fn init_help<'a, 'b>() -> App<'a, 'b> {
     app.subcommand(demo)
 }
 
+fn create_cornell_box() -> (Scene, Camera) {
+    (cornell_box::create_box(), cornell_box::create_camera(900, 900))
+}
+
+#[allow(dead_code)]
 fn create_random_scene_camera() -> (Scene, Camera) {
     let width = 1280.0;
     let height = 720.0;
     let fovy = 45.0;
     let num = 30;
 
+    let mut scene = Scene::default();
+
     println!("Creating {} random objects...", num);
-    let mut objects = Vec::new();
     for _ in 0..num {
         let x = fastrand::f32() * width - width / 2.0;
         let y = fastrand::f32() * width - width / 2.0;
         let z = fastrand::f32() * height - height / 2.0;
         let center = Vec3::new(x, y, z);
         let color = Srgb::from(center);
-        let bsdf = Phong::new(color, color, color, fastrand::f32());
+        let bxdf = LambertianReflection(color);
 
         let object;
         if fastrand::f32() < 0.5 {
             let radius = fastrand::f32() * width * 4.0 / num as f32;
             let sphere = Sphere::new(center, radius);
 
-            object = SceneObject::new(Box::new(sphere), Box::new(bsdf));
+            object = SceneObject::new(Box::new(sphere), Box::new(bxdf));
         } else {
             let size = fastrand::f32() * height / 5.0;
             let offset = Vec3::one() * size;
             let aabb = Aabb::new(center - offset, center + offset);
 
-            object = SceneObject::new(Box::new(aabb), Box::new(bsdf));
+            object = SceneObject::new(Box::new(aabb), Box::new(bxdf));
         }
 
-        objects.push(object);
+        scene.push_obj(object);
     }
 
     println!("Creating lights...");
-    let lights = vec![Light::new(
-        Vec3::zero(),
-        SceneObject::new(Box::new(Point::new(Vec3::zero())), Box::new(Phong::default())),
-        Srgb::from(Vec3::one()),
-        width * height,
-    )];
+    let light = Light::new(Vec3::zero(), Srgb::from(Vec3::one()), );
 
-    let scene = Scene::new(objects, lights);
+    scene.push_light(light);
+
     let camera = Camera::new(
         -width * Vec3::unit_x(),
         Vec3::zero(),
