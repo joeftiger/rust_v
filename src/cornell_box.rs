@@ -18,7 +18,7 @@ pub const THICKNESS: f32 = 0.001;
 
 pub const RADIUS: f32 = 1.0;
 
-pub const FOVY: f32 = 75.0;
+pub const FOVY: f32 = 70.0;
 
 pub fn create_box() -> Scene {
     let mut scene = Scene::default();
