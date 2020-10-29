@@ -137,3 +137,9 @@ impl Default for Aabb {
         Self::new(min, max)
     }
 }
+
+impl PartialEq for Aabb {
+    fn eq(&self, other: &Self) -> bool {
+        self.min == other.min && self.max == other.max
+    }
+}
