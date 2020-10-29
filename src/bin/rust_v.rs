@@ -47,7 +47,6 @@ fn main() {
         }
     } else {
         app.print_help().expect("Could not print help message");
-        return;
     }
 }
 
