@@ -5,6 +5,7 @@ use crate::geometry::ray::Ray;
 use crate::geometry::{Container, Geometry, GeometryInfo, Hit};
 use crate::math::solve_quadratic;
 
+#[derive(Debug, PartialEq)]
 pub struct Sphere {
     pub center: Vec3,
     pub radius: f32,

@@ -4,6 +4,7 @@ use crate::geometry::sphere::Sphere;
 use crate::geometry::{Container, Geometry, GeometryInfo, Hit};
 use ultraviolet::Vec3;
 
+#[derive(Debug, PartialEq)]
 pub struct BiconvexLens {
     pub sphere0: Sphere,
     pub sphere1: Sphere,

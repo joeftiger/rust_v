@@ -3,7 +3,7 @@ use crate::geometry::ray::Ray;
 use crate::geometry::{Container, Geometry, GeometryInfo, Hit};
 use ultraviolet::Vec3;
 
-#[derive(Clone)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct Aabb {
     pub min: Vec3,
     pub max: Vec3,
@@ -135,11 +135,5 @@ impl Default for Aabb {
         let max = Vec3::one();
 
         Self::new(min, max)
-    }
-}
-
-impl PartialEq for Aabb {
-    fn eq(&self, other: &Self) -> bool {
-        self.min == other.min && self.max == other.max
     }
 }

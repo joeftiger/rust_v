@@ -6,7 +6,7 @@ use crate::geometry::{Geometry, GeometryInfo, Hit};
 use crate::math::solve_quadratic;
 
 /// A geometrical cylinder.
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct Cylinder {
     pub center: Vec3,
     pub axis: Vec3,
@@ -82,14 +82,5 @@ impl Geometry for Cylinder {
         }
 
         GeometryInfo::new(hit, point, normal)
-    }
-}
-
-impl PartialEq for Cylinder {
-    fn eq(&self, other: &Self) -> bool {
-        self.center == other.center
-            && self.axis == other.axis
-            && self.radius == other.radius
-            && self.height == other.height
     }
 }
