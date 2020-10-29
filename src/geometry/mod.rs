@@ -10,6 +10,7 @@ pub mod lens;
 pub mod point;
 pub mod ray;
 pub mod sphere;
+mod tests;
 
 macro_rules! hits {
     ($($name:ident => $ray:ident, $float:ident), +) => {
