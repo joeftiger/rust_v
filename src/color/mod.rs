@@ -92,7 +92,7 @@ macro_rules! colors {
                 fn mul(self, rhs: $mul) -> Self::Output {
                     let mut data = self.data;
                     for i in 0..data.len() {
-                        data[i] = data[i] * rhs;
+                        data[i] *= rhs;
                     }
 
                     Self::new(data)
@@ -102,7 +102,7 @@ macro_rules! colors {
             impl MulAssign<$mul> for $name {
                 fn mul_assign(&mut self, rhs: $mul) {
                     for i in 0..self.data.len() {
-                        self.data[i] = self.data[i] * rhs;
+                        self.data[i] *=  rhs;
                     }
                 }
             }
@@ -134,7 +134,7 @@ macro_rules! colors {
                 fn div(self, rhs: $mul) -> Self::Output {
                     let mut data = self.data;
                     for i in 0..data.len() {
-                        data[i] = data[i]/ rhs;
+                        data[i] /= rhs;
                     }
 
                     Self::new(data)
@@ -144,7 +144,7 @@ macro_rules! colors {
             impl DivAssign<$mul> for $name {
                 fn div_assign(&mut self, rhs: $mul) {
                     for i in 0..self.data.len() {
-                        self.data[i] = self.data[i] / rhs;
+                        self.data[i] /= rhs;
                     }
                 }
             }
@@ -180,7 +180,6 @@ macro_rules! colors {
     }
 }
 
-#[allow(clippy::suspicious_op_assign_impl)]
 colors!(
     Srgb => f32, f32, 3,
     Xyz => f32, f32, 3
