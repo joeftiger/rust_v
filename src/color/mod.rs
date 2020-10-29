@@ -299,7 +299,7 @@ impl Srgb {
 
 impl Color for Srgb {
     fn is_black(&self) -> bool {
-        self.data.iter().all(|value| floats::approx_zero(*value))
+        floats::approx_zero_ar(&self.data)
     }
 
     fn clamp(&self, min: f32, max: f32) -> Self {
@@ -314,7 +314,7 @@ impl Color for Srgb {
     }
 
     fn to_rgb(&self) -> Srgb {
-        self.clone()
+        *self
     }
 
     fn to_xyz(&self) -> Xyz {
@@ -366,7 +366,7 @@ impl Color for Xyz {
     }
 
     fn to_xyz(&self) -> Xyz {
-        self.clone()
+        *self
     }
 }
 
