@@ -84,3 +84,12 @@ impl Geometry for Cylinder {
         GeometryInfo::new(hit, point, normal)
     }
 }
+
+impl PartialEq for Cylinder {
+    fn eq(&self, other: &Self) -> bool {
+        self.center == other.center
+            && self.axis == other.axis
+            && self.radius == other.radius
+            && self.height == other.height
+    }
+}
