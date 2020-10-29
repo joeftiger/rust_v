@@ -12,8 +12,8 @@ Run: \
 For a release (optimized) version, append `--release`: \
 `$  cargo build --package rust_v --bin rust_v --release`
 
-If you want to run the program immediately, use \
-`$  cargo run --package rust_v --bin rust_v`
+If you want to run the program immediately (help), use \
+`$  cargo run --package rust_v --bin rust_v -- --help`
 
 
 ## Jetbrains IDEs
