@@ -35,6 +35,11 @@ pub fn approx_zero(value: f32) -> bool {
     approx_zero_tolerance(value, DEFAULT_EPSILON)
 }
 
+#[must_use]
+pub fn approx_zero_ar(ar: &[f32]) -> bool {
+    ar.iter().all(|a| approx_zero(*a))
+}
+
 #[inline(always)]
 #[must_use]
 pub fn approx_equal_tolerance(a: f32, b: f32, zero_tolerance: f32) -> bool {
@@ -51,6 +56,11 @@ pub fn approx_equal_tolerance(a: f32, b: f32, zero_tolerance: f32) -> bool {
 #[must_use]
 pub fn approx_equal(a: f32, b: f32) -> bool {
     approx_equal_tolerance(a, b, DEFAULT_EPSILON)
+}
+
+#[must_use]
+pub fn approx_equal_ar(ar: &mut [f32], approx: f32) -> bool {
+    ar.iter().all(|a| approx_equal(*a, approx))
 }
 
 #[inline(always)]
