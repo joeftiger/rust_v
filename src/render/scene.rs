@@ -65,6 +65,9 @@ impl Scene {
 
 impl Default for Scene {
     fn default() -> Self {
-        Self { objects: Store::default(), lights: Vec::default() }
+        Self {
+            objects: Store::default(),
+            lights: Vec::default(),
+        }
     }
 }

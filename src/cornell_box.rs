@@ -1,12 +1,12 @@
+use crate::color::Srgb;
+use crate::geometry::aabb::Aabb;
+use crate::geometry::sphere::Sphere;
+use crate::render::bxdf::LambertianReflection;
+use crate::render::camera::Camera;
+use crate::render::light::Light;
 use crate::render::scene::Scene;
 use crate::render::scene_objects::SceneObject;
-use crate::geometry::aabb::Aabb;
 use ultraviolet::Vec3;
-use crate::color::Srgb;
-use crate::render::bxdf::LambertianReflection;
-use crate::render::light::Light;
-use crate::render::camera::Camera;
-use crate::geometry::sphere::Sphere;
 
 pub const LEFT_WALL: f32 = -3.0;
 pub const RIGHT_WALL: f32 = 3.0;
@@ -44,14 +44,14 @@ pub fn create_camera(width: u32, height: u32) -> Camera {
     let position = Vec3::new(
         (LEFT_WALL + RIGHT_WALL) / 2.0,
         (CEILING + FLOOR) / 2.0,
-        FRONT + 5.0
+        FRONT + 5.0,
     );
 
     // center
     let center = Vec3::new(
         (LEFT_WALL + RIGHT_WALL) / 2.0,
         (CEILING + FLOOR) / 2.0,
-        (FRONT + BACK_WALL) / 2.0
+        (FRONT + BACK_WALL) / 2.0,
     );
 
     let up = Vec3::unit_y();
@@ -64,7 +64,7 @@ fn sphere_0() -> SceneObject {
     let center = Vec3::new(
         (LEFT_WALL + RIGHT_WALL) / 2.0,
         FLOOR + RADIUS,
-        (FRONT + BACK_WALL) / 2.0
+        (FRONT + BACK_WALL) / 2.0,
     );
 
     let sphere = Sphere::new(center, RADIUS);
@@ -77,13 +77,16 @@ fn sphere_0() -> SceneObject {
 
 fn left_wall() -> SceneObject {
     let aabb = Aabb::new(
-        Vec3::new(LEFT_WALL - THICKNESS, FLOOR -THICKNESS, BACK_WALL - THICKNESS),
-        Vec3::new(LEFT_WALL, CEILING + THICKNESS, FRONT)
+        Vec3::new(
+            LEFT_WALL - THICKNESS,
+            FLOOR - THICKNESS,
+            BACK_WALL - THICKNESS,
+        ),
+        Vec3::new(LEFT_WALL, CEILING + THICKNESS, FRONT),
     );
 
     let color = Srgb::red();
     let bxdf = LambertianReflection(color);
-
 
     SceneObject::new(Box::new(aabb), Box::new(bxdf))
 }
@@ -91,20 +94,23 @@ fn left_wall() -> SceneObject {
 fn right_wall() -> SceneObject {
     let aabb = Aabb::new(
         Vec3::new(RIGHT_WALL, FLOOR - THICKNESS, BACK_WALL - THICKNESS),
-        Vec3::new(RIGHT_WALL + THICKNESS, CEILING + THICKNESS, FRONT)
+        Vec3::new(RIGHT_WALL + THICKNESS, CEILING + THICKNESS, FRONT),
     );
 
     let color = Srgb::green();
     let bxdf = LambertianReflection(color);
-
 
     SceneObject::new(Box::new(aabb), Box::new(bxdf))
 }
 
 fn back_wall() -> SceneObject {
     let aabb = Aabb::new(
-        Vec3::new(LEFT_WALL - THICKNESS, FLOOR - THICKNESS, BACK_WALL - THICKNESS),
-        Vec3::new(RIGHT_WALL + THICKNESS, CEILING + THICKNESS, BACK_WALL)
+        Vec3::new(
+            LEFT_WALL - THICKNESS,
+            FLOOR - THICKNESS,
+            BACK_WALL - THICKNESS,
+        ),
+        Vec3::new(RIGHT_WALL + THICKNESS, CEILING + THICKNESS, BACK_WALL),
     );
 
     let color = Srgb::white();
@@ -115,8 +121,12 @@ fn back_wall() -> SceneObject {
 
 fn floor() -> SceneObject {
     let aabb = Aabb::new(
-        Vec3::new(LEFT_WALL - THICKNESS, FLOOR - THICKNESS, BACK_WALL - THICKNESS),
-        Vec3::new(RIGHT_WALL + THICKNESS, FLOOR, FRONT)
+        Vec3::new(
+            LEFT_WALL - THICKNESS,
+            FLOOR - THICKNESS,
+            BACK_WALL - THICKNESS,
+        ),
+        Vec3::new(RIGHT_WALL + THICKNESS, FLOOR, FRONT),
     );
 
     let color = Srgb::white();
@@ -128,7 +138,7 @@ fn floor() -> SceneObject {
 fn ceiling() -> SceneObject {
     let aabb = Aabb::new(
         Vec3::new(LEFT_WALL - THICKNESS, CEILING, BACK_WALL - THICKNESS),
-        Vec3::new(RIGHT_WALL + THICKNESS, CEILING + THICKNESS, FRONT)
+        Vec3::new(RIGHT_WALL + THICKNESS, CEILING + THICKNESS, FRONT),
     );
 
     let color = Srgb::white();
@@ -141,7 +151,7 @@ fn light() -> Light {
     let point = Vec3::new(
         (LEFT_WALL + RIGHT_WALL) / 2.0,
         CEILING - THICKNESS,
-        (FRONT + BACK_WALL) / 2.0
+        (FRONT + BACK_WALL) / 2.0,
     );
 
     let color = Srgb::white();

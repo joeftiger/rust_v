@@ -1,6 +1,6 @@
-use std::ops::{BitOr, BitAnd};
-use ultraviolet::Vec3;
 use crate::color::Srgb;
+use std::ops::{BitAnd, BitOr};
+use ultraviolet::Vec3;
 
 #[derive(Copy, Clone)]
 pub struct BxDFType(u8);
@@ -10,7 +10,7 @@ impl BxDFType {
         (self.0 & 1) != 0
     }
 
-    pub fn is_transmission(&self) ->  bool {
+    pub fn is_transmission(&self) -> bool {
         (self.0 & 2) != 0
     }
 

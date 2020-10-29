@@ -2,8 +2,10 @@ use clap::{App, Arg, SubCommand};
 use ultraviolet::Vec3;
 
 use rust_v::color::Srgb;
+use rust_v::cornell_box;
 use rust_v::geometry::aabb::Aabb;
 use rust_v::geometry::sphere::Sphere;
+use rust_v::render::bxdf::LambertianReflection;
 use rust_v::render::camera::Camera;
 use rust_v::render::light::Light;
 use rust_v::render::renderer::debug::NormalRenderer;
@@ -11,8 +13,6 @@ use rust_v::render::renderer::{Renderer, RgbRenderer};
 use rust_v::render::scene::Scene;
 use rust_v::render::scene_objects::SceneObject;
 use rust_v::render::window::RenderWindow;
-use rust_v::render::bxdf::LambertianReflection;
-use rust_v::cornell_box;
 
 const LIVE_WINDOW: &str = "LIVE_WINDOW";
 const DEMO: &str = "demo";
@@ -93,7 +93,10 @@ fn init_help<'a, 'b>() -> App<'a, 'b> {
 }
 
 fn create_cornell_box() -> (Scene, Camera) {
-    (cornell_box::create_box(), cornell_box::create_camera(900, 900))
+    (
+        cornell_box::create_box(),
+        cornell_box::create_camera(900, 900),
+    )
 }
 
 #[allow(dead_code)]
@@ -132,7 +135,7 @@ fn create_random_scene_camera() -> (Scene, Camera) {
     }
 
     println!("Creating lights...");
-    let light = Light::new(Vec3::zero(), Srgb::from(Vec3::one()), );
+    let light = Light::new(Vec3::zero(), Srgb::from(Vec3::one()));
 
     scene.push_light(light);
 

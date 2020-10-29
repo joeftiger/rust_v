@@ -1,7 +1,7 @@
+use crate::floats;
 use crate::geometry::aabb::Aabb;
 use crate::geometry::ray::{Ray, Ray4};
 use ultraviolet::{f32x4, Vec3, Vec3x4};
-use crate::floats;
 
 pub mod aabb;
 pub mod cube;

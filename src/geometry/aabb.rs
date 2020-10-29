@@ -99,17 +99,23 @@ impl Geometry for Aabb {
         let position = hit.ray.at(hit.t);
         let normal: Vec3;
 
-        if floats::approx_equal_big(position.x, self.min.x) {           // back
+        if floats::approx_equal_big(position.x, self.min.x) {
+            // back
             normal = -Vec3::unit_z();
-        } else if floats::approx_equal_big(position.x, self.max.x) {    // front
+        } else if floats::approx_equal_big(position.x, self.max.x) {
+            // front
             normal = Vec3::unit_z();
-        } else if floats::approx_equal_big(position.y, self.min.y) {    // down
+        } else if floats::approx_equal_big(position.y, self.min.y) {
+            // down
             normal = -Vec3::unit_y();
-        } else if floats::approx_equal_big(position.y, self.max.y) {    // up
+        } else if floats::approx_equal_big(position.y, self.max.y) {
+            // up
             normal = Vec3::unit_y();
-        } else if floats::approx_equal_big(position.z, self.min.z) {    // left
+        } else if floats::approx_equal_big(position.z, self.min.z) {
+            // left
             normal = -Vec3::unit_x();
-        } else if floats::approx_equal_big(position.z, self.max.z) {    // right
+        } else if floats::approx_equal_big(position.z, self.max.z) {
+            // right
             normal = Vec3::unit_x();
         } else {
             panic!("f32 epsilon too small!");

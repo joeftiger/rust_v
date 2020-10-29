@@ -11,7 +11,11 @@ pub struct SceneObject {
 
 impl SceneObject {
     pub fn new(shape: Box<dyn Geometry>, bxdf: Box<dyn BxDF>) -> Self {
-        Self { shape, bxdf, id: usize::MAX }
+        Self {
+            shape,
+            bxdf,
+            id: usize::MAX,
+        }
     }
 }
 

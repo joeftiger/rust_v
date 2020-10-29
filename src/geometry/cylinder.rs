@@ -60,7 +60,7 @@ impl Geometry for Cylinder {
         let solutions = solve_quadratic(a, b, c);
         if let Some((t0, t1)) = solutions {
             let t_min = t0.min(t1);
-            
+
             if ray.t < t_min {
                 None
             } else {
