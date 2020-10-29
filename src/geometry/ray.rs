@@ -3,7 +3,7 @@ use ultraviolet::{f32x4, Vec3, Vec3x4};
 macro_rules! rays {
     ($($name:ident => $vec:ident, $float:ident), +) => {
         $(
-            #[derive(Clone, Copy)]
+            #[derive(Clone, Copy, Debug)]
             pub struct $name {
                 pub origin: $vec,
                 pub direction: $vec,

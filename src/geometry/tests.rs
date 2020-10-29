@@ -3,7 +3,7 @@ mod aabb {
     use crate::floats;
     use crate::geometry::aabb::*;
     use crate::geometry::ray::Ray;
-    use crate::geometry::{Container, Geometry};
+    use crate::geometry::{Container, Geometry, Hit};
     use ultraviolet::Vec3;
 
     #[test]
@@ -228,13 +228,28 @@ mod aabb {
         let max = Vec3::one();
         let aabb = Aabb::new(min, max);
 
-        let ray = Ray::new(
-            Vec3::zero(),
-            -Vec3::unit_x(),
-            f32::INFINITY,
-        );
+        let ray = Ray::new(Vec3::zero(), -Vec3::unit_x(), f32::INFINITY);
         let intersection = aabb.intersect(&ray);
 
         assert!(intersection.is_none());
+    }
+
+    #[test]
+    fn get_info_side() {
+        let min = Vec3::zero();
+        let max = Vec3::one();
+        let aabb = Aabb::new(min, max);
+
+        let point = Vec3::one() / 2.0 + Vec3::unit_x() * 0.5;
+
+        let ray = Ray::new(point + Vec3::unit_x(), -Vec3::unit_x(), f32::INFINITY);
+        let hit = Hit::new(ray, 1.0);
+
+        let info = aabb.get_info(hit);
+
+        assert_eq!(hit.ray, info.ray);
+        assert_eq!(hit.t, info.t);
+        assert_eq!(point, info.point);
+        assert_eq!(-ray.direction, info.normal);
     }
 }
