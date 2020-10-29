@@ -97,31 +97,35 @@ impl Geometry for Aabb {
 
     fn get_info(&self, hit: Hit) -> GeometryInfo {
         let position = hit.ray.at(hit.t);
-        let normal: Vec3;
 
+        // back
         if floats::approx_equal_big(position.x, self.min.x) {
-            // back
-            normal = -Vec3::unit_z();
-        } else if floats::approx_equal_big(position.x, self.max.x) {
-            // front
-            normal = Vec3::unit_z();
-        } else if floats::approx_equal_big(position.y, self.min.y) {
-            // down
-            normal = -Vec3::unit_y();
-        } else if floats::approx_equal_big(position.y, self.max.y) {
-            // up
-            normal = Vec3::unit_y();
-        } else if floats::approx_equal_big(position.z, self.min.z) {
-            // left
-            normal = -Vec3::unit_x();
-        } else if floats::approx_equal_big(position.z, self.max.z) {
-            // right
-            normal = Vec3::unit_x();
-        } else {
-            panic!("f32 epsilon too small!");
+            GeometryInfo::new(hit, position, -Vec3::unit_z())
         }
-
-        GeometryInfo::new(hit, position, normal)
+        // front
+        else if floats::approx_equal_big(position.x, self.max.x) {
+            GeometryInfo::new(hit, position, Vec3::unit_z())
+        }
+        // down
+        else if floats::approx_equal_big(position.y, self.min.y) {
+            GeometryInfo::new(hit, position, -Vec3::unit_y())
+        }
+        // up
+        else if floats::approx_equal_big(position.y, self.max.y) {
+            GeometryInfo::new(hit, position, Vec3::unit_y())
+        }
+        // left
+        else if floats::approx_equal_big(position.z, self.min.z) {
+            GeometryInfo::new(hit, position, -Vec3::unit_x())
+        }
+        // right
+        else if floats::approx_equal_big(position.z, self.max.z) {
+            GeometryInfo::new(hit, position, Vec3::unit_x())
+        }
+        // approximating epsilon is too small (unlikely) or the given hit was illegal
+        else {
+            panic!("Hit point not in range of any side!");
+        }
     }
 }
 
