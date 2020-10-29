@@ -27,3 +27,21 @@ rays!(
     Ray => Vec3, f32,
     Ray4 => Vec3x4, f32x4
 );
+
+impl PartialEq for Ray {
+    fn eq(&self, other: &Self) -> bool {
+        self.origin == other.origin && self.direction == other.direction && self.t == other.t
+    }
+}
+
+impl PartialEq for Ray4 {
+    fn eq(&self, other: &Self) -> bool {
+        self.origin.x == other.origin.x
+            && self.origin.y == other.origin.y
+            && self.origin.z == other.origin.z
+            && self.direction.x == other.direction.x
+            && self.direction.y == other.direction.y
+            && self.direction.z == other.direction.z
+            && self.t == other.t
+    }
+}
