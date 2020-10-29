@@ -41,7 +41,7 @@ impl Camera {
         let image_width = w * image_height / h;
 
         let x_dir = right * image_width / w;
-        let y_dir = up * image_height / h;
+        let y_dir = -up * image_height / h;
         let lower_left = center - 0.5 * w * x_dir - 0.5 * h * y_dir;
 
         Self {
