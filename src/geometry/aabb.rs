@@ -98,13 +98,13 @@ impl Geometry for Aabb {
     fn get_info(&self, hit: Hit) -> GeometryInfo {
         let position = hit.ray.at(hit.t);
 
-        // back
+        // left
         if floats::approx_equal_big(position.x, self.min.x) {
-            GeometryInfo::new(hit, position, -Vec3::unit_z())
+            GeometryInfo::new(hit, position, -Vec3::unit_x())
         }
-        // front
+        // right
         else if floats::approx_equal_big(position.x, self.max.x) {
-            GeometryInfo::new(hit, position, Vec3::unit_z())
+            GeometryInfo::new(hit, position, Vec3::unit_x())
         }
         // down
         else if floats::approx_equal_big(position.y, self.min.y) {
@@ -114,13 +114,13 @@ impl Geometry for Aabb {
         else if floats::approx_equal_big(position.y, self.max.y) {
             GeometryInfo::new(hit, position, Vec3::unit_y())
         }
-        // left
+        // back
         else if floats::approx_equal_big(position.z, self.min.z) {
-            GeometryInfo::new(hit, position, -Vec3::unit_x())
+            GeometryInfo::new(hit, position, -Vec3::unit_z())
         }
-        // right
+        // forward
         else if floats::approx_equal_big(position.z, self.max.z) {
-            GeometryInfo::new(hit, position, Vec3::unit_x())
+            GeometryInfo::new(hit, position, Vec3::unit_z())
         }
         // approximating epsilon is too small (unlikely) or the given hit was illegal
         else {

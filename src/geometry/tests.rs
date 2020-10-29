@@ -221,4 +221,20 @@ mod aabb {
 
         assert!(intersection.is_none());
     }
+
+    #[test]
+    fn intersect_from_inside_not() {
+        let min = Vec3::zero();
+        let max = Vec3::one();
+        let aabb = Aabb::new(min, max);
+
+        let ray = Ray::new(
+            Vec3::zero(),
+            -Vec3::unit_x(),
+            f32::INFINITY,
+        );
+        let intersection = aabb.intersect(&ray);
+
+        assert!(intersection.is_none());
+    }
 }
