@@ -15,7 +15,7 @@ mod tests;
 macro_rules! hits {
     ($($name:ident => $ray:ident, $float:ident), +) => {
         $(
-            #[derive(Copy, Clone)]
+            #[derive(Copy, Clone, PartialEq)]
             pub struct $name {
                 pub ray: $ray,
                 pub t: $float,
@@ -85,6 +85,28 @@ geometry_info!(
     GeometryInfo => Hit, Ray, f32, Vec3, floats::DEFAULT_EPSILON,
     GeometryInfox4 => Hit4, Ray4, f32x4, Vec3x4, f32x4::splat(floats::DEFAULT_EPSILON)
 );
+
+impl PartialEq for GeometryInfo {
+    fn eq(&self, other: &Self) -> bool {
+        self.ray == other.ray
+            && self.t == other.t
+            && self.point == other.point
+            && self.normal == other.normal
+    }
+}
+
+impl PartialEq for GeometryInfox4 {
+    fn eq(&self, other: &Self) -> bool {
+        self.ray == other.ray
+            && self.t == other.t
+            && self.point.x == other.point.x
+            && self.point.y == other.point.y
+            && self.point.z == other.point.z
+            && self.normal.x == other.normal.x
+            && self.normal.y == other.normal.y
+            && self.normal.z == other.normal.z
+    }
+}
 
 pub trait Container {
     fn contains(&self, obj: Vec3) -> bool;
