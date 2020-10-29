@@ -1,13 +1,13 @@
 use std::time::{Duration, Instant};
 
 use show_image::{make_window_full, KeyCode, Window, WindowOptions};
-use ultraviolet::Rotor3;
+use ultraviolet::{Rotor3, Bivec3};
 
 use crate::render::renderer::Renderer;
 
 const WAIT_KEY_MS: u64 = 1;
 const RENDER_TIME_MS: u64 = 500;
-const ROTATION: f32 = std::f32::consts::PI / 16.0; // 11.25°
+const ROTATION: f32 = -std::f32::consts::FRAC_PI_8 / 2.0; // 11.25°
 
 enum Direction {
     UP,
@@ -134,14 +134,18 @@ impl RenderWindow {
         let camera = self.renderer.get_camera();
         let direction = camera.position - camera.center;
 
+        println!("camera position: {:?}", camera.position);
+
         let new_direction = match dir {
-            Direction::LEFT => Some(direction.rotated_by(Rotor3::from_rotation_xy(-ROTATION))),
-            Direction::RIGHT => Some(direction.rotated_by(Rotor3::from_rotation_xy(ROTATION))),
-            _ => None,
+            Direction::LEFT => Some(direction.rotated_by( Rotor3::from_rotation_xz(-ROTATION))),
+            Direction::RIGHT => Some(direction.rotated_by(Rotor3::from_rotation_xz(ROTATION))),
+            Direction::UP => Some(direction.rotated_by(Rotor3::from_angle_plane(ROTATION, Bivec3::from_normalized_axis(camera.right)))),
+            Direction::DOWN => Some(direction.rotated_by(Rotor3::from_angle_plane(-ROTATION, Bivec3::from_normalized_axis(camera.right)))),
         };
 
         if let Some(new_direction) = new_direction {
             camera.position = camera.center + new_direction;
+            println!("camera position: {:?}", camera.position);
 
             // important
             camera.reset();
