@@ -1,4 +1,4 @@
-use crate::color::Srgb;
+use crate::color::*;
 
 pub mod color;
 pub mod cornell_box;
@@ -8,4 +8,4 @@ pub mod math;
 pub mod render;
 pub mod store;
 
-type Spectrum = Srgb;
+pub type Spectrum = Xyz;
