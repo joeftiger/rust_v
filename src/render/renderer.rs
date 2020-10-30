@@ -19,10 +19,10 @@ pub trait Renderer: Send + Sync {
 
 #[allow(dead_code)]
 pub mod debug {
-    use crate::Spectrum;
     use crate::render::camera::Camera;
     use crate::render::renderer::Renderer;
     use crate::render::scene::Scene;
+    use crate::Spectrum;
     use image::{Rgb, RgbImage};
 
     pub struct NormalRenderer {

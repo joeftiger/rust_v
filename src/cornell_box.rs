@@ -1,4 +1,3 @@
-use crate::Spectrum;
 use crate::color::Color;
 use crate::geometry::aabb::Aabb;
 use crate::geometry::sphere::Sphere;
@@ -7,6 +6,7 @@ use crate::render::camera::Camera;
 use crate::render::light::Light;
 use crate::render::scene::Scene;
 use crate::render::scene_objects::SceneObject;
+use crate::Spectrum;
 use ultraviolet::Vec3;
 
 pub const LEFT_WALL: f32 = -3.0;

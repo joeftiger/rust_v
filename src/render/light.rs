@@ -1,8 +1,8 @@
 use ultraviolet::Vec3;
 
-use crate::Spectrum;
 use crate::floats::BIG_EPSILON;
 use crate::geometry::ray::Ray;
+use crate::Spectrum;
 
 pub struct Light {
     pub point: Vec3,

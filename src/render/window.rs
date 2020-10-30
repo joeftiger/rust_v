@@ -1,7 +1,7 @@
 use std::time::{Duration, Instant};
 
 use show_image::{make_window_full, KeyCode, Window, WindowOptions};
-use ultraviolet::{Rotor3, Bivec3};
+use ultraviolet::{Bivec3, Rotor3};
 
 use crate::render::renderer::Renderer;
 
@@ -137,10 +137,16 @@ impl RenderWindow {
         println!("camera position: {:?}", camera.position);
 
         let new_direction = match dir {
-            Direction::LEFT => Some(direction.rotated_by( Rotor3::from_rotation_xz(-ROTATION))),
+            Direction::LEFT => Some(direction.rotated_by(Rotor3::from_rotation_xz(-ROTATION))),
             Direction::RIGHT => Some(direction.rotated_by(Rotor3::from_rotation_xz(ROTATION))),
-            Direction::UP => Some(direction.rotated_by(Rotor3::from_angle_plane(ROTATION, Bivec3::from_normalized_axis(camera.right)))),
-            Direction::DOWN => Some(direction.rotated_by(Rotor3::from_angle_plane(-ROTATION, Bivec3::from_normalized_axis(camera.right)))),
+            Direction::UP => Some(direction.rotated_by(Rotor3::from_angle_plane(
+                ROTATION,
+                Bivec3::from_normalized_axis(camera.right),
+            ))),
+            Direction::DOWN => Some(direction.rotated_by(Rotor3::from_angle_plane(
+                -ROTATION,
+                Bivec3::from_normalized_axis(camera.right),
+            ))),
         };
 
         if let Some(new_direction) = new_direction {

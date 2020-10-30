@@ -1,5 +1,5 @@
-use ultraviolet::Vec3;
 use crate::Spectrum;
+use ultraviolet::Vec3;
 
 bitflags! {
     pub struct BxDFType: u8 {
@@ -48,7 +48,7 @@ pub trait BxDF: Send + Sync {
 
 pub struct ScaledBxDF {
     bxdf: Box<dyn BxDF>,
-    scale: Spectrum
+    scale: Spectrum,
 }
 
 /// A scaled BxDF
@@ -75,7 +75,7 @@ impl BxDF for LambertianReflection {
         BxDFType::REFLECTION | BxDFType::DIFFUSE
     }
 
-    fn apply(&self, _: Vec3, _: Vec3) -> Spectrum{
+    fn apply(&self, _: Vec3, _: Vec3) -> Spectrum {
         self.0 / std::f32::consts::PI
     }
 }

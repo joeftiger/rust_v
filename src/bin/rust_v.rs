@@ -1,7 +1,6 @@
 use clap::{App, Arg, SubCommand};
 use ultraviolet::Vec3;
 
-use rust_v::Spectrum;
 use rust_v::cornell_box;
 use rust_v::geometry::aabb::Aabb;
 use rust_v::geometry::sphere::Sphere;
@@ -13,6 +12,7 @@ use rust_v::render::renderer::{Renderer, RgbRenderer};
 use rust_v::render::scene::Scene;
 use rust_v::render::scene_objects::SceneObject;
 use rust_v::render::window::RenderWindow;
+use rust_v::Spectrum;
 
 const LIVE_WINDOW: &str = "LIVE_WINDOW";
 const DEMO: &str = "demo";
