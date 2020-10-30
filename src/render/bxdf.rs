@@ -2,6 +2,14 @@ use std::ops::{BitAnd, BitOr};
 use ultraviolet::Vec3;
 use crate::Spectrum;
 
+const REFLECTION: BxDFType = BxDFType(1 << 0);
+const TRANSMISSION: BxDFType = BxDFType(1 << 1);
+const DIFFUSE: BxDFType = BxDFType(1 << 2);
+const GLOSSY: BxDFType = BxDFType(1 << 3);
+const SPECULAR: BxDFType = BxDFType(1 << 4);
+#[allow(dead_code)]
+const ALL: BxDFType = BxDFType(REFLECTION.0 | TRANSMISSION.0 | DIFFUSE.0 | GLOSSY.0 | SPECULAR.0);
+
 #[derive(Copy, Clone)]
 pub struct BxDFType(u8);
 
@@ -49,14 +57,6 @@ impl PartialEq for BxDFType {
     }
 }
 
-const REFLECTION: BxDFType = BxDFType(1);
-const TRANSMISSION: BxDFType = BxDFType(2);
-const DIFFUSE: BxDFType = BxDFType(4);
-const GLOSSY: BxDFType = BxDFType(8);
-const SPECULAR: BxDFType = BxDFType(16);
-#[allow(dead_code)]
-const ALL: BxDFType = BxDFType(1 + 2 + 4 + 8 + 16);
-
 pub trait BxDF: Send + Sync {
     fn get_type(&self) -> BxDFType;
 
@@ -67,6 +67,28 @@ pub trait BxDF: Send + Sync {
     fn apply(&self, view: Vec3, from: Vec3) -> Spectrum;
 
     // fn apply_sample(&self, view: Vec3, from: Vec3, )
+}
+
+pub struct ScaledBxDF {
+    bxdf: Box<dyn BxDF>,
+    scale: Spectrum
+}
+
+/// A scaled BxDF
+impl ScaledBxDF {
+    pub fn new(bxdf: Box<dyn BxDF>, scale: Spectrum) -> Self {
+        Self { bxdf, scale }
+    }
+}
+
+impl BxDF for ScaledBxDF {
+    fn get_type(&self) -> BxDFType {
+        self.bxdf.get_type()
+    }
+
+    fn apply(&self, view: Vec3, from: Vec3) -> Spectrum {
+        self.scale * self.bxdf.apply(view, from)
+    }
 }
 
 pub struct LambertianReflection(pub Spectrum);
