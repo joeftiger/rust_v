@@ -5,7 +5,7 @@ use ultraviolet::Vec3;
 
 #[derive(Debug, PartialEq)]
 pub struct Point {
-    position: Vec3,
+    pub position: Vec3,
 }
 
 impl Point {
