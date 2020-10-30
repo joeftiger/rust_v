@@ -104,6 +104,7 @@ impl BxDF for LambertianReflection {
         self.r / std::f32::consts::PI
     }
 
+    #[allow(unused_variables)]
     fn apply_sample(&self, view: Vec3, from: Vec3, sample: Vec2, pdf: f32, sampled_type: BxDFType) -> Spectrum {
         unimplemented!()
     }
@@ -132,7 +133,7 @@ impl BxDF for LambertianTransmission {
         BxDFType::DIFFUSE | BxDFType::TRANSMISSION
     }
 
-    fn apply(&self, view: Vec3, from: Vec3) -> Spectrum {
+    fn apply(&self, _: Vec3, _: Vec3) -> Spectrum {
         self.t / std::f32::consts::PI
     }
 
@@ -144,11 +145,12 @@ impl BxDF for LambertianTransmission {
         self.t
     }
 
-    fn rho2(&self, n_samples: u32, samples1: Vec2, samples2: Vec2) -> Spectrum {
+    fn rho2(&self, _: u32, _: Vec2, _: Vec2) -> Spectrum {
         self.t
     }
 }
 
+#[allow(dead_code)]
 pub struct SpecularReflection {
     r: Spectrum,
     fresnel: Box<dyn Fresnel>,
@@ -169,14 +171,17 @@ impl BxDF for SpecularReflection {
         0.0.into()
     }
 
+    #[allow(unused_variables)]
     fn apply_sample(&self, view: Vec3, from: Vec3, sample: Vec2, pdf: f32, sampled_type: BxDFType) -> Spectrum {
         unimplemented!()
     }
 
+    #[allow(unused_variables)]
     fn rho(&self, w: Vec3, n_samples: u32, samples: Vec2) -> Spectrum {
         unimplemented!()
     }
 
+    #[allow(unused_variables)]
     fn rho2(&self, n_samples: u32, samples1: Vec2, samples2: Vec2) -> Spectrum {
         unimplemented!()
     }
