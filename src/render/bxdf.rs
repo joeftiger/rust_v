@@ -1,59 +1,36 @@
-use std::ops::{BitAnd, BitOr};
 use ultraviolet::Vec3;
 use crate::Spectrum;
 
-const REFLECTION: BxDFType = BxDFType(1 << 0);
-const TRANSMISSION: BxDFType = BxDFType(1 << 1);
-const DIFFUSE: BxDFType = BxDFType(1 << 2);
-const GLOSSY: BxDFType = BxDFType(1 << 3);
-const SPECULAR: BxDFType = BxDFType(1 << 4);
-#[allow(dead_code)]
-const ALL: BxDFType = BxDFType(REFLECTION.0 | TRANSMISSION.0 | DIFFUSE.0 | GLOSSY.0 | SPECULAR.0);
-
-#[derive(Copy, Clone)]
-pub struct BxDFType(u8);
+bitflags! {
+    pub struct BxDFType: u8 {
+        const REFLECTION = 1 << 0;
+        const TRANSMISSION = 1 << 1;
+        const DIFFUSE = 1 << 2;
+        const GLOSSY = 1 << 3;
+        const SPECULAR = 1 << 4;
+        const ALL = Self::REFLECTION.bits | Self::TRANSMISSION.bits | Self::DIFFUSE.bits | Self::GLOSSY.bits | Self::SPECULAR.bits;
+    }
+}
 
 impl BxDFType {
     pub fn is_reflection(&self) -> bool {
-        *self & REFLECTION == REFLECTION
+        *self & Self::REFLECTION == Self::REFLECTION
     }
 
     pub fn is_transmission(&self) -> bool {
-        *self & TRANSMISSION == TRANSMISSION
+        *self & Self::TRANSMISSION == Self::TRANSMISSION
     }
 
     pub fn is_diffuse(&self) -> bool {
-        *self & DIFFUSE == DIFFUSE
+        *self & Self::DIFFUSE == Self::DIFFUSE
     }
 
     pub fn is_glossy(&self) -> bool {
-        *self & GLOSSY == GLOSSY
+        *self & Self::GLOSSY == Self::GLOSSY
     }
 
     pub fn is_specular(&self) -> bool {
-        *self & SPECULAR == SPECULAR
-    }
-}
-
-impl BitOr for BxDFType {
-    type Output = Self;
-
-    fn bitor(self, rhs: Self) -> Self::Output {
-        BxDFType(self.0 | rhs.0)
-    }
-}
-
-impl BitAnd for BxDFType {
-    type Output = BxDFType;
-
-    fn bitand(self, rhs: Self) -> Self::Output {
-        BxDFType(self.0 & rhs.0)
-    }
-}
-
-impl PartialEq for BxDFType {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
+        *self & Self::SPECULAR == Self::SPECULAR
     }
 }
 
@@ -95,7 +72,7 @@ pub struct LambertianReflection(pub Spectrum);
 
 impl BxDF for LambertianReflection {
     fn get_type(&self) -> BxDFType {
-        REFLECTION | DIFFUSE
+        BxDFType::REFLECTION | BxDFType::DIFFUSE
     }
 
     fn apply(&self, _: Vec3, _: Vec3) -> Spectrum{

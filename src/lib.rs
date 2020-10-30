@@ -1,3 +1,6 @@
+#[macro_use]
+extern crate bitflags;
+
 use crate::color::*;
 
 pub mod color;
