@@ -6,3 +6,5 @@ pub mod scene;
 pub mod scene_objects;
 pub mod shading;
 pub mod window;
+pub mod fresnel;
+pub mod reflection;
