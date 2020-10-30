@@ -11,7 +11,7 @@ pub mod cie;
 macro_rules! colors {
     ($($name:ident => $storage:ident, $mul:ident, $size:expr), +) => {
         $(
-            #[derive(Clone, Copy, Debug, Default)]
+            #[derive(Clone, Copy, Debug)]
             pub struct $name {
                 data: [$storage; $size],
             }
@@ -20,6 +20,13 @@ macro_rules! colors {
                 pub fn new(data: [$storage; $size]) -> Self {
                     debug_assert!(data.iter().all(|f| !f.is_nan()));
                     Self { data }
+                }
+            }
+
+            impl Default for $name {
+                fn default() -> Self {
+                    let data = [$storage::default(); $size];
+                    Self::new(data)
                 }
             }
 
@@ -182,7 +189,8 @@ macro_rules! colors {
 
 colors!(
     Srgb => f32, f32, 3,
-    Xyz => f32, f32, 3
+    Xyz => f32, f32, 3,
+    Spectral => f32, f32, cie::CIE_SAMPLES
 );
 
 pub trait Color:
