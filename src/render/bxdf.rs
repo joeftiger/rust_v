@@ -45,6 +45,10 @@ pub trait BxDF: Send + Sync {
     fn apply(&self, view: Vec3, from: Vec3) -> Spectrum;
 
     fn apply_sample(&self, view: Vec3, from: Vec3, sample: Vec2, pdf: f32, sampled_type: BxDFType) -> Spectrum;
+
+    fn rho(&self, w: Vec3, n_samples: u32, samples: Vec2) -> Spectrum;
+
+    fn rho2(&self, n_samples: u32, samples1: Vec2, samples2: Vec2) -> Spectrum;
 }
 
 pub struct ScaledBxDF {
@@ -71,6 +75,14 @@ impl BxDF for ScaledBxDF {
     fn apply_sample(&self, view: Vec3, from: Vec3, sample: Vec2, pdf: f32, sampled_type: BxDFType) -> Spectrum {
         self.scale * self.bxdf.apply_sample(view, from, sample, pdf, sampled_type)
     }
+
+    fn rho(&self, w: Vec3, n_samples: u32, samples: Vec2) -> Spectrum {
+        self.scale * self.bxdf.rho(w, n_samples, samples)
+    }
+
+    fn rho2(&self, n_samples: u32, samples1: Vec2, samples2: Vec2) -> Spectrum {
+        self.scale * self.bxdf.rho2(n_samples, samples1, samples2)
+    }
 }
 
 pub struct LambertianReflection {
@@ -95,6 +107,46 @@ impl BxDF for LambertianReflection {
     fn apply_sample(&self, view: Vec3, from: Vec3, sample: Vec2, pdf: f32, sampled_type: BxDFType) -> Spectrum {
         unimplemented!()
     }
+
+    fn rho(&self, _: Vec3, _: u32, _: Vec2) -> Spectrum {
+        self.r
+    }
+
+    fn rho2(&self, _: u32, _: Vec2, _: Vec2) -> Spectrum {
+        self.r
+    }
+}
+
+pub struct LambertianTransmission {
+    t: Spectrum,
+}
+
+impl LambertianTransmission {
+    pub fn new(t: Spectrum) -> Self {
+        Self { t }
+    }
+}
+
+impl BxDF for LambertianTransmission {
+    fn get_type(&self) -> BxDFType {
+        BxDFType::DIFFUSE | BxDFType::TRANSMISSION
+    }
+
+    fn apply(&self, view: Vec3, from: Vec3) -> Spectrum {
+        self.t / std::f32::consts::PI
+    }
+
+    fn apply_sample(&self, _: Vec3, _: Vec3, _: Vec2, _: f32, _: BxDFType) -> Spectrum {
+        unimplemented!()
+    }
+
+    fn rho(&self, _: Vec3, _: u32, _: Vec2) -> Spectrum {
+        self.t
+    }
+
+    fn rho2(&self, n_samples: u32, samples1: Vec2, samples2: Vec2) -> Spectrum {
+        self.t
+    }
 }
 
 pub struct SpecularReflection {
@@ -118,6 +170,14 @@ impl BxDF for SpecularReflection {
     }
 
     fn apply_sample(&self, view: Vec3, from: Vec3, sample: Vec2, pdf: f32, sampled_type: BxDFType) -> Spectrum {
+        unimplemented!()
+    }
+
+    fn rho(&self, w: Vec3, n_samples: u32, samples: Vec2) -> Spectrum {
+        unimplemented!()
+    }
+
+    fn rho2(&self, n_samples: u32, samples1: Vec2, samples2: Vec2) -> Spectrum {
         unimplemented!()
     }
 }
