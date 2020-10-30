@@ -3,7 +3,7 @@ use crate::geometry::ray::Ray;
 use crate::geometry::{Geometry, GeometryInfo, Hit};
 use ultraviolet::Vec3;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Default)]
 pub struct Point {
     pub position: Vec3,
 }
