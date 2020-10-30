@@ -1,9 +1,9 @@
 #[allow(dead_code)]
-const CIE_SAMPLES: usize = 471;
+pub const CIE_SAMPLES: usize = 471;
 
 //noinspection RsApproxConstant
 #[allow(dead_code)]
-const CIE_X_2: [f32; CIE_SAMPLES] = [
+pub const CIE_X_2: [f32; CIE_SAMPLES] = [
     0.0001299,
     0.000145847,
     0.0001638021,
@@ -478,7 +478,7 @@ const CIE_X_2: [f32; CIE_SAMPLES] = [
 ];
 
 #[allow(dead_code)]
-const CIE_Y_2: [f32; CIE_SAMPLES] = [
+pub const CIE_Y_2: [f32; CIE_SAMPLES] = [
     0.000003917,
     0.000004393581,
     0.000004929604,
@@ -953,7 +953,7 @@ const CIE_Y_2: [f32; CIE_SAMPLES] = [
 ];
 
 #[allow(dead_code)]
-const CIE_Z_2: [f32; CIE_SAMPLES] = [
+pub const CIE_Z_2: [f32; CIE_SAMPLES] = [
     0.0006061,
     0.0006808792,
     0.0007651456,
