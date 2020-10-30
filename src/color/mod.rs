@@ -21,6 +21,17 @@ macro_rules! colors {
                     debug_assert!(data.iter().all(|f| !f.is_nan()));
                     Self { data }
                 }
+
+                pub fn new_const(data: $storage) -> Self {
+                    Self::new([data; $size])
+                }
+
+                pub fn sqrt(s: &Self) -> Self {
+                    let mut data = s.data;
+                    data.iter_mut().for_each(|f| *f = f.sqrt());
+
+                    Self::new(data)
+                }
             }
 
             impl Default for $name {
@@ -221,6 +232,8 @@ pub trait Color:
     /// Whether this color has NaN values.
     fn has_nans(&self) -> bool;
 
+    fn sqrt(&self) -> Self;
+
     /// Converts this color to sRGB.
     fn to_rgb(&self) -> Srgb;
 
@@ -318,6 +331,10 @@ impl Color for Srgb {
         self.data.iter().all(|value| !value.is_nan())
     }
 
+    fn sqrt(&self) -> Self {
+        Self::sqrt(self)
+    }
+
     fn to_rgb(&self) -> Srgb {
         *self
     }
@@ -384,6 +401,10 @@ impl Color for Xyz {
 
     fn has_nans(&self) -> bool {
         self.data.iter().all(|value| !value.is_nan())
+    }
+
+    fn sqrt(&self) -> Self {
+        Self::sqrt(self)
     }
 
     fn to_rgb(&self) -> Srgb {
