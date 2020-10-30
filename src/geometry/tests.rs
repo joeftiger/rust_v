@@ -275,6 +275,59 @@ mod aabb {
     }
 }
 
+#[cfg(test)]
+mod point {
+    use crate::geometry::point::Point;
+    use ultraviolet::Vec3;
+    use crate::geometry::{Geometry, Hit};
+    use crate::geometry::ray::Ray;
+
+    #[test]
+    fn new() {
+        let position = Vec3::zero();
+        let point = Point::new(position);
+
+        assert_eq!(position, point.position);
+    }
+
+    #[test]
+    fn default() {
+        let point = Point::default();
+
+        assert_eq!(Vec3::zero(), point.position);
+    }
+
+    #[test]
+    fn bounding_box() {
+        let point = Point::default();
+        let bbox = point.bounding_box();
+
+        assert!(bbox.is_valid());
+        assert_eq!(Vec3::zero(), bbox.min);
+        assert_eq!(Vec3::zero(), bbox.max);
+    }
+
+    #[test]
+    fn intersect() {
+        let point = Point::default();
+        let ray = Ray::new(Vec3::zero(), Vec3::unit_x(), f32::INFINITY);
+
+        let intersection = point.intersect(&ray);
+
+        assert!(intersection.is_none())
+    }
+
+    #[test]
+    #[should_panic]
+    fn get_info() {
+        let point = Point::default();
+        let ray = Ray::new(Vec3::zero(), Vec3::unit_x(), f32::INFINITY);
+        let hit = Hit::new(ray, f32::default());
+
+        let _info = point.get_info(hit);
+    }
+}
+
 #[allow(clippy::float_cmp)]
 #[cfg(test)]
 mod sphere {
@@ -377,6 +430,16 @@ mod sphere {
     fn intersect_inner_not() {
         let sphere = Sphere::default();
         let ray = Ray::new(Vec3::zero(), Vec3::unit_x(), f32::INFINITY);
+
+        let intersection = sphere.intersect(&ray);
+
+        assert!(intersection.is_none());
+    }
+
+    #[test]
+    fn intersect_not_in_range() {
+        let sphere = Sphere::default();
+        let ray = Ray::new(Vec3::zero(), Vec3::unit_x(), 0.5);
 
         let intersection = sphere.intersect(&ray);
 
