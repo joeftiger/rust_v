@@ -1,7 +1,7 @@
 use clap::{App, Arg, SubCommand};
 use ultraviolet::Vec3;
 
-use rust_v::color::Srgb;
+use rust_v::Spectrum;
 use rust_v::cornell_box;
 use rust_v::geometry::aabb::Aabb;
 use rust_v::geometry::sphere::Sphere;
@@ -113,7 +113,7 @@ fn create_random_scene_camera() -> (Scene, Camera) {
         let y = fastrand::f32() * width - width / 2.0;
         let z = fastrand::f32() * height - height / 2.0;
         let center = Vec3::new(x, y, z);
-        let color = Srgb::from(center);
+        let color = Spectrum::from(center);
         let bxdf = LambertianReflection(color);
 
         let object;
@@ -134,7 +134,7 @@ fn create_random_scene_camera() -> (Scene, Camera) {
     }
 
     println!("Creating lights...");
-    let light = Light::new(Vec3::zero(), Srgb::from(Vec3::one()));
+    let light = Light::new(Vec3::zero(), Spectrum::from(Vec3::one()));
 
     scene.push_light(light);
 

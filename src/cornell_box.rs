@@ -1,4 +1,5 @@
-use crate::color::Srgb;
+use crate::Spectrum;
+use crate::color::Color;
 use crate::geometry::aabb::Aabb;
 use crate::geometry::sphere::Sphere;
 use crate::render::bxdf::LambertianReflection;
@@ -69,7 +70,7 @@ fn sphere_0() -> SceneObject {
 
     let sphere = Sphere::new(center, RADIUS);
 
-    let color = Srgb::blue();
+    let color = Spectrum::blue();
     let bxdf = LambertianReflection(color);
 
     SceneObject::new(Box::new(sphere), Box::new(bxdf))
@@ -85,7 +86,7 @@ fn left_wall() -> SceneObject {
         Vec3::new(LEFT_WALL, CEILING + THICKNESS, FRONT),
     );
 
-    let color = Srgb::red();
+    let color = Spectrum::red();
     let bxdf = LambertianReflection(color);
 
     SceneObject::new(Box::new(aabb), Box::new(bxdf))
@@ -97,7 +98,7 @@ fn right_wall() -> SceneObject {
         Vec3::new(RIGHT_WALL + THICKNESS, CEILING + THICKNESS, FRONT),
     );
 
-    let color = Srgb::green();
+    let color = Spectrum::green();
     let bxdf = LambertianReflection(color);
 
     SceneObject::new(Box::new(aabb), Box::new(bxdf))
@@ -113,7 +114,7 @@ fn back_wall() -> SceneObject {
         Vec3::new(RIGHT_WALL + THICKNESS, CEILING + THICKNESS, BACK_WALL),
     );
 
-    let color = Srgb::white();
+    let color = Spectrum::white();
     let bxdf = LambertianReflection(color);
 
     SceneObject::new(Box::new(aabb), Box::new(bxdf))
@@ -129,7 +130,7 @@ fn floor() -> SceneObject {
         Vec3::new(RIGHT_WALL + THICKNESS, FLOOR, FRONT),
     );
 
-    let color = Srgb::white();
+    let color = Spectrum::white();
     let bxdf = LambertianReflection(color);
 
     SceneObject::new(Box::new(aabb), Box::new(bxdf))
@@ -141,7 +142,7 @@ fn ceiling() -> SceneObject {
         Vec3::new(RIGHT_WALL + THICKNESS, CEILING + THICKNESS, FRONT),
     );
 
-    let color = Srgb::white();
+    let color = Spectrum::white();
     let bxdf = LambertianReflection(color);
 
     SceneObject::new(Box::new(aabb), Box::new(bxdf))
@@ -154,7 +155,7 @@ fn light() -> Light {
         (FRONT + BACK_WALL) / 2.0,
     );
 
-    let color = Srgb::white();
+    let color = Spectrum::white();
 
     Light::new(point, color)
 }
