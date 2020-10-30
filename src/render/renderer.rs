@@ -19,7 +19,7 @@ pub trait Renderer: Send + Sync {
 
 #[allow(dead_code)]
 pub mod debug {
-    use crate::color::Srgb;
+    use crate::Spectrum;
     use crate::render::camera::Camera;
     use crate::render::renderer::Renderer;
     use crate::render::scene::Scene;
@@ -54,7 +54,7 @@ pub mod debug {
 
             if let Some(si) = si {
                 let normal = si.info.normal.abs();
-                let color = Srgb::from(normal);
+                let color = Spectrum::from(normal);
 
                 color.into()
             } else {

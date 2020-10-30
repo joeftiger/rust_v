@@ -1,16 +1,16 @@
 use ultraviolet::Vec3;
 
-use crate::color::Srgb;
+use crate::Spectrum;
 use crate::floats::BIG_EPSILON;
 use crate::geometry::ray::Ray;
 
 pub struct Light {
     pub point: Vec3,
-    pub color: Srgb,
+    pub color: Spectrum,
 }
 
 impl Light {
-    pub fn new(point: Vec3, color: Srgb) -> Self {
+    pub fn new(point: Vec3, color: Spectrum) -> Self {
         Self { point, color }
     }
 

@@ -1,6 +1,6 @@
-use crate::color::Srgb;
 use std::ops::{BitAnd, BitOr};
 use ultraviolet::Vec3;
+use crate::Spectrum;
 
 #[derive(Copy, Clone)]
 pub struct BxDFType(u8);
@@ -68,19 +68,19 @@ pub trait BxDF: Send + Sync {
         (self.get_type() | t) == self.get_type()
     }
 
-    fn apply(&self, view: Vec3, from: Vec3) -> Srgb;
+    fn apply(&self, view: Vec3, from: Vec3) -> Spectrum;
 
     // fn apply_sample(&self, view: Vec3, from: Vec3, )
 }
 
-pub struct LambertianReflection(pub Srgb);
+pub struct LambertianReflection(pub Spectrum);
 
 impl BxDF for LambertianReflection {
     fn get_type(&self) -> BxDFType {
         REFLECTION | DIFFUSE
     }
 
-    fn apply(&self, _: Vec3, _: Vec3) -> Srgb {
+    fn apply(&self, _: Vec3, _: Vec3) -> Spectrum{
         self.0 / std::f32::consts::PI
     }
 }
