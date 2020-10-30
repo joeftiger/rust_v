@@ -1,8 +1,8 @@
 use crate::Spectrum;
 use crate::render::reflection;
 
-pub trait Fresnel {
-    fn fresnel(&self, cos_i: f32) -> f32;
+pub trait Fresnel: Send + Sync {
+    fn evaluate(&self, cos_i: f32) -> Spectrum;
 }
 
 pub struct Dielectric {
@@ -19,8 +19,8 @@ impl Dielectric {
 }
 
 impl Fresnel for Dielectric {
-    fn fresnel(&self, cos_i: f32) -> f32 {
-        reflection::fresnel_dielectric(cos_i, self.eta_i, self.eta_t)
+    fn evaluate(&self, cos_i: f32) -> Spectrum {
+        reflection::fresnel_dielectric(cos_i, self.eta_i, self.eta_t).into()
     }
 }
 
@@ -38,8 +38,16 @@ impl Conductor {
     }
 }
 
-// impl Fresnel for Conductor {
-//     fn fresnel(&self, cos_i: f32) -> f32 {
-//         fresnel_conductor(cos_i.abs(), &self.eta_i, &self.eta_t, &self.k)
-//     }
-// }
+impl Fresnel for Conductor {
+    fn evaluate(&self, cos_i: f32) -> Spectrum {
+        reflection::fresnel_conductor(cos_i.abs(), &self.eta_i, &self.eta_t, &self.k)
+    }
+}
+
+pub struct FresnelNoOp();
+
+impl Fresnel for FresnelNoOp {
+    fn evaluate(&self, _: f32) -> Spectrum {
+        1.0.into()
+    }
+}

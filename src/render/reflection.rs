@@ -57,14 +57,14 @@ pub fn fresnel_conductor(mut cos_i: f32, eta_i: &Spectrum, eta_t: &Spectrum, k: 
     let eta2 = eta * eta;
     let etak2 = etak * etak;
 
-    let t0 = eta2 - etak2 - Spectrum::new_const(sin_i2);
+    let t0 = eta2 - etak2 - sin_i2.into();
     let a2_plus_b2 = (t0 * t0 + eta2 * etak2 * 4.0).sqrt();
     let t1 = a2_plus_b2 + Spectrum::new_const(cos_i2);
     let a = ((a2_plus_b2 + t0) * 0.5).sqrt();
     let t2 = a * (cos_i * 2.0);
     let r_s = (t1 - t2) / (t1 + t2);
 
-    let t3 = a2_plus_b2 * cos_i2 + Spectrum::new_const(sin_i2 * sin_i2);
+    let t3 = a2_plus_b2 * cos_i2 + (sin_i2 * sin_i2).into();
     let t4 = t2 * sin_i2;
     let r_p = r_s * ((t3 - t4) / (t3 + t4));
 
