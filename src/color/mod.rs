@@ -194,6 +194,12 @@ macro_rules! colors {
                     iter.fold($name::default(), |a, b| a + b)
                 }
             }
+
+            impl Into<$name> for f32 {
+                fn into(self) -> $name {
+                    $name::new_const(self)
+                }
+            }
         )+
     }
 }
