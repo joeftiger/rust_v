@@ -226,6 +226,16 @@ pub trait Color:
 
     /// Converts this color to XYZ.
     fn to_xyz(&self) -> Xyz;
+
+    fn black() -> Self;
+
+    fn white() -> Self;
+
+    fn red() -> Self;
+
+    fn green() -> Self;
+
+    fn blue() -> Self;
 }
 
 /// Returns the XYZ to sRGB matrix
@@ -290,26 +300,6 @@ impl Srgb {
     pub fn to_vec(&self) -> Vec3 {
         Vec3::from(self.data)
     }
-
-    pub fn black() -> Self {
-        Self::new([0.0, 0.0, 0.0])
-    }
-
-    pub fn white() -> Self {
-        Self::new([1.0, 1.0, 1.0])
-    }
-
-    pub fn red() -> Self {
-        Self::new([1.0, 0.0, 0.0])
-    }
-
-    pub fn green() -> Self {
-        Self::new([0.0, 1.0, 0.0])
-    }
-
-    pub fn blue() -> Self {
-        Self::new([0.0, 0.0, 1.0])
-    }
 }
 
 impl Color for Srgb {
@@ -334,6 +324,26 @@ impl Color for Srgb {
 
     fn to_xyz(&self) -> Xyz {
         Xyz::from(srgb_to_xyz_mat() * srgbs_to_linear(self.to_vec()))
+    }
+
+    fn black() -> Self {
+        Self::new([0.0, 0.0, 0.0])
+    }
+
+    fn white() -> Self {
+        Self::new([1.0, 1.0, 1.0])
+    }
+
+    fn red() -> Self {
+        Self::new([1.0, 0.0, 0.0])
+    }
+
+    fn green() -> Self {
+        Self::new([0.0, 1.0, 0.0])
+    }
+
+    fn blue() -> Self {
+        Self::new([0.0, 0.0, 1.0])
     }
 }
 
@@ -382,6 +392,26 @@ impl Color for Xyz {
 
     fn to_xyz(&self) -> Xyz {
         *self
+    }
+
+    fn black() -> Self {
+        Srgb::black().to_xyz()
+    }
+
+    fn white() -> Self {
+        Srgb::white().to_xyz()
+    }
+
+    fn red() -> Self {
+        Srgb::red().to_xyz()
+    }
+
+    fn green() -> Self {
+        Srgb::green().to_xyz()
+    }
+
+    fn blue() -> Self {
+        Srgb::blue().to_xyz()
     }
 }
 
