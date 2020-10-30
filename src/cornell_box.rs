@@ -71,7 +71,7 @@ fn sphere_0() -> SceneObject {
     let sphere = Sphere::new(center, RADIUS);
 
     let color = Spectrum::blue();
-    let bxdf = LambertianReflection(color);
+    let bxdf = LambertianReflection::new(color);
 
     SceneObject::new(Box::new(sphere), Box::new(bxdf))
 }
@@ -87,7 +87,7 @@ fn left_wall() -> SceneObject {
     );
 
     let color = Spectrum::red();
-    let bxdf = LambertianReflection(color);
+    let bxdf = LambertianReflection::new(color);
 
     SceneObject::new(Box::new(aabb), Box::new(bxdf))
 }
@@ -99,7 +99,7 @@ fn right_wall() -> SceneObject {
     );
 
     let color = Spectrum::green();
-    let bxdf = LambertianReflection(color);
+    let bxdf = LambertianReflection::new(color);
 
     SceneObject::new(Box::new(aabb), Box::new(bxdf))
 }
@@ -115,7 +115,7 @@ fn back_wall() -> SceneObject {
     );
 
     let color = Spectrum::white();
-    let bxdf = LambertianReflection(color);
+    let bxdf = LambertianReflection::new(color);
 
     SceneObject::new(Box::new(aabb), Box::new(bxdf))
 }
@@ -131,7 +131,7 @@ fn floor() -> SceneObject {
     );
 
     let color = Spectrum::white();
-    let bxdf = LambertianReflection(color);
+    let bxdf = LambertianReflection::new(color);
 
     SceneObject::new(Box::new(aabb), Box::new(bxdf))
 }
@@ -143,7 +143,7 @@ fn ceiling() -> SceneObject {
     );
 
     let color = Spectrum::white();
-    let bxdf = LambertianReflection(color);
+    let bxdf = LambertianReflection::new(color);
 
     SceneObject::new(Box::new(aabb), Box::new(bxdf))
 }

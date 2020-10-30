@@ -114,7 +114,7 @@ fn create_random_scene_camera() -> (Scene, Camera) {
         let z = fastrand::f32() * height - height / 2.0;
         let center = Vec3::new(x, y, z);
         let color = Spectrum::from(center);
-        let bxdf = LambertianReflection(color);
+        let bxdf = LambertianReflection::new(color);
 
         let object;
         if fastrand::f32() < 0.5 {
