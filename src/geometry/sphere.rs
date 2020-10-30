@@ -44,7 +44,7 @@ impl Geometry for Sphere {
         if let Some((t0, t1)) = solutions {
             let t_min = t0.min(t1);
 
-            if ray.t < t_min {
+            if t_min < 0.0 || ray.t < t_min {
                 None
             } else {
                 Some(t_min)
