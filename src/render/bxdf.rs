@@ -7,23 +7,23 @@ pub struct BxDFType(u8);
 
 impl BxDFType {
     pub fn is_reflection(&self) -> bool {
-        (self.0 & 1) != 0
+        *self & REFLECTION == REFLECTION
     }
 
     pub fn is_transmission(&self) -> bool {
-        (self.0 & 2) != 0
+        *self & TRANSMISSION == TRANSMISSION
     }
 
     pub fn is_diffuse(&self) -> bool {
-        (self.0 & 4) != 0
+        *self & DIFFUSE == DIFFUSE
     }
 
     pub fn is_glossy(&self) -> bool {
-        (self.0 & 8) != 0
+        *self & GLOSSY == GLOSSY
     }
 
     pub fn is_specular(&self) -> bool {
-        (self.0 & 16) != 0
+        *self & SPECULAR == SPECULAR
     }
 }
 
@@ -49,14 +49,10 @@ impl PartialEq for BxDFType {
     }
 }
 
-#[allow(dead_code)]
 const REFLECTION: BxDFType = BxDFType(1);
-#[allow(dead_code)]
 const TRANSMISSION: BxDFType = BxDFType(2);
 const DIFFUSE: BxDFType = BxDFType(4);
-#[allow(dead_code)]
 const GLOSSY: BxDFType = BxDFType(8);
-#[allow(dead_code)]
 const SPECULAR: BxDFType = BxDFType(16);
 #[allow(dead_code)]
 const ALL: BxDFType = BxDFType(1 + 2 + 4 + 8 + 16);
@@ -65,7 +61,7 @@ pub trait BxDF: Send + Sync {
     fn get_type(&self) -> BxDFType;
 
     fn is_type(&self, t: BxDFType) -> bool {
-        (self.get_type() | t) == self.get_type()
+        (self.get_type() & t) == t
     }
 
     fn apply(&self, view: Vec3, from: Vec3) -> Spectrum;
