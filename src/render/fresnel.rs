@@ -1,5 +1,5 @@
-use crate::Spectrum;
 use crate::render::reflection;
+use crate::Spectrum;
 
 pub trait Fresnel: Send + Sync {
     fn evaluate(&self, cos_i: f32) -> Spectrum;
@@ -27,14 +27,18 @@ impl Fresnel for Dielectric {
 pub struct Conductor {
     pub eta_t: Spectrum,
     pub eta_i: Spectrum,
-    pub k: Spectrum
+    pub k: Spectrum,
 }
 
 impl Conductor {
     /// - `eta_t`: refractive index of material the light is entering.
     /// - `eta_i`: refractive index of material the light is coming from.
     pub fn new(eta_t: Spectrum, eta_i: Spectrum, absorption: Spectrum) -> Self {
-        Self { eta_t, eta_i, k: absorption }
+        Self {
+            eta_t,
+            eta_i,
+            k: absorption,
+        }
     }
 }
 

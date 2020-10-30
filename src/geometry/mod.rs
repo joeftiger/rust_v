@@ -7,11 +7,11 @@ pub mod aabb;
 pub mod cube;
 pub mod cylinder;
 pub mod lens;
+pub mod mesh;
 pub mod point;
 pub mod ray;
 pub mod sphere;
 mod tests;
-pub mod mesh;
 
 macro_rules! hits {
     ($($name:ident => $ray:ident, $float:ident), +) => {

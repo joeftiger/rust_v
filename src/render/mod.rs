@@ -1,10 +1,10 @@
 pub mod bxdf;
 pub mod camera;
+pub mod fresnel;
 pub mod light;
+pub mod reflection;
 pub mod renderer;
 pub mod scene;
 pub mod scene_objects;
 pub mod shading;
 pub mod window;
-pub mod fresnel;
-pub mod reflection;

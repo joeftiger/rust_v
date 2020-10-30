@@ -1,8 +1,8 @@
-use ultraviolet::Vec3;
-use crate::geometry::{Geometry, Hit, GeometryInfo};
-use crate::geometry::ray::Ray;
-use crate::geometry::aabb::Aabb;
 use crate::floats;
+use crate::geometry::aabb::Aabb;
+use crate::geometry::ray::Ray;
+use crate::geometry::{Geometry, GeometryInfo, Hit};
+use ultraviolet::Vec3;
 
 pub struct Triangle {
     pub a: Vec3,
@@ -74,16 +74,18 @@ pub struct Mesh {
 impl Mesh {
     pub fn new(vertices: Vec<Vec3>, indices: Vec<usize>) -> Self {
         let mut aabb = Aabb::inverted_infinite();
-        vertices
-            .iter()
-            .for_each(|v| {
-                aabb.min = aabb.min.min_by_component(*v);
-                aabb.max = aabb.max.max_by_component(*v);
+        vertices.iter().for_each(|v| {
+            aabb.min = aabb.min.min_by_component(*v);
+            aabb.max = aabb.max.max_by_component(*v);
         });
 
         debug_assert!(aabb.is_valid());
 
-        Self { vertices, indices, aabb }
+        Self {
+            vertices,
+            indices,
+            aabb,
+        }
     }
 }
 

@@ -1,6 +1,6 @@
-use crate::Spectrum;
-use ultraviolet::{Vec3, Vec2};
 use crate::render::fresnel::Fresnel;
+use crate::Spectrum;
+use ultraviolet::{Vec2, Vec3};
 
 bitflags! {
     pub struct BxDFType: u8 {
@@ -44,7 +44,14 @@ pub trait BxDF: Send + Sync {
 
     fn apply(&self, view: Vec3, from: Vec3) -> Spectrum;
 
-    fn apply_sample(&self, view: Vec3, from: Vec3, sample: Vec2, pdf: f32, sampled_type: BxDFType) -> Spectrum;
+    fn apply_sample(
+        &self,
+        view: Vec3,
+        from: Vec3,
+        sample: Vec2,
+        pdf: f32,
+        sampled_type: BxDFType,
+    ) -> Spectrum;
 
     fn rho(&self, w: Vec3, n_samples: u32, samples: Vec2) -> Spectrum;
 
@@ -72,8 +79,18 @@ impl BxDF for ScaledBxDF {
         self.scale * self.bxdf.apply(view, from)
     }
 
-    fn apply_sample(&self, view: Vec3, from: Vec3, sample: Vec2, pdf: f32, sampled_type: BxDFType) -> Spectrum {
-        self.scale * self.bxdf.apply_sample(view, from, sample, pdf, sampled_type)
+    fn apply_sample(
+        &self,
+        view: Vec3,
+        from: Vec3,
+        sample: Vec2,
+        pdf: f32,
+        sampled_type: BxDFType,
+    ) -> Spectrum {
+        self.scale
+            * self
+                .bxdf
+                .apply_sample(view, from, sample, pdf, sampled_type)
     }
 
     fn rho(&self, w: Vec3, n_samples: u32, samples: Vec2) -> Spectrum {
@@ -105,7 +122,14 @@ impl BxDF for LambertianReflection {
     }
 
     #[allow(unused_variables)]
-    fn apply_sample(&self, view: Vec3, from: Vec3, sample: Vec2, pdf: f32, sampled_type: BxDFType) -> Spectrum {
+    fn apply_sample(
+        &self,
+        view: Vec3,
+        from: Vec3,
+        sample: Vec2,
+        pdf: f32,
+        sampled_type: BxDFType,
+    ) -> Spectrum {
         unimplemented!()
     }
 
@@ -172,7 +196,14 @@ impl BxDF for SpecularReflection {
     }
 
     #[allow(unused_variables)]
-    fn apply_sample(&self, view: Vec3, from: Vec3, sample: Vec2, pdf: f32, sampled_type: BxDFType) -> Spectrum {
+    fn apply_sample(
+        &self,
+        view: Vec3,
+        from: Vec3,
+        sample: Vec2,
+        pdf: f32,
+        sampled_type: BxDFType,
+    ) -> Spectrum {
         unimplemented!()
     }
 

@@ -278,9 +278,9 @@ mod aabb {
 #[cfg(test)]
 mod point {
     use crate::geometry::point::Point;
-    use ultraviolet::Vec3;
-    use crate::geometry::{Geometry, Hit};
     use crate::geometry::ray::Ray;
+    use crate::geometry::{Geometry, Hit};
+    use ultraviolet::Vec3;
 
     #[test]
     fn new() {
@@ -331,12 +331,12 @@ mod point {
 #[allow(clippy::float_cmp)]
 #[cfg(test)]
 mod sphere {
-    use ultraviolet::Vec3;
-    use crate::geometry::sphere::Sphere;
-    use crate::geometry::{Container, Geometry, Hit};
+    use crate::floats;
     use crate::geometry::aabb::Aabb;
     use crate::geometry::ray::Ray;
-    use crate::floats;
+    use crate::geometry::sphere::Sphere;
+    use crate::geometry::{Container, Geometry, Hit};
+    use ultraviolet::Vec3;
 
     #[test]
     fn new() {
@@ -419,7 +419,11 @@ mod sphere {
     #[test]
     fn intersect_edge() {
         let sphere = Sphere::default();
-        let ray = Ray::new(Vec3::unit_x() + Vec3::unit_y(), -Vec3::unit_x(), f32::INFINITY);
+        let ray = Ray::new(
+            Vec3::unit_x() + Vec3::unit_y(),
+            -Vec3::unit_x(),
+            f32::INFINITY,
+        );
 
         let intersection = sphere.intersect(&ray);
 
@@ -465,7 +469,11 @@ mod sphere {
     #[test]
     fn get_info_2() {
         let sphere = Sphere::default();
-        let ray = Ray::new(Vec3::unit_x() + Vec3::unit_y(), -Vec3::unit_x(), f32::INFINITY);
+        let ray = Ray::new(
+            Vec3::unit_x() + Vec3::unit_y(),
+            -Vec3::unit_x(),
+            f32::INFINITY,
+        );
 
         let t = sphere.intersect(&ray).unwrap();
         let hit = Hit::new(ray, t);

@@ -1,5 +1,5 @@
-use crate::{floats, Spectrum};
 use crate::color::Color;
+use crate::{floats, Spectrum};
 use bitflags::_core::mem::swap;
 
 #[inline(always)]
@@ -47,7 +47,12 @@ pub fn fresnel_dielectric(mut cos_i: f32, mut eta_i: f32, mut eta_t: f32) -> f32
 }
 
 #[must_use]
-pub fn fresnel_conductor(mut cos_i: f32, eta_i: &Spectrum, eta_t: &Spectrum, k: &Spectrum) -> Spectrum {
+pub fn fresnel_conductor(
+    mut cos_i: f32,
+    eta_i: &Spectrum,
+    eta_t: &Spectrum,
+    k: &Spectrum,
+) -> Spectrum {
     cos_i = floats::fast_clamp(cos_i, -1.0, 1.0);
     let eta = *eta_t / *eta_i;
     let etak = *k / *eta_i;
