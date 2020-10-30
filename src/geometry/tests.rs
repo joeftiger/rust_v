@@ -1,3 +1,5 @@
+#[allow(clippy::float_cmp)]
+
 #[cfg(test)]
 mod aabb {
     use crate::floats;
