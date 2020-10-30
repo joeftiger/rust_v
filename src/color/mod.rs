@@ -297,7 +297,7 @@ pub fn linears_to_srgb(val: Vec3) -> Vec3 {
 }
 
 impl Srgb {
-    pub fn to_vec(&self) -> Vec3 {
+    pub fn to_vec3(&self) -> Vec3 {
         Vec3::from(self.data)
     }
 }
@@ -323,7 +323,7 @@ impl Color for Srgb {
     }
 
     fn to_xyz(&self) -> Xyz {
-        Xyz::from(srgb_to_xyz_mat() * srgbs_to_linear(self.to_vec()))
+        Xyz::from(srgb_to_xyz_mat() * srgbs_to_linear(self.to_vec3()))
     }
 
     fn black() -> Self {
@@ -365,7 +365,7 @@ impl From<Vec3> for Srgb {
 }
 
 impl Xyz {
-    pub fn to_vec(&self) -> Vec3 {
+    pub fn to_vec3(&self) -> Vec3 {
         Vec3::from(self.data)
     }
 }
@@ -387,7 +387,7 @@ impl Color for Xyz {
     }
 
     fn to_rgb(&self) -> Srgb {
-        Srgb::from(linears_to_srgb(xyz_to_srgb_mat() * self.to_vec()))
+        Srgb::from(linears_to_srgb(xyz_to_srgb_mat() * self.to_vec3()))
     }
 
     fn to_xyz(&self) -> Xyz {
