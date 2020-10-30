@@ -1,5 +1,6 @@
 use crate::Spectrum;
-use ultraviolet::Vec3;
+use ultraviolet::{Vec3, Vec2};
+use crate::render::fresnel::Fresnel;
 
 bitflags! {
     pub struct BxDFType: u8 {
@@ -43,7 +44,9 @@ pub trait BxDF: Send + Sync {
 
     fn apply(&self, view: Vec3, from: Vec3) -> Spectrum;
 
-    // fn apply_sample(&self, view: Vec3, from: Vec3, )
+    fn apply_sample(&self, view: Vec3, from: Vec3, sample: Vec2, pdf: f32, sampled_type: BxDFType) -> Spectrum;
+
+    fn pdf(&self, view: Vec3, from: Vec3) -> f32;
 }
 
 pub struct ScaledBxDF {
@@ -66,9 +69,25 @@ impl BxDF for ScaledBxDF {
     fn apply(&self, view: Vec3, from: Vec3) -> Spectrum {
         self.scale * self.bxdf.apply(view, from)
     }
+
+    fn apply_sample(&self, view: Vec3, from: Vec3, sample: Vec2, pdf: f32, sampled_type: BxDFType) -> Spectrum {
+        self.scale * self.bxdf.apply_sample(view, from, sample, pdf, sampled_type)
+    }
+
+    fn pdf(&self, view: Vec3, from: Vec3) -> f32 {
+        self.bxdf.pdf(view, from)
+    }
 }
 
-pub struct LambertianReflection(pub Spectrum);
+pub struct LambertianReflection {
+    r: Spectrum,
+}
+
+impl LambertianReflection {
+    pub fn new(r: Spectrum) -> Self {
+        Self { r }
+    }
+}
 
 impl BxDF for LambertianReflection {
     fn get_type(&self) -> BxDFType {
@@ -76,6 +95,43 @@ impl BxDF for LambertianReflection {
     }
 
     fn apply(&self, _: Vec3, _: Vec3) -> Spectrum {
-        self.0 / std::f32::consts::PI
+        self.r / std::f32::consts::PI
+    }
+
+    fn apply_sample(&self, view: Vec3, from: Vec3, sample: Vec2, pdf: f32, sampled_type: BxDFType) -> Spectrum {
+        unimplemented!()
+    }
+
+    fn pdf(&self, view: Vec3, from: Vec3) -> f32 {
+        unimplemented!()
+    }
+}
+
+pub struct SpecularReflection {
+    r: Spectrum,
+    fresnel: Box<dyn Fresnel>,
+}
+
+impl SpecularReflection {
+    pub fn new(r: Spectrum, fresnel: Box<dyn Fresnel>) -> Self {
+        Self { r, fresnel }
+    }
+}
+
+impl BxDF for SpecularReflection {
+    fn get_type(&self) -> BxDFType {
+        BxDFType::REFLECTION | BxDFType::SPECULAR
+    }
+
+    fn apply(&self, _: Vec3, _: Vec3) -> Spectrum {
+        0.0.into()
+    }
+
+    fn apply_sample(&self, view: Vec3, from: Vec3, sample: Vec2, pdf: f32, sampled_type: BxDFType) -> Spectrum {
+        unimplemented!()
+    }
+
+    fn pdf(&self, view: Vec3, from: Vec3) -> f32 {
+        unimplemented!()
     }
 }
