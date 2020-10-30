@@ -45,8 +45,6 @@ pub trait BxDF: Send + Sync {
     fn apply(&self, view: Vec3, from: Vec3) -> Spectrum;
 
     fn apply_sample(&self, view: Vec3, from: Vec3, sample: Vec2, pdf: f32, sampled_type: BxDFType) -> Spectrum;
-
-    fn pdf(&self, view: Vec3, from: Vec3) -> f32;
 }
 
 pub struct ScaledBxDF {
@@ -73,10 +71,6 @@ impl BxDF for ScaledBxDF {
     fn apply_sample(&self, view: Vec3, from: Vec3, sample: Vec2, pdf: f32, sampled_type: BxDFType) -> Spectrum {
         self.scale * self.bxdf.apply_sample(view, from, sample, pdf, sampled_type)
     }
-
-    fn pdf(&self, view: Vec3, from: Vec3) -> f32 {
-        self.bxdf.pdf(view, from)
-    }
 }
 
 pub struct LambertianReflection {
@@ -99,10 +93,6 @@ impl BxDF for LambertianReflection {
     }
 
     fn apply_sample(&self, view: Vec3, from: Vec3, sample: Vec2, pdf: f32, sampled_type: BxDFType) -> Spectrum {
-        unimplemented!()
-    }
-
-    fn pdf(&self, view: Vec3, from: Vec3) -> f32 {
         unimplemented!()
     }
 }
@@ -128,10 +118,6 @@ impl BxDF for SpecularReflection {
     }
 
     fn apply_sample(&self, view: Vec3, from: Vec3, sample: Vec2, pdf: f32, sampled_type: BxDFType) -> Spectrum {
-        unimplemented!()
-    }
-
-    fn pdf(&self, view: Vec3, from: Vec3) -> f32 {
         unimplemented!()
     }
 }
