@@ -123,32 +123,32 @@ pub trait Geometry: Send + Sync {
 
 /// A trait that allows measuring the angle between two structs.
 /// For example:
-/// ```
+/// ```rust
 /// use ultraviolet::Vec3;
 /// use rust_v::geometry::AngularExt;
 /// use rust_v::floats;
 ///
 /// let v1 = Vec3::unit_x();
 /// let v2 = Vec3::unit_y();
-/// let angle = v1.angle_to(v2);
+/// let angle = v1.angle_to(&v2);
 ///
-/// assert_eq!(floats::approx_eq(angle, 90.0 * 180.0 / std::f32::consts::PI));  // 90 degrees in radians
+/// assert!(floats::approx_equal(angle, std::f32::consts::FRAC_PI_2));  // 90 degrees in radians
 /// ```
-pub trait AngularExt<T> {
+pub trait AngularExt {
     /// Returns the angle to the other in radians.
     #[must_use]
-    fn angle_to(&self, other: T) -> f32;
+    fn angle_to(&self, other: &Self) -> f32;
 }
 
-impl AngularExt<Self> for Vec3 {
+impl AngularExt for Vec3 {
     #[inline]
     #[must_use]
-    fn angle_to(&self, other: Self) -> f32 {
-        f32::acos(self.dot(other) / (self.mag() * other.mag()))
+    fn angle_to(&self, other: &Self) -> f32 {
+        f32::acos(self.dot(*other) / (self.mag() * other.mag()))
     }
 }
 
-/// A trait that allows the implementation to ceil / floor itself, such that e.g.:
+/// A trait that allows ceiling / flooring itself, such that e.g.:
 /// ```rust
 /// use ultraviolet::Vec3;
 /// use rust_v::geometry::CeilFloorExt;
@@ -185,7 +185,7 @@ impl CeilFloorExt for Vec3 {
 
 /// Allows itself to be inversed.
 /// For example:
-/// ```
+/// ```rust
 /// use ultraviolet::Vec3;
 /// use rust_v::geometry::InversibleExt;
 ///
@@ -213,7 +213,7 @@ impl InversibleExt for Vec3 {
 
 /// Allows itself to be strictly compared to another self.
 /// For example:
-/// ```
+/// ```rust
 /// use ultraviolet::Vec3;
 /// use rust_v::geometry::ComparableExt;
 ///
