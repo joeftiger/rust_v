@@ -126,12 +126,13 @@ pub trait Geometry: Send + Sync {
 /// ```
 /// use ultraviolet::Vec3;
 /// use rust_v::geometry::AngularExt;
+/// use rust_v::floats;
 ///
 /// let v1 = Vec3::unit_x();
 /// let v2 = Vec3::unit_y();
 /// let angle = v1.angle_to(v2);
 ///
-/// assert_eq!(angle, 90.0 * 180.0 / f32::consts::PI);  // 90 degrees in radians
+/// assert_eq!(floats::approx_eq(angle, 90.0 * 180.0 / std::f32::consts::PI));  // 90 degrees in radians
 /// ```
 pub trait AngularExt<T> {
     /// Returns the angle to the other in radians.
@@ -207,5 +208,55 @@ impl InversibleExt for Vec3 {
             y: 1.0 / self.y,
             z: 1.0 / self.z,
         }
+    }
+}
+
+/// Allows itself to be strictly compared to another self.
+/// For example:
+/// ```
+/// use ultraviolet::Vec3;
+/// use rust_v::geometry::ComparableExt;
+///
+/// let v = Vec3::zero();
+/// let other = Vec3::one();
+///
+/// assert!(v.lt(&other));
+/// ```
+pub trait ComparableExt {
+    #[must_use]
+    fn lt(&self, other: &Self) -> bool;
+
+    #[must_use]
+    fn leq(&self, other: &Self) -> bool;
+
+    #[must_use]
+    fn gt(&self, other: &Self) -> bool;
+
+    #[must_use]
+    fn geq(&self, other: &Self) -> bool;
+
+    #[must_use]
+    fn eq(&self, other: &Self) -> bool;
+}
+
+impl ComparableExt for Vec3 {
+    fn lt(&self, other: &Self) -> bool {
+        self.x < other.x && self.y < other.y && self.z < other.z
+    }
+
+    fn leq(&self, other: &Self) -> bool {
+        self.x <= other.x && self.y <= other.y && self.z <= other.z
+    }
+
+    fn gt(&self, other: &Self) -> bool {
+        self.x > other.x && self.y > other.y && self.z > other.z
+    }
+
+    fn geq(&self, other: &Self) -> bool {
+        self.x >= other.x && self.y >= other.y && self.z >= other.z
+    }
+
+    fn eq(&self, other: &Self) -> bool {
+        self == other
     }
 }
