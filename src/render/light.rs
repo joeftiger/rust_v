@@ -12,7 +12,11 @@ pub struct Light {
 
 impl Light {
     pub fn new(point: Vec3, color: Spectrum, intensity: f32) -> Self {
-        Self { point, color, intensity }
+        Self {
+            point,
+            color,
+            intensity,
+        }
     }
 
     pub fn direction_from(&self, point: Vec3) -> Vec3 {
@@ -32,9 +36,11 @@ impl Light {
     }
 
     pub fn ray_from(&self, point: Vec3) -> Ray {
-        Ray::new(point,
-        self.direction_from(point),
-        self.distance(point) + floats::BIG_EPSILON)
+        Ray::new(
+            point,
+            self.direction_from(point),
+            self.distance(point) + floats::BIG_EPSILON,
+        )
     }
 
     pub fn distance(&self, point: Vec3) -> f32 {

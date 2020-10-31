@@ -1,8 +1,7 @@
-
 #[cfg(test)]
 mod util {
-    use ultraviolet::Vec3;
     use crate::geometry::ray::Ray;
+    use ultraviolet::Vec3;
 
     pub fn unit_vec3s() -> [Vec3; 6] {
         [
@@ -29,9 +28,9 @@ mod aabb {
     use crate::floats;
     use crate::geometry::aabb::*;
     use crate::geometry::ray::Ray;
+    use crate::geometry::tests::util::{unit_rays, unit_vec3s};
     use crate::geometry::{Container, Geometry, Hit};
     use ultraviolet::Vec3;
-    use crate::geometry::tests::util::{unit_rays, unit_vec3s};
 
     #[test]
     fn new() {
@@ -313,22 +312,20 @@ mod aabb {
         let max = Vec3::one();
         let aabb = Aabb::new(min, max);
 
-        unit_rays(1.5)
-            .iter()
-            .for_each(|ray| {
-                println!("{:?}", *ray);
+        unit_rays(1.5).iter().for_each(|ray| {
+            println!("{:?}", *ray);
 
-                let hit = Hit::new(*ray, 1.0);
-                let info = aabb.get_info(hit);
+            let hit = Hit::new(*ray, 1.0);
+            let info = aabb.get_info(hit);
 
-                // exactly 1.0 apart
-                let point = ray.origin + ray.direction;
+            // exactly 1.0 apart
+            let point = ray.origin + ray.direction;
 
-                assert_eq!(hit.ray, info.ray);
-                assert_eq!(hit.t, info.t);
-                assert_eq!(point, info.point);
-                assert_eq!(-ray.direction, info.normal);    // left, right ERROR
-            });
+            assert_eq!(hit.ray, info.ray);
+            assert_eq!(hit.t, info.t);
+            assert_eq!(point, info.point);
+            assert_eq!(-ray.direction, info.normal); // left, right ERROR
+        });
     }
 }
 

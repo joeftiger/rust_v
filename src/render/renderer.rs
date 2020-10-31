@@ -1,9 +1,9 @@
+use crate::color::Color;
 use crate::render::camera::Camera;
 use crate::render::scene::Scene;
+use crate::{floats, Spectrum};
 use image::{Rgb, RgbImage};
 use ultraviolet::Vec3;
-use crate::{Spectrum, floats};
-use crate::color::Color;
 
 pub trait Renderer: Send + Sync {
     fn is_done(&self) -> bool;
@@ -144,7 +144,9 @@ impl RgbRenderer {
             let view = -si.info.ray.direction;
 
             let obj = self.scene.get_obj(si.obj_id);
-            let color: Spectrum = self.scene.lights
+            let color: Spectrum = self
+                .scene
+                .lights
                 .iter()
                 .filter(|l| self.scene.is_occluded(&l.ray_to(si.info.point)))
                 .map(|l| {
