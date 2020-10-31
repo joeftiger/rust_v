@@ -30,6 +30,12 @@ impl Light {
         )
     }
 
+    pub fn ray_from(&self, point: Vec3) -> Ray {
+        Ray::new(point,
+        self.direction_from(point),
+        self.distance(point) + floats::BIG_EPSILON)
+    }
+
     pub fn distance(&self, point: Vec3) -> f32 {
         (self.point - point).mag()
     }
