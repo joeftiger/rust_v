@@ -6,7 +6,7 @@ use ultraviolet::{Bivec3, Rotor3};
 use crate::render::renderer::Renderer;
 
 const WAIT_KEY_MS: u64 = 1;
-const RENDER_TIME_MS: u64 = 1000 / 60;
+const RENDER_TIME_MS: u64 = 1000 / 25;
 const ROTATION: f32 = -std::f32::consts::FRAC_PI_8 / 2.0; // 11.25°
 
 enum Direction {
