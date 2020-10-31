@@ -15,8 +15,11 @@ mod util {
         ]
     }
 
-    pub fn create_unit_rays(dist: f32) -> Vec<Ray> {
-        unit_vec3s().iter().map(|v| Ray::new(*v * dist, -*v, f32::INFINITY)).collect()
+    pub fn unit_rays(dist_from_zero: f32) -> Vec<Ray> {
+        unit_vec3s()
+            .iter()
+            .map(|v| Ray::new(*v * dist_from_zero, -*v, f32::INFINITY))
+            .collect()
     }
 }
 
@@ -28,7 +31,7 @@ mod aabb {
     use crate::geometry::ray::Ray;
     use crate::geometry::{Container, Geometry, Hit};
     use ultraviolet::Vec3;
-    use crate::geometry::tests::util::{create_unit_rays, unit_vec3s};
+    use crate::geometry::tests::util::{unit_rays, unit_vec3s};
 
     #[test]
     fn new() {
@@ -310,7 +313,7 @@ mod aabb {
         let max = Vec3::one();
         let aabb = Aabb::new(min, max);
 
-        create_unit_rays(1.5)
+        unit_rays(1.5)
             .iter()
             .for_each(|ray| {
                 println!("{:?}", *ray);
