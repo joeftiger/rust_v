@@ -1,6 +1,6 @@
 use crate::floats;
 use crate::geometry::ray::Ray;
-use crate::geometry::{Container, Geometry, GeometryInfo, Hit};
+use crate::geometry::{Container, Geometry, GeometryInfo, Hit, ComparableExt};
 use ultraviolet::Vec3;
 
 #[derive(Clone, Debug, PartialEq)]
@@ -62,6 +62,11 @@ impl Aabb {
         let max = self.max.max_by_component(other.max);
 
         Self::new(min, max)
+    }
+
+    /// Doe the two aabbs overlap
+    pub fn overlaps(&self, other: &Self) -> bool {
+        self.min.lt(&other.max) && self.max.gt(&other.min)
     }
 }
 

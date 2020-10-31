@@ -118,6 +118,32 @@ mod aabb {
     }
 
     #[test]
+    fn overlaps() {
+        let min = Vec3::zero();
+        let max = Vec3::one();
+        let aabb = Aabb::new(min, max);
+
+        let min = Vec3::one() / 2.0;
+        let max = Vec3::one();
+        let other = Aabb::new(min, max);
+
+        assert!(aabb.overlaps(&other));
+    }
+
+    #[test]
+    fn overlaps_not() {
+        let min = Vec3::zero();
+        let max = Vec3::one();
+        let aabb = Aabb::new(min, max);
+
+        let min = -Vec3::one();
+        let max = Vec3::zero();
+        let other = Aabb::new(min, max);
+
+        assert!(!aabb.overlaps(&other));
+    }
+
+    #[test]
     fn contains() {
         let min = Vec3::zero();
         let max = Vec3::one();
