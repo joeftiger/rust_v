@@ -1,3 +1,25 @@
+
+#[cfg(test)]
+mod util {
+    use ultraviolet::Vec3;
+    use crate::geometry::ray::Ray;
+
+    pub fn unit_vec3s() -> [Vec3; 6] {
+        [
+            Vec3::unit_x(),
+            -Vec3::unit_x(),
+            Vec3::unit_y(),
+            -Vec3::unit_y(),
+            Vec3::unit_z(),
+            -Vec3::unit_z(),
+        ]
+    }
+
+    pub fn create_unit_rays(dist: f32) -> Vec<Ray> {
+        unit_vec3s().iter().map(|v| Ray::new(*v * dist, -*v, f32::INFINITY)).collect()
+    }
+}
+
 #[allow(clippy::float_cmp)]
 #[cfg(test)]
 mod aabb {
@@ -6,6 +28,7 @@ mod aabb {
     use crate::geometry::ray::Ray;
     use crate::geometry::{Container, Geometry, Hit};
     use ultraviolet::Vec3;
+    use crate::geometry::tests::util::{create_unit_rays, unit_vec3s};
 
     #[test]
     fn new() {
@@ -287,17 +310,22 @@ mod aabb {
         let max = Vec3::one();
         let aabb = Aabb::new(min, max);
 
-        let point = Vec3::one() / 2.0 + Vec3::unit_x() * 0.5;
+        create_unit_rays(1.5)
+            .iter()
+            .for_each(|ray| {
+                println!("{:?}", *ray);
 
-        let ray = Ray::new(point + Vec3::unit_x(), -Vec3::unit_x(), f32::INFINITY);
-        let hit = Hit::new(ray, 1.0);
+                let hit = Hit::new(*ray, 1.0);
+                let info = aabb.get_info(hit);
 
-        let info = aabb.get_info(hit);
+                // exactly 1.0 apart
+                let point = ray.origin + ray.direction;
 
-        assert_eq!(hit.ray, info.ray);
-        assert_eq!(hit.t, info.t);
-        assert_eq!(point, info.point);
-        assert_eq!(-ray.direction, info.normal);
+                assert_eq!(hit.ray, info.ray);
+                assert_eq!(hit.t, info.t);
+                assert_eq!(point, info.point);
+                assert_eq!(-ray.direction, info.normal);    // left, right ERROR
+            });
     }
 }
 
