@@ -11,4 +11,4 @@ pub mod math;
 pub mod render;
 pub mod store;
 
-pub type Spectrum = Xyz;
+pub type Spectrum = Srgb;
