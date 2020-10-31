@@ -2,6 +2,8 @@ use crate::render::camera::Camera;
 use crate::render::scene::Scene;
 use image::{Rgb, RgbImage};
 use ultraviolet::Vec3;
+use crate::{Spectrum, floats};
+use crate::color::Color;
 
 pub trait Renderer: Send + Sync {
     fn is_done(&self) -> bool;
@@ -24,6 +26,7 @@ pub mod debug {
     use crate::render::scene::Scene;
     use crate::Spectrum;
     use image::{Rgb, RgbImage};
+    use ultraviolet::Vec3;
 
     pub struct NormalRenderer {
         scene: Scene,
@@ -53,7 +56,7 @@ pub mod debug {
             let si = self.scene.intersect(&ray);
 
             if let Some(si) = si {
-                let normal = si.info.normal.abs();
+                let normal = (si.info.normal + Vec3::one()) / 2.0;
                 let color = Spectrum::from(normal);
 
                 color.into()
@@ -137,8 +140,22 @@ impl RgbRenderer {
         let si = self.scene.intersect(&ray);
 
         if let Some(si) = si {
+            let normal = si.info.normal;
+            let view = -si.info.ray.direction;
+
             let obj = self.scene.get_obj(si.obj_id);
-            let color = obj.bxdf.apply(Vec3::default(), Vec3::default());
+            let color: Spectrum = self.scene.lights
+                .iter()
+                .filter(|l| self.scene.is_occluded(&l.ray_to(si.info.point)))
+                .map(|l| {
+                    let dir = l.direction_from(si.info.point);
+                    let cos = normal.dot(dir).max(0.0);
+
+                    let intensity = l.intensity_at(si.info.point);
+
+                    obj.bxdf.apply(view, dir) * (intensity * cos)
+                })
+                .sum();
 
             color.into()
         } else {
