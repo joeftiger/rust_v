@@ -1,6 +1,6 @@
 use ultraviolet::Vec3;
 
-use crate::floats::BIG_EPSILON;
+use crate::floats;
 use crate::geometry::ray::Ray;
 use crate::Spectrum;
 
@@ -26,7 +26,7 @@ impl Light {
         Ray::new(
             self.point,
             self.direction_to(point),
-            self.distance(point) + BIG_EPSILON,
+            self.distance(point) + floats::BIG_EPSILON,
         )
     }
 
