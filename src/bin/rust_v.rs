@@ -134,7 +134,7 @@ fn create_random_scene_camera() -> (Scene, Camera) {
     }
 
     println!("Creating lights...");
-    let light = Light::new(Vec3::zero(), Spectrum::from(Vec3::one()));
+    let light = Light::new(Vec3::zero(), Spectrum::from(Vec3::one()), 25.0);
 
     scene.push_light(light);
 

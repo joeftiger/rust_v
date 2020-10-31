@@ -7,11 +7,12 @@ use crate::Spectrum;
 pub struct Light {
     pub point: Vec3,
     pub color: Spectrum,
+    pub intensity: f32,
 }
 
 impl Light {
-    pub fn new(point: Vec3, color: Spectrum) -> Self {
-        Self { point, color }
+    pub fn new(point: Vec3, color: Spectrum, intensity: f32) -> Self {
+        Self { point, color, intensity }
     }
 
     pub fn direction_from(&self, point: Vec3) -> Vec3 {
@@ -38,5 +39,11 @@ impl Light {
 
     pub fn distance(&self, point: Vec3) -> f32 {
         (self.point - point).mag()
+    }
+
+    pub fn intensity_at(&self, point: Vec3) -> Spectrum {
+        let dist = self.distance(point);
+
+        self.color * (self.intensity / (dist * dist))
     }
 }

@@ -151,11 +151,11 @@ fn ceiling() -> SceneObject {
 fn light() -> Light {
     let point = Vec3::new(
         (LEFT_WALL + RIGHT_WALL) / 2.0,
-        CEILING - THICKNESS,
+        CEILING - (CEILING - FLOOR) / 20.0,
         (FRONT + BACK_WALL) / 2.0,
     );
 
     let color = Spectrum::white();
 
-    Light::new(point, color)
+    Light::new(point, color, 25.0)
 }
