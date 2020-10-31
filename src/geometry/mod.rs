@@ -221,6 +221,7 @@ impl InversibleExt for Vec3 {
 /// let other = Vec3::one();
 ///
 /// assert!(v.lt(&other));
+/// assert!(other.gt(&v));
 /// ```
 pub trait ComparableExt {
     #[must_use]
