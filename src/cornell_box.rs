@@ -1,5 +1,6 @@
 use crate::color::Color;
 use crate::geometry::aabb::Aabb;
+use crate::geometry::cylinder::Cylinder;
 use crate::geometry::sphere::Sphere;
 use crate::render::bxdf::LambertianReflection;
 use crate::render::camera::Camera;
@@ -8,7 +9,6 @@ use crate::render::scene::Scene;
 use crate::render::scene_objects::SceneObject;
 use crate::Spectrum;
 use ultraviolet::Vec3;
-use crate::geometry::cylinder::Cylinder;
 
 pub const LEFT_WALL: f32 = -3.0;
 pub const RIGHT_WALL: f32 = 3.0;

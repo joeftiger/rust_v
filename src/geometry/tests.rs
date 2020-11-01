@@ -107,7 +107,10 @@ mod aabb {
         let max = Vec3::one();
         let aabb = Aabb::new(min, max);
 
-        assert!(floats::approx_equal(f32::sqrt(3.0) / 2.0, aabb.max_radius()));
+        assert!(floats::approx_equal(
+            f32::sqrt(3.0) / 2.0,
+            aabb.max_radius()
+        ));
     }
 
     #[test]
