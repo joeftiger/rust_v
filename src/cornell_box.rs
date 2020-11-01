@@ -8,6 +8,7 @@ use crate::render::scene::Scene;
 use crate::render::scene_objects::SceneObject;
 use crate::Spectrum;
 use ultraviolet::Vec3;
+use crate::geometry::cylinder::Cylinder;
 
 pub const LEFT_WALL: f32 = -3.0;
 pub const RIGHT_WALL: f32 = 3.0;
@@ -31,8 +32,9 @@ pub fn create_box() -> Scene {
     scene.push_obj(floor());
     scene.push_obj(ceiling());
 
-    // spheres
-    scene.push_obj(sphere_0());
+    // objects
+    scene.push_obj(sphere());
+    scene.push_obj(cylinder());
 
     // light
     scene.push_light(light());
@@ -60,12 +62,12 @@ pub fn create_camera(width: u32, height: u32) -> Camera {
     Camera::new(position, center, up, FOVY, width, height)
 }
 
-fn sphere_0() -> SceneObject {
+fn sphere() -> SceneObject {
     // center on ground
     let center = Vec3::new(
-        (LEFT_WALL + RIGHT_WALL) / 2.0,
+        LEFT_WALL + RIGHT_WALL * 1.5,
         FLOOR + RADIUS,
-        (FRONT + BACK_WALL) / 2.0,
+        (FRONT + BACK_WALL) / 4.0,
     );
 
     let sphere = Sphere::new(center, RADIUS);
@@ -74,6 +76,25 @@ fn sphere_0() -> SceneObject {
     let bxdf = LambertianReflection::new(color);
 
     SceneObject::new(Box::new(sphere), Box::new(bxdf))
+}
+
+fn cylinder() -> SceneObject {
+    let height = (CEILING - FLOOR) / 2.0;
+    let center = Vec3::new(
+        LEFT_WALL * 1.5 + RIGHT_WALL,
+        FLOOR,
+        (FRONT + BACK_WALL) / 1.5,
+    );
+    let center = center + Vec3::unit_y() * (height / 2.0);
+
+    let axis = Vec3::unit_y();
+
+    let cylinder = Cylinder::new(center, axis, RADIUS, height);
+
+    let color = Spectrum::white() * 0.75;
+    let bxdf = LambertianReflection::new(color);
+
+    SceneObject::new(Box::new(cylinder), Box::new(bxdf))
 }
 
 fn left_wall() -> SceneObject {
