@@ -26,6 +26,8 @@ impl Aabb {
         Self { min, max }
     }
 
+    #[inline]
+    #[must_use]
     pub fn is_valid(&self) -> bool {
         self.min.x <= self.max.x && self.min.y <= self.max.y && self.min.z <= self.max.z
     }
@@ -45,7 +47,13 @@ impl Aabb {
     #[inline]
     #[must_use]
     pub fn max_radius(&self) -> f32 {
-        (self.center() - self.min).mag()
+        self.size().mag() / 2.0
+    }
+
+    #[inline]
+    #[must_use]
+    pub fn min_radius(&self) -> f32 {
+        self.size().component_min() / 2.0
     }
 
     /// Creates the inner join / intersection of both aabbs.
@@ -64,7 +72,7 @@ impl Aabb {
         Self::new(min, max)
     }
 
-    /// Doe the two aabbs overlap
+    /// Do the two aabbs overlap
     pub fn overlaps(&self, other: &Self) -> bool {
         self.min.lt(&other.max) && self.max.gt(&other.min)
     }
