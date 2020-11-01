@@ -23,6 +23,20 @@ impl Cylinder {
             height,
         }
     }
+
+    fn check_valid_t(&self, ray: &Ray, t: f32) -> bool {
+        if t <= 0.0 {
+            return false;
+        }
+
+        let z = self.axis.dot(ray.at(t) - self.center);
+
+        if 2.0 * z.abs() < self.height {
+            return true;
+        }
+
+        false
+    }
 }
 
 impl Default for Cylinder {
@@ -59,12 +73,21 @@ impl Geometry for Cylinder {
         // (in front of the viewer and within the cylinder's height).
         let solutions = solve_quadratic(a, b, c);
         if let Some((t0, t1)) = solutions {
-            let t_min = t0.min(t1);
+            let mut t_min = None;
+
+            if self.check_valid_t(ray, t0) {
+                t_min = Some(t0)
+            }
+            if self.check_valid_t(ray, t1) {
+                t_min = Some(t_min.unwrap_or(f32::INFINITY).min(t1));
+            }
+
+            let t_min = t_min?;
 
             if ray.t < t_min {
                 None
             } else {
-                Some(t0.min(t1))
+                Some(t_min)
             }
         } else {
             None
@@ -73,12 +96,13 @@ impl Geometry for Cylinder {
 
     fn get_info(&self, hit: Hit) -> GeometryInfo {
         let point = hit.ray.at(hit.t);
-        let mut normal = self.axis.dot((point - self.center) / self.radius) * self.axis;
+        let mut normal = (point - self.center) / self.radius;
+        normal -= normal.dot(self.axis) * self.axis;
 
         // Choose the normal's orientation to be opposite the ray's
         // (in case the ray intersects the inside surface)
         if normal.dot(hit.ray.direction) > 0.0 {
-            normal *= -1.0;
+            normal = -normal;
         }
 
         GeometryInfo::new(hit, point, normal)
