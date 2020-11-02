@@ -46,14 +46,14 @@ pub fn create_camera(width: u32, height: u32) -> Camera {
     // center and a bit back
     let position = Vec3::new(
         (LEFT_WALL + RIGHT_WALL) / 2.0,
-        (CEILING + FLOOR) / 1.5,
+        (CEILING + FLOOR) / 2.0,
         FRONT + 5.0,
     );
 
     // center
     let center = Vec3::new(
         (LEFT_WALL + RIGHT_WALL) / 2.0,
-        (CEILING + FLOOR) / 2.5,
+        (CEILING + FLOOR) / 2.0,
         (FRONT + BACK_WALL) / 2.0,
     );
 
