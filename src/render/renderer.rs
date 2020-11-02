@@ -4,6 +4,7 @@ use crate::render::scene::Scene;
 use crate::{floats, Spectrum};
 use image::{Rgb, RgbImage};
 use ultraviolet::Vec3;
+use crate::render::bxdf::BxDFType;
 
 pub trait Renderer: Send + Sync {
     fn is_done(&self) -> bool;
@@ -145,6 +146,7 @@ impl RgbRenderer {
             let view = -si.info.ray.direction;
 
             let obj = self.scene.get_obj(si.obj_id);
+
             let color: Spectrum = self
                 .scene
                 .lights
@@ -156,7 +158,7 @@ impl RgbRenderer {
 
                     let intensity = l.intensity_at(si.info.point);
 
-                    obj.bxdf.apply(view, to_light) * (intensity * cos + 1.0.into())
+                    obj.bxdf.apply(view, to_light) * (intensity * cos + Spectrum::white())
                 })
                 .sum();
 

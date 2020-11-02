@@ -1,5 +1,6 @@
 use crate::render::reflection;
 use crate::Spectrum;
+use crate::color::Color;
 
 pub trait Fresnel: Send + Sync {
     fn evaluate(&self, cos_i: f32) -> Spectrum;
@@ -52,6 +53,6 @@ pub struct FresnelNoOp();
 
 impl Fresnel for FresnelNoOp {
     fn evaluate(&self, _: f32) -> Spectrum {
-        1.0.into()
+        Spectrum::white()
     }
 }
