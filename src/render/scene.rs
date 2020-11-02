@@ -1,9 +1,9 @@
+use crate::geometry::aabb::Aabb;
 use crate::geometry::ray::Ray;
-use crate::geometry::{Geometry, GeometryInfo, Hit, Container};
+use crate::geometry::{Container, Geometry, GeometryInfo, Hit};
 use crate::render::light::Light;
 use crate::render::scene_objects::SceneObject;
 use crate::store::Store;
-use crate::geometry::aabb::Aabb;
 use ultraviolet::Vec3;
 
 /// Consists of
@@ -43,10 +43,12 @@ impl Scene {
         &self.objects[obj_id]
     }
 
+    /// Checks if the given ray intersects any object before reaching it's own maximum t lifespan.
     pub fn is_occluded(&self, ray: &Ray) -> bool {
         self.objects
             .iter()
             .any(|object| object.intersect(ray).is_some())
+        //.any(|object| object.bounding_box().intersect(ray).is_some() && object.intersect(ray).is_some())
     }
 
     pub fn intersect(&self, ray: &Ray) -> Option<SceneIntersection> {
@@ -54,10 +56,12 @@ impl Scene {
         let mut index = None;
 
         for (i, obj) in self.objects.iter().enumerate() {
+            // if obj.bounding_box().intersect(&ray).is_some() {
             if let Some(t) = obj.intersect(&ray) {
                 index = Some(i);
                 ray.t = t;
             }
+            // }
         }
 
         if let Some(index) = index {

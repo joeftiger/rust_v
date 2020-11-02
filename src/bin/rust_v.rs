@@ -42,7 +42,7 @@ fn main() {
         } else {
             renderer.render_all();
 
-            let image = renderer.get_image();
+            let image = renderer.get_image_u16();
             image.save("./rendering.png").unwrap();
         }
     } else {

@@ -28,7 +28,7 @@ mod aabb {
     use crate::floats;
     use crate::geometry::aabb::*;
     use crate::geometry::ray::Ray;
-    use crate::geometry::tests::util::{unit_rays, unit_vec3s};
+    use crate::geometry::tests::util::unit_rays;
     use crate::geometry::{Container, Geometry, Hit};
     use ultraviolet::Vec3;
 

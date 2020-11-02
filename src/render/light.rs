@@ -1,6 +1,5 @@
 use ultraviolet::Vec3;
 
-use crate::floats;
 use crate::geometry::ray::Ray;
 use crate::Spectrum;
 

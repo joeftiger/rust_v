@@ -1,6 +1,6 @@
+use crate::color::Color;
 use crate::render::reflection;
 use crate::Spectrum;
-use crate::color::Color;
 
 pub trait Fresnel: Send + Sync {
     fn evaluate(&self, cos_i: f32) -> Spectrum;

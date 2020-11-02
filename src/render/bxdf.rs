@@ -1,7 +1,7 @@
+use crate::color::Color;
 use crate::render::fresnel::Fresnel;
 use crate::Spectrum;
 use ultraviolet::{Vec2, Vec3};
-use crate::color::Color;
 
 bitflags! {
     pub struct BxDFType: u8 {

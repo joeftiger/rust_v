@@ -4,6 +4,7 @@ use show_image::{make_window_full, KeyCode, Window, WindowOptions};
 use ultraviolet::{Bivec3, Rotor3};
 
 use crate::render::renderer::Renderer;
+use image::ImageFormat;
 
 const WAIT_KEY_MS: u64 = 1;
 const RENDER_TIME_MS: u64 = 1000 / 25;
@@ -92,7 +93,7 @@ impl RenderWindow {
                 }
             }
 
-            let image = self.renderer.get_image();
+            let image = self.renderer.get_image_u8();
             self.window
                 .set_image(image, "Rendering")
                 .expect("Unable to update image in window");
@@ -129,6 +130,14 @@ impl RenderWindow {
         match input {
             KeyCode::Escape => self.should_exit = true,
             KeyCode::Backspace => self.should_update_render = true,
+            KeyCode::Enter => {
+                println!("Saving to ./rendering ...");
+                self.renderer
+                    .get_image_u16()
+                    .save_with_format("./rendering.png", ImageFormat::Png)
+                    .expect("Could not save image");
+                println!("Successfully saved");
+            },
             KeyCode::ArrowUp => self.rotate_camera(Direction::UP),
             KeyCode::ArrowDown => self.rotate_camera(Direction::DOWN),
             KeyCode::ArrowLeft => self.rotate_camera(Direction::LEFT),

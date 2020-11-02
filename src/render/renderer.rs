@@ -1,10 +1,7 @@
-use crate::color::Color;
 use crate::render::camera::Camera;
 use crate::render::scene::Scene;
-use crate::{floats, Spectrum};
-use image::{Rgb, RgbImage};
-use ultraviolet::Vec3;
-use crate::render::bxdf::BxDFType;
+use crate::{floats, Spectrum, RgbDepth};
+use image::{Rgb, ImageBuffer};
 
 pub trait Renderer: Send + Sync {
     fn is_done(&self) -> bool;
@@ -17,22 +14,30 @@ pub trait Renderer: Send + Sync {
 
     fn get_camera(&mut self) -> &mut Camera;
 
-    fn get_image(&self) -> RgbImage;
+    fn get_image_u8(&self) -> ImageBuffer<Rgb<u8>, Vec<u8>>;
+
+    fn get_image_u16(&self) -> ImageBuffer<Rgb<u16>, Vec<u16>>;
+}
+
+fn convert_u16_to_u8(vec: Vec<u16>) -> Vec<u8> {
+    vec.iter()
+        .map(|b16| (b16 / 2u16.pow(8)) as u8)
+        .collect()
 }
 
 #[allow(dead_code)]
 pub mod debug {
     use crate::render::camera::Camera;
-    use crate::render::renderer::Renderer;
+    use crate::render::renderer::{Renderer, convert_u16_to_u8};
     use crate::render::scene::Scene;
-    use crate::Spectrum;
-    use image::{Rgb, RgbImage};
+    use crate::{Spectrum, RgbDepth};
+    use image::{Rgb, ImageBuffer};
     use ultraviolet::Vec3;
 
     pub struct NormalRenderer {
         scene: Scene,
         camera: Camera,
-        image: RgbImage,
+        image: ImageBuffer<Rgb<u16>, Vec<u16>>,
         progress: u32,
     }
 
@@ -41,7 +46,7 @@ pub mod debug {
 
     impl NormalRenderer {
         pub fn new(scene: Scene, camera: Camera) -> Self {
-            let image = RgbImage::new(camera.width, camera.height);
+            let image = ImageBuffer::new(camera.width, camera.height);
 
             Self {
                 scene,
@@ -51,7 +56,7 @@ pub mod debug {
             }
         }
 
-        fn render(&self, x: u32, y: u32) -> Rgb<u8> {
+        fn render(&self, x: u32, y: u32) -> Rgb<RgbDepth> {
             let ray = self.camera.primary_ray(x, y);
 
             let si = self.scene.intersect(&ray);
@@ -107,7 +112,14 @@ pub mod debug {
             &mut self.camera
         }
 
-        fn get_image(&self) -> RgbImage {
+        fn get_image_u8(&self) -> ImageBuffer<Rgb<u8>, Vec<u8>> {
+            let data = convert_u16_to_u8(self.image.to_vec());
+
+            ImageBuffer::from_vec(self.image.width(), self.image.height(), data)
+                .expect("Could not convert u16 image to u8")
+        }
+
+        fn get_image_u16(&self) -> ImageBuffer<Rgb<u16>, Vec<u16>> {
             self.image.clone()
         }
     }
@@ -116,7 +128,7 @@ pub mod debug {
 pub struct RgbRenderer {
     scene: Scene,
     camera: Camera,
-    image: RgbImage,
+    image: ImageBuffer<Rgb<RgbDepth>, Vec<RgbDepth>>,
     progress: u32,
 }
 
@@ -125,7 +137,7 @@ unsafe impl Sync for RgbRenderer {}
 
 impl RgbRenderer {
     pub fn new(scene: Scene, camera: Camera) -> Self {
-        let image = RgbImage::new(camera.width, camera.height);
+        let image = ImageBuffer::new(camera.width, camera.height);
 
         Self {
             scene,
@@ -135,7 +147,7 @@ impl RgbRenderer {
         }
     }
 
-    fn render(&self, x: u32, y: u32) -> Rgb<u8> {
+    fn render(&self, x: u32, y: u32) -> Rgb<RgbDepth> {
         let ray = self.camera.primary_ray(x, y);
 
         let si = self.scene.intersect(&ray);
@@ -147,20 +159,26 @@ impl RgbRenderer {
 
             let obj = self.scene.get_obj(si.obj_id);
 
-            let color: Spectrum = self
-                .scene
-                .lights
-                .iter()
-                .filter(|&l| self.scene.is_occluded(&l.ray_to(si.info.point)))
-                .map(|l| {
-                    let to_light = l.direction_from(point);
+            let mut color = Spectrum::default();
+            for light in &self.scene.lights {
+                // exact vector
+                let to_light = light.direction_from(point);
+
+                // offset actual ray to avoid black pixels
+                let mut ray = light.ray_to(point);
+                ray.origin += normal * floats::BIG_EPSILON;
+
+                // normal diffuse color
+                // TODO: Subject to change
+                color += obj.bxdf.apply(view, to_light);
+
+                if !self.scene.is_occluded(&ray) {
                     let cos = normal.dot(to_light).max(0.0);
+                    let intensity = light.intensity_at(point);
 
-                    let intensity = l.intensity_at(si.info.point);
-
-                    obj.bxdf.apply(view, to_light) * (intensity * cos + Spectrum::white())
-                })
-                .sum();
+                    color += obj.bxdf.apply(view, to_light) * intensity * cos;
+                }
+            }
 
             color.into()
         } else {
@@ -209,7 +227,14 @@ impl Renderer for RgbRenderer {
         &mut self.camera
     }
 
-    fn get_image(&self) -> RgbImage {
+    fn get_image_u8(&self) -> ImageBuffer<Rgb<u8>, Vec<u8>> {
+        let data = convert_u16_to_u8(self.image.to_vec());
+
+        ImageBuffer::from_vec(self.image.width(), self.image.height(), data)
+            .expect("Could not convert u16 image to u8")
+    }
+
+    fn get_image_u16(&self) -> ImageBuffer<Rgb<u16>, Vec<u16>> {
         self.image.clone()
     }
 }
