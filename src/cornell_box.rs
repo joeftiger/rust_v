@@ -62,6 +62,18 @@ pub fn create_camera(width: u32, height: u32) -> Camera {
     Camera::new(position, center, up, FOVY, width, height)
 }
 
+fn light() -> Light {
+    let point = Vec3::new(
+        (LEFT_WALL + RIGHT_WALL) / 2.0,
+        CEILING - (CEILING - FLOOR) / 20.0,
+        (FRONT + BACK_WALL) / 2.0,
+    );
+
+    let color = Spectrum::white();
+
+    Light::new(point, color, 20.0)
+}
+
 fn sphere() -> SceneObject {
     // center on ground
     let center = Vec3::new(
@@ -167,16 +179,4 @@ fn ceiling() -> SceneObject {
     let bxdf = LambertianReflection::new(color);
 
     SceneObject::new(Box::new(aabb), Box::new(bxdf))
-}
-
-fn light() -> Light {
-    let point = Vec3::new(
-        (LEFT_WALL + RIGHT_WALL) / 2.0,
-        CEILING - (CEILING - FLOOR) / 20.0,
-        (FRONT + BACK_WALL) / 2.0,
-    );
-
-    let color = Spectrum::white();
-
-    Light::new(point, color, 25.0)
 }
