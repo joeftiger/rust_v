@@ -29,9 +29,16 @@ unsafe impl Sync for RenderWindow {}
 impl RenderWindow {
     pub fn new(name: String, mut renderer: Box<dyn Renderer>) -> Result<Self, String> {
         let camera = renderer.get_camera();
+
+        let div = f32::max(camera.width as f32 / 900.0, camera.height as f32 / 900.0).max(1.0);
+        let width = (camera.width as f32 / div) as u32;
+        let height = (camera.height as f32 / div) as u32;
+
         let options = WindowOptions::default()
             .set_name(name)
-            .set_size([camera.width, camera.height]);
+            .set_size([width, height])
+            .set_resizable(true)
+            .set_preserve_aspect_ratio(true);
 
         Ok(Self {
             window: make_window_full(options)?,
