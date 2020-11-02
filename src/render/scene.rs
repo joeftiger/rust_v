@@ -1,9 +1,10 @@
 use crate::geometry::ray::Ray;
-use crate::geometry::{Geometry, GeometryInfo, Hit};
+use crate::geometry::{Geometry, GeometryInfo, Hit, Container};
 use crate::render::light::Light;
 use crate::render::scene_objects::SceneObject;
 use crate::store::Store;
 use crate::geometry::aabb::Aabb;
+use ultraviolet::Vec3;
 
 /// Consists of
 /// - info: [GeometryInfo](../geometry/struct.GeometryInfo.html)
@@ -88,5 +89,11 @@ impl Default for Scene {
             lights: Vec::default(),
             objects: Store::default(),
         }
+    }
+}
+
+impl Container for Scene {
+    fn contains(&self, obj: Vec3) -> bool {
+        self.aabb.contains(obj)
     }
 }
