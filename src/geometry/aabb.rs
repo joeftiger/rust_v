@@ -113,8 +113,8 @@ impl Geometry for Aabb {
 
         let mut closest = None;
 
-        let min = (point - self.min).abs();
-        let max = (point - self.max).abs();
+        let min = point - self.min;
+        let max = point - self.max;
 
         // left
         closest = compare_closest(min.x, -Vec3::unit_x(), closest);
