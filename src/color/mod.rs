@@ -228,6 +228,7 @@ pub trait Color:
     + IndexMut<usize>
     + Debug
     + Into<Rgb<u8>>
+    + Into<Rgb<u16>>
 {
     /// Whether this color is black. Some computations can be omitted, if the color is black.
     fn is_black(&self) -> bool;
@@ -375,7 +376,18 @@ impl Into<Rgb<u8>> for Srgb {
         let mut data = [0; 3];
         data.iter_mut()
             .zip(self.data.iter())
-            .for_each(|(d0, d1)| *d0 = (d1 * 255.0) as u8);
+            .for_each(|(d0, d1)| *d0 = (d1 * 2u32.pow(8) as f32) as u8);
+
+        Rgb::from(data)
+    }
+}
+
+impl Into<Rgb<u16>> for Srgb {
+    fn into(self) -> Rgb<u16> {
+        let mut data = [0; 3];
+        data.iter_mut()
+            .zip(self.data.iter())
+            .for_each(|(d0, d1)| *d0 = (d1 * 2u32.pow(16) as f32) as u16);
 
         Rgb::from(data)
     }
@@ -444,6 +456,12 @@ impl Color for Xyz {
 
 impl Into<Rgb<u8>> for Xyz {
     fn into(self) -> Rgb<u8> {
+        self.to_rgb().into()
+    }
+}
+
+impl Into<Rgb<u16>> for Xyz {
+    fn into(self) -> Rgb<u16> {
         self.to_rgb().into()
     }
 }
