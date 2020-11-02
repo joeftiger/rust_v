@@ -1,6 +1,6 @@
 use crate::render::camera::Camera;
 use crate::render::scene::Scene;
-use crate::{floats, RgbDepth, Spectrum};
+use crate::{floats, Spectrum};
 use image::{ImageBuffer, Rgb};
 
 pub trait Renderer: Send + Sync {
@@ -28,7 +28,7 @@ pub mod debug {
     use crate::render::camera::Camera;
     use crate::render::renderer::{convert_u16_to_u8, Renderer};
     use crate::render::scene::Scene;
-    use crate::{RgbDepth, Spectrum};
+    use crate::Spectrum;
     use image::{ImageBuffer, Rgb};
     use ultraviolet::Vec3;
 
@@ -54,7 +54,7 @@ pub mod debug {
             }
         }
 
-        fn render(&self, x: u32, y: u32) -> Rgb<RgbDepth> {
+        fn render(&self, x: u32, y: u32) -> Rgb<u16> {
             let ray = self.camera.primary_ray(x, y);
 
             let si = self.scene.intersect(&ray);
@@ -126,7 +126,7 @@ pub mod debug {
 pub struct RgbRenderer {
     scene: Scene,
     camera: Camera,
-    image: ImageBuffer<Rgb<RgbDepth>, Vec<RgbDepth>>,
+    image: ImageBuffer<Rgb<u16>, Vec<u16>>,
     progress: u32,
 }
 
@@ -145,7 +145,7 @@ impl RgbRenderer {
         }
     }
 
-    fn render(&self, x: u32, y: u32) -> Rgb<RgbDepth> {
+    fn render(&self, x: u32, y: u32) -> Rgb<u16> {
         let ray = self.camera.primary_ray(x, y);
 
         let si = self.scene.intersect(&ray);
