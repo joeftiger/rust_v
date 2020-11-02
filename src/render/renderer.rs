@@ -1,7 +1,7 @@
 use crate::render::camera::Camera;
 use crate::render::scene::Scene;
-use crate::{floats, Spectrum, RgbDepth};
-use image::{Rgb, ImageBuffer};
+use crate::{floats, RgbDepth, Spectrum};
+use image::{ImageBuffer, Rgb};
 
 pub trait Renderer: Send + Sync {
     fn is_done(&self) -> bool;
@@ -20,18 +20,16 @@ pub trait Renderer: Send + Sync {
 }
 
 fn convert_u16_to_u8(vec: Vec<u16>) -> Vec<u8> {
-    vec.iter()
-        .map(|b16| (b16 / 2u16.pow(8)) as u8)
-        .collect()
+    vec.iter().map(|b16| (b16 / 2u16.pow(8)) as u8).collect()
 }
 
 #[allow(dead_code)]
 pub mod debug {
     use crate::render::camera::Camera;
-    use crate::render::renderer::{Renderer, convert_u16_to_u8};
+    use crate::render::renderer::{convert_u16_to_u8, Renderer};
     use crate::render::scene::Scene;
-    use crate::{Spectrum, RgbDepth};
-    use image::{Rgb, ImageBuffer};
+    use crate::{RgbDepth, Spectrum};
+    use image::{ImageBuffer, Rgb};
     use ultraviolet::Vec3;
 
     pub struct NormalRenderer {

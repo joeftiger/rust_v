@@ -137,7 +137,7 @@ impl RenderWindow {
                     .save_with_format("./rendering.png", ImageFormat::Png)
                     .expect("Could not save image");
                 println!("Successfully saved");
-            },
+            }
             KeyCode::ArrowUp => self.rotate_camera(Direction::UP),
             KeyCode::ArrowDown => self.rotate_camera(Direction::DOWN),
             KeyCode::ArrowLeft => self.rotate_camera(Direction::LEFT),
