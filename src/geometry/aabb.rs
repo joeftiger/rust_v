@@ -133,7 +133,7 @@ impl Geometry for Aabb {
         GeometryInfo::new(
             hit,
             point,
-            closest.expect("Hit point not in range of any side!").1
+            closest.expect("Hit point not in range of any side!").1,
         )
     }
 }
