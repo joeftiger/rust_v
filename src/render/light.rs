@@ -32,7 +32,7 @@ impl Light {
         Ray::new(
             self.point,
             diff.normalized(),
-            diff.mag() + floats::BIG_EPSILON,
+            diff.mag(),
         )
     }
 
@@ -41,7 +41,7 @@ impl Light {
         Ray::new(
             self.point,
             diff.normalized(),
-            diff.mag() + floats::BIG_EPSILON,
+            diff.mag(),
         )
     }
 
