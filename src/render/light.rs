@@ -28,7 +28,7 @@ impl Light {
     }
 
     pub fn ray_to(&self, point: Vec3) -> Ray {
-        let diff = self.point - point;
+        let diff = point - self.point;
         Ray::new(
             self.point,
             diff.normalized(),
@@ -37,10 +37,11 @@ impl Light {
     }
 
     pub fn ray_from(&self, point: Vec3) -> Ray {
+        let diff = self.point - point;
         Ray::new(
-            point,
-            self.direction_from(point),
-            self.distance(point) + floats::BIG_EPSILON,
+            self.point,
+            diff.normalized(),
+            diff.mag() + floats::BIG_EPSILON,
         )
     }
 
