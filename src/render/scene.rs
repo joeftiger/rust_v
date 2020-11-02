@@ -63,7 +63,11 @@ impl Scene {
     }
 
     pub fn reflect_from(&self, intersection: SceneIntersection) -> Option<SceneIntersection> {
-        let direction = intersection.info.ray.direction.reflected(intersection.info.normal);
+        let direction = intersection
+            .info
+            .ray
+            .direction
+            .reflected(intersection.info.normal);
         let ray = intersection.info.create_ray(direction);
 
         self.intersect(&ray)
