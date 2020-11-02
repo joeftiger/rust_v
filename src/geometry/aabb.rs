@@ -110,11 +110,10 @@ impl Geometry for Aabb {
 
     fn get_info(&self, hit: Hit) -> GeometryInfo {
         let point = hit.ray.at(hit.t);
-
-        let mut closest = None;
-
         let min = point - self.min;
         let max = point - self.max;
+
+        let mut closest = None;
 
         // left
         closest = compare_closest(min.x, -Vec3::unit_x(), closest);
