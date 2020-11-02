@@ -140,6 +140,7 @@ impl RgbRenderer {
         let si = self.scene.intersect(&ray);
 
         if let Some(si) = si {
+            let point = si.info.point;
             let normal = si.info.normal;
             let view = -si.info.ray.direction;
 
@@ -148,14 +149,14 @@ impl RgbRenderer {
                 .scene
                 .lights
                 .iter()
-                .filter(|l| self.scene.is_occluded(&l.ray_to(si.info.point)))
+                .filter(|&l| self.scene.is_occluded(&l.ray_to(si.info.point)))
                 .map(|l| {
-                    let dir = l.direction_from(si.info.point);
-                    let cos = normal.dot(dir).max(0.0);
+                    let to_light = l.direction_from(point);
+                    let cos = normal.dot(to_light).max(0.0);
 
                     let intensity = l.intensity_at(si.info.point);
 
-                    obj.bxdf.apply(view, dir) * (intensity * cos)
+                    obj.bxdf.apply(view, to_light) * (intensity * cos)
                 })
                 .sum();
 
