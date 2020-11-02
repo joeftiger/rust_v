@@ -1,6 +1,7 @@
 use crate::render::fresnel::Fresnel;
 use crate::Spectrum;
 use ultraviolet::{Vec2, Vec3};
+use crate::color::Color;
 
 bitflags! {
     pub struct BxDFType: u8 {
@@ -192,7 +193,7 @@ impl BxDF for SpecularReflection {
     }
 
     fn apply(&self, _: Vec3, _: Vec3) -> Spectrum {
-        0.0.into()
+        Spectrum::black()
     }
 
     #[allow(unused_variables)]
