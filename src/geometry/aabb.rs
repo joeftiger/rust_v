@@ -109,37 +109,46 @@ impl Geometry for Aabb {
     }
 
     fn get_info(&self, hit: Hit) -> GeometryInfo {
-        let position = hit.ray.at(hit.t);
+        let point = hit.ray.at(hit.t);
+
+        let mut closest = None;
+
+        let min = (point - self.min).abs();
+        let max = (point - self.max).abs();
 
         // left
-        if floats::approx_equal_big(position.x, self.min.x) {
-            GeometryInfo::new(hit, position, -Vec3::unit_x())
-        }
+        closest = compare_closest(min.x, -Vec3::unit_x(), closest);
         // right
-        else if floats::approx_equal_big(position.x, self.max.x) {
-            GeometryInfo::new(hit, position, Vec3::unit_x())
-        }
+        closest = compare_closest(max.x, Vec3::unit_x(), closest);
         // down
-        else if floats::approx_equal_big(position.y, self.min.y) {
-            GeometryInfo::new(hit, position, -Vec3::unit_y())
-        }
+        closest = compare_closest(min.y, -Vec3::unit_y(), closest);
         // up
-        else if floats::approx_equal_big(position.y, self.max.y) {
-            GeometryInfo::new(hit, position, Vec3::unit_y())
-        }
+        closest = compare_closest(max.y, Vec3::unit_y(), closest);
         // back
-        else if floats::approx_equal_big(position.z, self.min.z) {
-            GeometryInfo::new(hit, position, -Vec3::unit_z())
-        }
+        closest = compare_closest(min.z, -Vec3::unit_z(), closest);
         // forward
-        else if floats::approx_equal_big(position.z, self.max.z) {
-            GeometryInfo::new(hit, position, Vec3::unit_z())
-        }
+        closest = compare_closest(max.z, Vec3::unit_z(), closest);
+
         // approximating epsilon is too small (unlikely) or the given hit was illegal
-        else {
-            panic!("Hit point not in range of any side!");
+        GeometryInfo::new(
+            hit,
+            point,
+            closest.expect("Hit point not in range of any side!").1
+        )
+    }
+}
+
+fn compare_closest(d: f32, v: Vec3, closest: Option<(f32, Vec3)>) -> Option<(f32, Vec3)> {
+    if floats::approx_zero(d) {
+        if let Some((dist, _)) = closest {
+            if d < dist {
+                return Some((d, v));
+            }
+        } else {
+            return Some((d, v));
         }
     }
+    closest
 }
 
 impl Default for Aabb {
