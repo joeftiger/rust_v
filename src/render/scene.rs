@@ -3,6 +3,7 @@ use crate::geometry::{Geometry, GeometryInfo, Hit};
 use crate::render::light::Light;
 use crate::render::scene_objects::SceneObject;
 use crate::store::Store;
+use crate::geometry::aabb::Aabb;
 
 /// Consists of
 /// - info: [GeometryInfo](../geometry/struct.GeometryInfo.html)
@@ -18,12 +19,18 @@ impl SceneIntersection {
 }
 
 pub struct Scene {
-    objects: Store<SceneObject>,
+    pub aabb: Aabb,
     pub lights: Vec<Light>,
+    objects: Store<SceneObject>,
 }
 
 impl Scene {
     pub fn push_obj(&mut self, obj: SceneObject) -> usize {
+        let aabb = &mut self.aabb;
+        let bo = obj.bounding_box();
+        aabb.min = aabb.min.min_by_component(bo.min);
+        aabb.max = aabb.max.min_by_component(bo.min);
+
         self.objects.push(obj)
     }
 
@@ -77,8 +84,9 @@ impl Scene {
 impl Default for Scene {
     fn default() -> Self {
         Self {
-            objects: Store::default(),
+            aabb: Aabb::inverted_infinite(),
             lights: Vec::default(),
+            objects: Store::default(),
         }
     }
 }
