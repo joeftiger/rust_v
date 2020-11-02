@@ -156,7 +156,7 @@ impl RgbRenderer {
 
                     let intensity = l.intensity_at(si.info.point);
 
-                    obj.bxdf.apply(view, to_light) * (intensity * cos)
+                    obj.bxdf.apply(view, to_light) * (intensity * cos + 1.0.into())
                 })
                 .sum();
 
