@@ -4,6 +4,7 @@ use crate::geometry::aabb::Aabb;
 use crate::geometry::ray::Ray;
 use crate::geometry::{Geometry, GeometryInfo, Hit};
 use crate::math::solve_quadratic;
+
 /// A geometrical cylinder.
 #[derive(Debug, PartialEq)]
 pub struct Cylinder {
