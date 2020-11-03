@@ -250,7 +250,8 @@ mod aabb {
         assert!(intersection.is_some());
         let i = intersection.unwrap();
         assert!(floats::approx_equal(f32::sqrt(3.0), i.t));
-        assert_eq!(Vec3::one(), i.point);
+        // floating point errors if not normalized
+        assert_eq!(Vec3::one().normalized(), i.point.normalized());
 
         // can't really test intersection.normal, since it is a bit unpredictable in corner cases!
     }
