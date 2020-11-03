@@ -1,6 +1,6 @@
 use crate::floats;
 use crate::geometry::ray::Ray;
-use crate::geometry::{ComparableExt, Container, Geometry, GeometryInfo, Hit};
+use crate::geometry::{ComparableExt, Container, Geometry, GeometryInfo};
 use ultraviolet::Vec3;
 
 #[derive(Clone, Debug, PartialEq)]
@@ -91,7 +91,7 @@ impl Geometry for Aabb {
         self.clone()
     }
 
-    fn intersect(&self, ray: &Ray) -> Option<f32> {
+    fn intersect(&self, ray: &Ray) -> Option<GeometryInfo> {
         let t1 = (self.min - ray.origin) / ray.direction;
         let t2 = (self.max - ray.origin) / ray.direction;
 
@@ -102,14 +102,10 @@ impl Geometry for Aabb {
         let t_max = f32::min(t_max_vec.z, f32::min(t_max_vec.y, t_max_vec.x));
 
         if t_max < 0.0 || t_max < t_min || ray.t < t_min {
-            None
-        } else {
-            Some(t_min)
+            return None;
         }
-    }
 
-    fn get_info(&self, hit: Hit) -> GeometryInfo {
-        let point = hit.ray.at(hit.t);
+        let point = ray.at(t_min);
         let min = point - self.min;
         let max = point - self.max;
 
@@ -129,11 +125,12 @@ impl Geometry for Aabb {
         closest = compare_closest(max.z, Vec3::unit_z(), closest);
 
         // approximating epsilon is too small (unlikely) or the given hit was illegal
-        GeometryInfo::new(
-            hit,
+        Some(GeometryInfo::new(
+            *ray,
+            t_min,
             point,
             closest.expect("Hit point not in range of any side!").1,
-        )
+        ))
     }
 }
 

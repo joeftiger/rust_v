@@ -2,7 +2,7 @@ use ultraviolet::{Mat4, Vec3};
 
 use crate::geometry::aabb::Aabb;
 use crate::geometry::ray::Ray;
-use crate::geometry::{Container, Geometry, GeometryInfo, Hit, InversibleExt};
+use crate::geometry::{Container, Geometry, GeometryInfo, InversibleExt};
 
 #[allow(dead_code)]
 pub struct Cube {
@@ -79,15 +79,12 @@ impl Geometry for Cube {
         // Aabb::new(min, max)
     }
 
-    fn intersect(&self, ray: &Ray) -> Option<f32> {
+    fn intersect(&self, ray: &Ray) -> Option<GeometryInfo> {
         let origin = self.point_to_local_space(ray.origin);
         let direction = self.point_to_local_space(ray.direction);
-        let ray = Ray::new(origin, direction, f32::INFINITY);
+        let _ray = Ray::new(origin, direction, f32::INFINITY);
 
-        Aabb::default().intersect(&ray)
-    }
-
-    fn get_info(&self, _hit: Hit) -> GeometryInfo {
-        unimplemented!()
+        unimplemented!();
+        // Aabb::default().intersect(&ray)
     }
 }

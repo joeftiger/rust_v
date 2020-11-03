@@ -1,6 +1,6 @@
 use crate::geometry::aabb::Aabb;
 use crate::geometry::ray::Ray;
-use crate::geometry::{Geometry, GeometryInfo, Hit};
+use crate::geometry::{Geometry, GeometryInfo};
 use ultraviolet::Vec3;
 
 #[derive(Debug, PartialEq, Default)]
@@ -19,11 +19,7 @@ impl Geometry for Point {
         Aabb::new(self.position, self.position)
     }
 
-    fn intersect(&self, _: &Ray) -> Option<f32> {
+    fn intersect(&self, _: &Ray) -> Option<GeometryInfo> {
         None
-    }
-
-    fn get_info(&self, _hit: Hit) -> GeometryInfo {
-        unimplemented!()
     }
 }

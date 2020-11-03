@@ -2,7 +2,7 @@ use ultraviolet::Vec3;
 
 use crate::geometry::aabb::Aabb;
 use crate::geometry::ray::Ray;
-use crate::geometry::{Container, Geometry, GeometryInfo, Hit};
+use crate::geometry::{Container, Geometry, GeometryInfo};
 use crate::math::solve_quadratic;
 
 #[derive(Debug, PartialEq)]
@@ -32,7 +32,7 @@ impl Geometry for Sphere {
         Aabb::new(self.center - offset, self.center + offset)
     }
 
-    fn intersect(&self, ray: &Ray) -> Option<f32> {
+    fn intersect(&self, ray: &Ray) -> Option<GeometryInfo> {
         let dir = ray.direction;
         let oc = ray.origin - self.center;
 
@@ -44,17 +44,13 @@ impl Geometry for Sphere {
         let t_min = t0.min(t1);
 
         if t_min < 0.0 || ray.t < t_min {
-            None
-        } else {
-            Some(t_min)
+            return None;
         }
-    }
-
-    fn get_info(&self, hit: Hit) -> GeometryInfo {
-        let point = hit.ray.at(hit.t);
+        
+        let point = ray.at(t_min);
         let normal = (point - self.center).normalized();
 
-        GeometryInfo::new(hit, point, normal)
+        Some(GeometryInfo::new(*ray, t_min, point, normal))
     }
 }
 

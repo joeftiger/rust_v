@@ -1,7 +1,7 @@
 use crate::floats;
 use crate::geometry::aabb::Aabb;
 use crate::geometry::ray::Ray;
-use crate::geometry::{Geometry, GeometryInfo, Hit};
+use crate::geometry::{Geometry, GeometryInfo};
 use ultraviolet::Vec3;
 
 pub struct Triangle {
@@ -24,7 +24,7 @@ impl Geometry for Triangle {
         Aabb::new(min, max)
     }
 
-    fn intersect(&self, ray: &Ray) -> Option<f32> {
+    fn intersect(&self, ray: &Ray) -> Option<GeometryInfo> {
         let ab = self.b - self.a;
         let ac = self.c - self.a;
         let h = ray.direction.cross(ac);
@@ -48,20 +48,16 @@ impl Geometry for Triangle {
 
         let t = ac.dot(q) / det;
         if ray.t < t {
-            None
-        } else {
-            Some(t)
+            return None;
         }
-    }
 
-    fn get_info(&self, hit: Hit) -> GeometryInfo {
-        let point = hit.ray.at(hit.t);
+        let point = ray.at(t);
 
         let ab = self.b - self.a;
         let ac = self.c - self.a;
         let normal = ac.cross(ab);
 
-        GeometryInfo::new(hit, point, normal)
+        Some(GeometryInfo::new(*ray, t, point, normal))
     }
 }
 
@@ -95,12 +91,7 @@ impl Geometry for Mesh {
     }
 
     #[allow(unused_variables)]
-    fn intersect(&self, ray: &Ray) -> Option<f32> {
-        unimplemented!()
-    }
-
-    #[allow(unused_variables)]
-    fn get_info(&self, hit: Hit) -> GeometryInfo {
+    fn intersect(&self, ray: &Ray) -> Option<GeometryInfo> {
         unimplemented!()
     }
 }

@@ -2,7 +2,7 @@ use ultraviolet::Vec3;
 
 use crate::geometry::aabb::Aabb;
 use crate::geometry::ray::Ray;
-use crate::geometry::{Geometry, GeometryInfo, Hit};
+use crate::geometry::{Geometry, GeometryInfo};
 use crate::math::solve_quadratic;
 
 /// A geometrical cylinder.
@@ -58,7 +58,7 @@ impl Geometry for Cylinder {
         Aabb::new(min - offset, max + offset)
     }
 
-    fn intersect(&self, ray: &Ray) -> Option<f32> {
+    fn intersect(&self, ray: &Ray) -> Option<GeometryInfo> {
         let dir = ray.direction;
         let oc = ray.origin - self.center;
 
@@ -88,23 +88,19 @@ impl Geometry for Cylinder {
         let t_min = t_min?;
 
         if ray.t < t_min {
-            None
-        } else {
-            Some(t_min)
+            return None;
         }
-    }
 
-    fn get_info(&self, hit: Hit) -> GeometryInfo {
-        let point = hit.ray.at(hit.t);
+        let point = ray.at(t_min);
         let mut normal = (point - self.center) / self.radius;
         normal -= normal.dot(self.axis) * self.axis;
 
         // Choose the normal's orientation to be opposite the ray's
         // (in case the ray intersects the inside surface)
-        if normal.dot(hit.ray.direction) > 0.0 {
+        if normal.dot(ray.direction) > 0.0 {
             normal = -normal;
         }
 
-        GeometryInfo::new(hit, point, normal)
+        Some(GeometryInfo::new(*ray, t_min, point, normal))
     }
 }

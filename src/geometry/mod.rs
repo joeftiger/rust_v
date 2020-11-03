@@ -15,43 +15,43 @@ pub mod ray;
 pub mod sphere;
 mod tests;
 
-macro_rules! hits {
-    ($($name:ident => $ray:ident, $float:ident), +) => {
-        $(
-            #[derive(Copy, Clone, PartialEq)]
-            pub struct $name {
-                pub ray: $ray,
-                pub t: $float,
-            }
-
-            impl $name {
-                pub fn new(ray: $ray, t: $float) -> Self {
-                    Self { ray, t }
-                }
-            }
-        )+
-    };
-}
-
-hits!(
-    Hit => Ray, f32,
-    Hit4 => Ray4, f32x4
-);
-
-impl From<Ray> for Hit {
-    fn from(ray: Ray) -> Self {
-        Self::new(ray, ray.t)
-    }
-}
-
-impl From<Ray4> for Hit4 {
-    fn from(ray: Ray4) -> Self {
-        Self::new(ray, ray.t)
-    }
-}
+// macro_rules! hits {
+//     ($($name:ident => $ray:ident, $float:ident), +) => {
+//         $(
+//             #[derive(Copy, Clone, PartialEq)]
+//             pub struct $name {
+//                 pub ray: $ray,
+//                 pub t: $float,
+//             }
+// 
+//             impl $name {
+//                 pub fn new(ray: $ray, t: $float) -> Self {
+//                     Self { ray, t }
+//                 }
+//             }
+//         )+
+//     };
+// }
+// 
+// hits!(
+//     Hit => Ray, f32,
+//     Hit4 => Ray4, f32x4
+// );
+// 
+// impl From<Ray> for Hit {
+//     fn from(ray: Ray) -> Self {
+//         Self::new(ray, ray.t)
+//     }
+// }
+// 
+// impl From<Ray4> for Hit4 {
+//     fn from(ray: Ray4) -> Self {
+//         Self::new(ray, ray.t)
+//     }
+// }
 
 macro_rules! geometry_info {
-    ($($name:ident => $hit:ident, $ray:ident, $float:ident, $vec:ident, $offset_epsilon:expr, $infinity:expr), +) => {
+    ($($name:ident => $ray:ident, $float:ident, $vec:ident, $offset_epsilon:expr, $infinity:expr), +) => {
         $(
             /// Consists of:
             /// - ray: Ray
@@ -67,8 +67,8 @@ macro_rules! geometry_info {
             }
 
             impl $name {
-                pub fn new(hit: $hit, point: $vec, normal: $vec) -> Self {
-                    Self { ray: hit.ray, t: hit.t, point, normal, offset_epsilon: $offset_epsilon }
+                pub fn new(ray: $ray, t: $float, point: $vec, normal: $vec) -> Self {
+                    Self { ray, t, point, normal, offset_epsilon: $offset_epsilon }
                 }
 
                 /// Creates a ray from `self.point` into the given direction, offset by `self.offset_epsilon`.
@@ -82,8 +82,8 @@ macro_rules! geometry_info {
 }
 
 geometry_info!(
-    GeometryInfo => Hit, Ray, f32, Vec3, floats::DEFAULT_EPSILON, f32::INFINITY,
-    GeometryInfox4 => Hit4, Ray4, f32x4, Vec3x4, f32x4::splat(floats::DEFAULT_EPSILON), f32x4::splat(f32::INFINITY)
+    GeometryInfo => Ray, f32, Vec3, floats::DEFAULT_EPSILON, f32::INFINITY,
+    GeometryInfox4 => Ray4, f32x4, Vec3x4, f32x4::splat(floats::DEFAULT_EPSILON), f32x4::splat(f32::INFINITY)
 );
 
 impl PartialEq for GeometryInfo {
@@ -113,9 +113,7 @@ pub trait Container {
 pub trait Geometry: Send + Sync {
     fn bounding_box(&self) -> Aabb;
 
-    fn intersect(&self, ray: &Ray) -> Option<f32>;
-
-    fn get_info(&self, hit: Hit) -> GeometryInfo;
+    fn intersect(&self, ray: &Ray) -> Option<GeometryInfo>;
 }
 
 /// A trait that allows measuring the angle between two structs.

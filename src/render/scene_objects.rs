@@ -1,6 +1,6 @@
 use crate::geometry::aabb::Aabb;
 use crate::geometry::ray::Ray;
-use crate::geometry::{Geometry, GeometryInfo, Hit};
+use crate::geometry::{Geometry, GeometryInfo};
 use crate::render::bxdf::BxDF;
 
 pub struct SceneObject {
@@ -24,11 +24,7 @@ impl Geometry for SceneObject {
         self.shape.bounding_box()
     }
 
-    fn intersect(&self, ray: &Ray) -> Option<f32> {
+    fn intersect(&self, ray: &Ray) -> Option<GeometryInfo> {
         self.shape.intersect(ray)
-    }
-
-    fn get_info(&self, hit: Hit) -> GeometryInfo {
-        self.shape.get_info(hit)
     }
 }

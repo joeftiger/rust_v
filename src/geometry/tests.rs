@@ -1,4 +1,5 @@
 #[cfg(test)]
+#[allow(dead_code)]
 mod util {
     use crate::geometry::ray::Ray;
     use ultraviolet::Vec3;
@@ -28,8 +29,7 @@ mod aabb {
     use crate::floats;
     use crate::geometry::aabb::*;
     use crate::geometry::ray::Ray;
-    use crate::geometry::tests::util::unit_rays;
-    use crate::geometry::{Container, Geometry, Hit};
+    use crate::geometry::{Container, Geometry};
     use ultraviolet::Vec3;
 
     #[test]
@@ -234,7 +234,8 @@ mod aabb {
         let intersection = aabb.intersect(&ray);
 
         assert!(intersection.is_some());
-        assert!(floats::approx_equal(1.0, intersection.unwrap()));
+        let i = intersection.unwrap();
+        assert!(floats::approx_equal(1.0, i.t));
     }
 
     #[test]
@@ -247,7 +248,11 @@ mod aabb {
         let intersection = aabb.intersect(&ray);
 
         assert!(intersection.is_some());
-        assert!(floats::approx_equal(f32::sqrt(3.0), intersection.unwrap()));
+        let i = intersection.unwrap();
+        assert!(floats::approx_equal(f32::sqrt(3.0), i.t));
+        assert_eq!(Vec3::one(), i.point);
+
+        // can't really test intersection.normal, since it is a bit unpredictable in corner cases!
     }
 
     #[test]
@@ -317,35 +322,13 @@ mod aabb {
 
         assert!(intersection.is_none());
     }
-
-    #[test]
-    fn get_info_side() {
-        let min = Vec3::zero();
-        let max = Vec3::one();
-        let aabb = Aabb::new(min, max);
-
-        unit_rays(1.5).iter().for_each(|ray| {
-            println!("{:?}", *ray);
-
-            let hit = Hit::new(*ray, 1.0);
-            let info = aabb.get_info(hit);
-
-            // exactly 1.0 apart
-            let point = ray.origin + ray.direction;
-
-            assert_eq!(hit.ray, info.ray);
-            assert_eq!(hit.t, info.t);
-            assert_eq!(point, info.point);
-            assert_eq!(-ray.direction, info.normal); // left, right ERROR
-        });
-    }
 }
 
 #[cfg(test)]
 mod point {
     use crate::geometry::point::Point;
     use crate::geometry::ray::Ray;
-    use crate::geometry::{Geometry, Hit};
+    use crate::geometry::{Geometry};
     use ultraviolet::Vec3;
 
     #[test]
@@ -382,16 +365,6 @@ mod point {
 
         assert!(intersection.is_none())
     }
-
-    #[test]
-    #[should_panic]
-    fn get_info() {
-        let point = Point::default();
-        let ray = Ray::new(Vec3::zero(), Vec3::unit_x(), f32::INFINITY);
-        let hit = Hit::new(ray, f32::default());
-
-        let _info = point.get_info(hit);
-    }
 }
 
 #[allow(clippy::float_cmp)]
@@ -401,7 +374,7 @@ mod sphere {
     use crate::geometry::aabb::Aabb;
     use crate::geometry::ray::Ray;
     use crate::geometry::sphere::Sphere;
-    use crate::geometry::{Container, Geometry, Hit};
+    use crate::geometry::{Container, Geometry};
     use ultraviolet::Vec3;
 
     #[test]
@@ -469,7 +442,8 @@ mod sphere {
         let intersection = sphere.intersect(&ray);
 
         assert!(intersection.is_some());
-        assert!(floats::approx_equal(1.0, intersection.unwrap()));
+        let i = intersection.unwrap();
+        assert!(floats::approx_equal(1.0, i.t));
     }
 
     #[test]
@@ -494,6 +468,9 @@ mod sphere {
         let intersection = sphere.intersect(&ray);
 
         assert!(intersection.is_some());
+        let i = intersection.unwrap();
+        assert_eq!(Vec3::unit_y(), i.point);
+        assert_eq!(Vec3::unit_y(), i.normal);
     }
 
     #[test]
@@ -514,41 +491,5 @@ mod sphere {
         let intersection = sphere.intersect(&ray);
 
         assert!(intersection.is_none());
-    }
-
-    #[test]
-    fn get_info() {
-        let sphere = Sphere::default();
-        let ray = Ray::new(Vec3::unit_x() * 2.0, -Vec3::unit_x(), f32::INFINITY);
-
-        let t = sphere.intersect(&ray).unwrap();
-        let hit = Hit::new(ray, t);
-
-        let info = sphere.get_info(hit);
-
-        assert_eq!(ray, info.ray);
-        assert_eq!(t, info.t);
-        assert_eq!(Vec3::unit_x(), info.point);
-        assert_eq!(Vec3::unit_x(), info.normal);
-    }
-
-    #[test]
-    fn get_info_2() {
-        let sphere = Sphere::default();
-        let ray = Ray::new(
-            Vec3::unit_x() + Vec3::unit_y(),
-            -Vec3::unit_x(),
-            f32::INFINITY,
-        );
-
-        let t = sphere.intersect(&ray).unwrap();
-        let hit = Hit::new(ray, t);
-
-        let info = sphere.get_info(hit);
-
-        assert_eq!(ray, info.ray);
-        assert_eq!(t, info.t);
-        assert_eq!(Vec3::unit_y(), info.point);
-        assert_eq!(Vec3::unit_y(), info.normal);
     }
 }

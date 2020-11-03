@@ -1,6 +1,6 @@
 use crate::geometry::aabb::Aabb;
 use crate::geometry::ray::Ray;
-use crate::geometry::{Container, Geometry, GeometryInfo, Hit};
+use crate::geometry::{Container, Geometry, GeometryInfo};
 use crate::render::light::Light;
 use crate::render::scene_objects::SceneObject;
 use crate::store::Store;
@@ -54,20 +54,20 @@ impl Scene {
     pub fn intersect(&self, ray: &Ray) -> Option<SceneIntersection> {
         let mut ray = *ray;
         let mut index = None;
+        let mut info = None;
 
         for (i, obj) in self.objects.iter().enumerate() {
             // if obj.bounding_box().intersect(&ray).is_some() {
-            if let Some(t) = obj.intersect(&ray) {
+            if let Some(g_info) = obj.intersect(&ray) {
                 index = Some(i);
-                ray.t = t;
+                info = Some(g_info);
+                ray.t = g_info.t;
             }
             // }
         }
 
         if let Some(index) = index {
-            let hit = Hit::from(ray);
-            let info = self.objects[index].get_info(hit);
-
+            let info = info.expect("Unexpected erro");
             Some(SceneIntersection::new(info, index))
         } else {
             None
