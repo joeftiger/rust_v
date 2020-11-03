@@ -86,6 +86,20 @@ geometry_info!(
     GeometryInfox4 => Ray4, f32x4, Vec3x4, f32x4::splat(floats::DEFAULT_EPSILON), f32x4::splat(f32::INFINITY)
 );
 
+impl GeometryInfo {
+    pub fn min(&self, other: Option<Self>) -> Self {
+        if let Some(other) = other {
+            if self.t <= other.t {
+                return *self;
+            }
+
+            return other;
+        }
+
+        *self
+    }
+}
+
 impl PartialEq for GeometryInfo {
     fn eq(&self, other: &Self) -> bool {
         self.t == other.t && self.point == other.point && self.normal == other.normal
@@ -252,5 +266,26 @@ impl ComparableExt for Vec3 {
 
     fn eq(&self, other: &Self) -> bool {
         self == other
+    }
+}
+
+/// Allows the distance calculation to another self.
+/// For example:
+/// ```rust
+/// use ultraviolet::Vec3;
+/// use rust_v::geometry::DistanceExt;
+///
+/// let v = Vec3::zero();
+/// let other = Vec3::unit_x();
+///
+/// assert_eq!(1.0, v.distance(&other));
+/// ```
+pub trait DistanceExt {
+    fn distance(&self, other: &Self) -> f32;
+}
+
+impl DistanceExt for Vec3 {
+    fn distance(&self, other: &Self) -> f32 {
+        (*other - *self).mag()
     }
 }
