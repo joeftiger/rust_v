@@ -40,17 +40,13 @@ impl Geometry for Sphere {
         let b = 2.0 * dir.dot(oc);
         let c = oc.dot(oc) - self.radius * self.radius;
 
-        let solutions = solve_quadratic(a, b, c);
-        if let Some((t0, t1)) = solutions {
-            let t_min = t0.min(t1);
+        let (t0, t1) = solve_quadratic(a, b, c)?;
+        let t_min = t0.min(t1);
 
-            if t_min < 0.0 || ray.t < t_min {
-                None
-            } else {
-                Some(t_min)
-            }
-        } else {
+        if t_min < 0.0 || ray.t < t_min {
             None
+        } else {
+            Some(t_min)
         }
     }
 
