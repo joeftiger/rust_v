@@ -328,7 +328,7 @@ mod aabb {
 mod point {
     use crate::geometry::point::Point;
     use crate::geometry::ray::Ray;
-    use crate::geometry::{Geometry};
+    use crate::geometry::Geometry;
     use ultraviolet::Vec3;
 
     #[test]

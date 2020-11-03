@@ -46,7 +46,7 @@ impl Geometry for Sphere {
         if t_min < 0.0 || ray.t < t_min {
             return None;
         }
-        
+
         let point = ray.at(t_min);
         let normal = (point - self.center).normalized();
 

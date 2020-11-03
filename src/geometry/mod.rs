@@ -23,7 +23,7 @@ mod tests;
 //                 pub ray: $ray,
 //                 pub t: $float,
 //             }
-// 
+//
 //             impl $name {
 //                 pub fn new(ray: $ray, t: $float) -> Self {
 //                     Self { ray, t }
@@ -32,18 +32,18 @@ mod tests;
 //         )+
 //     };
 // }
-// 
+//
 // hits!(
 //     Hit => Ray, f32,
 //     Hit4 => Ray4, f32x4
 // );
-// 
+//
 // impl From<Ray> for Hit {
 //     fn from(ray: Ray) -> Self {
 //         Self::new(ray, ray.t)
 //     }
 // }
-// 
+//
 // impl From<Ray4> for Hit4 {
 //     fn from(ray: Ray4) -> Self {
 //         Self::new(ray, ray.t)
@@ -88,9 +88,7 @@ geometry_info!(
 
 impl PartialEq for GeometryInfo {
     fn eq(&self, other: &Self) -> bool {
-        self.t == other.t
-            && self.point == other.point
-            && self.normal == other.normal
+        self.t == other.t && self.point == other.point && self.normal == other.normal
     }
 }
 
