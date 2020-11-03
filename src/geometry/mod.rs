@@ -2,6 +2,7 @@ use crate::floats;
 use crate::geometry::aabb::Aabb;
 use crate::geometry::ray::{Ray, Ray4};
 use ultraviolet::{f32x4, Vec3, Vec3x4};
+use crate::util::MinMaxExt;
 
 pub mod aabb;
 pub mod capsule;
@@ -86,17 +87,21 @@ geometry_info!(
     GeometryInfox4 => Ray4, f32x4, Vec3x4, f32x4::splat(floats::DEFAULT_EPSILON), f32x4::splat(f32::INFINITY)
 );
 
-impl GeometryInfo {
-    pub fn min(&self, other: Option<Self>) -> Self {
-        if let Some(other) = other {
-            if self.t <= other.t {
-                return *self;
-            }
-
-            return other;
+impl MinMaxExt for GeometryInfo {
+    fn mmin(&self, other: &Self) -> Self {
+        if self.t <= other.t {
+            return *self;
         }
 
-        *self
+        *other
+    }
+
+    fn mmax(&self, other: &Self) -> Self {
+        if self.t >= other.t {
+            return *self;
+        }
+
+        *other
     }
 }
 

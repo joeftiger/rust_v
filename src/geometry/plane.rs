@@ -1,8 +1,8 @@
 use ultraviolet::Vec3;
-use crate::geometry::{AngularExt, Container, Geometry, GeometryInfo};
+use crate::geometry::{AngularExt, Container, GeometryInfo};
 use crate::geometry::ray::Ray;
 use crate::floats;
-use crate::geometry::aabb::Aabb;
+use crate::util::MinMaxExt;
 
 #[derive(Debug, PartialEq)]
 pub struct Plane {
@@ -103,12 +103,7 @@ impl Plane2 {
     pub fn intersect(&self, ray: &Ray) -> Option<GeometryInfo> {
         let (p0, p1) = Plane::from(self);
 
-        let mut info = None;
-        if let Some(i) = p0.intersect(ray) {
-            info = Some(i.min(p1.intersect(ray)));
-        }
-
-        info
+        GeometryInfo::mmin_op2(p0.intersect(ray), p1.intersect(ray))
     }
 }
 
