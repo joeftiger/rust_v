@@ -4,7 +4,6 @@ use crate::geometry::aabb::Aabb;
 use crate::geometry::ray::Ray;
 use crate::geometry::{Geometry, GeometryInfo, Hit};
 use crate::math::solve_quadratic;
-
 /// A geometrical cylinder.
 #[derive(Debug, PartialEq)]
 pub struct Cylinder {
@@ -71,26 +70,26 @@ impl Geometry for Cylinder {
 
         // Find the closest valid solution
         // (in front of the viewer and within the cylinder's height).
-        let solutions = solve_quadratic(a, b, c);
-        if let Some((t0, t1)) = solutions {
-            let mut t_min = None;
+        let (t0, t1) = solve_quadratic(a, b, c)?;
 
-            if self.check_valid_t(ray, t0) {
-                t_min = Some(t0)
-            }
-            if self.check_valid_t(ray, t1) {
-                t_min = Some(t_min.unwrap_or(f32::INFINITY).min(t1));
-            }
-
-            let t_min = t_min?;
-
-            if ray.t < t_min {
-                None
+        // get valid t
+        let mut t_min = None;
+        if self.check_valid_t(ray, t0) {
+            t_min = Some(t0)
+        }
+        if self.check_valid_t(ray, t1) {
+            if let Some(prev) = t_min {
+                t_min = Some(prev.min(t1));
             } else {
-                Some(t_min)
+                t_min = Some(t1);
             }
-        } else {
+        }
+        let t_min = t_min?;
+
+        if ray.t < t_min {
             None
+        } else {
+            Some(t_min)
         }
     }
 
