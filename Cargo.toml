@@ -33,3 +33,8 @@ incremental = true
 [profile.release.package."*"]
 codegen-units = 1
 opt-level = 3
+
+
+[profile.dev]
+opt-level = 1
+incremental = true
