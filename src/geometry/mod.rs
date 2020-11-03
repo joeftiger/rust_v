@@ -4,10 +4,12 @@ use crate::geometry::ray::{Ray, Ray4};
 use ultraviolet::{f32x4, Vec3, Vec3x4};
 
 pub mod aabb;
+pub mod capsule;
 pub mod cube;
 pub mod cylinder;
 pub mod lens;
 pub mod mesh;
+pub mod plane;
 pub mod point;
 pub mod ray;
 pub mod sphere;
@@ -49,12 +51,12 @@ impl From<Ray4> for Hit4 {
 }
 
 macro_rules! geometry_info {
-    ($($name:ident => $hit:ident, $ray:ident, $float:ident, $vec:ident, $offset_epsilon:expr), +) => {
+    ($($name:ident => $hit:ident, $ray:ident, $float:ident, $vec:ident, $offset_epsilon:expr, $infinity:expr), +) => {
         $(
             /// Consists of:
             /// - ray: Ray
             /// - t, offset_epsilon: f32
-            /// - normal: Vec3
+            /// - point, normal: Vec3
             #[derive(Copy, Clone)]
             pub struct $name {
                 pub ray: $ray,
@@ -71,11 +73,8 @@ macro_rules! geometry_info {
 
                 /// Creates a ray from `self.point` into the given direction, offset by `self.offset_epsilon`.
                 pub fn create_ray(&self, dir: $vec) -> $ray {
-                    let mut ray = self.ray;
-                    ray.origin = self.point + self.normal * self.offset_epsilon;
-                    ray.direction = dir;
-
-                    ray
+                    let origin = self.point + self.normal * self.offset_epsilon;
+                    $ray::new(origin, dir, $infinity)
                 }
             }
         )+
@@ -83,14 +82,13 @@ macro_rules! geometry_info {
 }
 
 geometry_info!(
-    GeometryInfo => Hit, Ray, f32, Vec3, floats::DEFAULT_EPSILON,
-    GeometryInfox4 => Hit4, Ray4, f32x4, Vec3x4, f32x4::splat(floats::DEFAULT_EPSILON)
+    GeometryInfo => Hit, Ray, f32, Vec3, floats::DEFAULT_EPSILON, f32::INFINITY,
+    GeometryInfox4 => Hit4, Ray4, f32x4, Vec3x4, f32x4::splat(floats::DEFAULT_EPSILON), f32x4::splat(f32::INFINITY)
 );
 
 impl PartialEq for GeometryInfo {
     fn eq(&self, other: &Self) -> bool {
-        self.ray == other.ray
-            && self.t == other.t
+        self.t == other.t
             && self.point == other.point
             && self.normal == other.normal
     }
@@ -98,8 +96,7 @@ impl PartialEq for GeometryInfo {
 
 impl PartialEq for GeometryInfox4 {
     fn eq(&self, other: &Self) -> bool {
-        self.ray == other.ray
-            && self.t == other.t
+        self.t == other.t
             && self.point.x == other.point.x
             && self.point.y == other.point.y
             && self.point.z == other.point.z
