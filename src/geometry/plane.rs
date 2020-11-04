@@ -1,9 +1,9 @@
 use crate::floats;
+use crate::geometry::aabb::Aabb;
 use crate::geometry::ray::Ray;
-use crate::geometry::{AngularExt, Container, GeometryInfo, Geometry};
+use crate::geometry::{AngularExt, Container, Geometry, GeometryInfo};
 use crate::util::MinMaxExt;
 use ultraviolet::Vec3;
-use crate::geometry::aabb::Aabb;
 
 #[derive(Debug, PartialEq)]
 pub struct Plane {

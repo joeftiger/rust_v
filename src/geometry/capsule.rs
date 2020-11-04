@@ -3,8 +3,8 @@ use crate::geometry::cylinder::Cylinder;
 use crate::geometry::ray::Ray;
 use crate::geometry::sphere::Sphere;
 use crate::geometry::{Container, Geometry, GeometryInfo};
-use ultraviolet::Vec3;
 use crate::util::MinMaxExt;
+use ultraviolet::Vec3;
 
 pub struct Capsule {
     top: Sphere,
