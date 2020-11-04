@@ -1,8 +1,9 @@
-use ultraviolet::Vec3;
-use crate::geometry::{AngularExt, Container, GeometryInfo};
-use crate::geometry::ray::Ray;
 use crate::floats;
+use crate::geometry::ray::Ray;
+use crate::geometry::{AngularExt, Container, GeometryInfo, Geometry};
 use crate::util::MinMaxExt;
+use ultraviolet::Vec3;
+use crate::geometry::aabb::Aabb;
 
 #[derive(Debug, PartialEq)]
 pub struct Plane {
@@ -56,6 +57,16 @@ impl Plane {
     }
 }
 
+impl From<(Vec3, Vec3)> for Plane {
+    fn from((origin, normal): (Vec3, Vec3)) -> Self {
+        let cos = origin.dot(normal);
+        let angle = cos.acos() - std::f32::consts::FRAC_PI_2;
+
+        let d = angle.sin() * origin.mag();
+        Self::new(normal, d)
+    }
+}
+
 #[derive(Debug, PartialEq)]
 pub struct Plane2 {
     pub normal: Vec3,
@@ -99,12 +110,6 @@ impl Plane2 {
     pub fn height(&self) -> f32 {
         f32::abs(self.d1 - self.d0)
     }
-
-    pub fn intersect(&self, ray: &Ray) -> Option<GeometryInfo> {
-        let (p0, p1) = Plane::from(self);
-
-        GeometryInfo::mmin_op2(p0.intersect(ray), p1.intersect(ray))
-    }
 }
 
 impl Container for Plane2 {
@@ -113,5 +118,27 @@ impl Container for Plane2 {
         let (d0, d1) = self.distance(obj);
 
         (d0 <= diff) && (d1 <= diff)
+    }
+}
+
+impl Geometry for Plane2 {
+    fn bounding_box(&self) -> Aabb {
+        Aabb::infinite()
+    }
+
+    fn intersect(&self, ray: &Ray) -> Option<GeometryInfo> {
+        let (p0, p1) = Plane::from(self);
+
+        GeometryInfo::mmin_op2(p0.intersect(ray), p1.intersect(ray))
+    }
+}
+
+impl From<(Vec3, Vec3, f32)> for Plane2 {
+    fn from((origin, normal, height): (Vec3, Vec3, f32)) -> Self {
+        let cos = origin.dot(normal);
+        let angle = cos.acos() - std::f32::consts::FRAC_PI_2;
+
+        let d0 = angle.sin() * origin.mag();
+        Self::new(normal, d0, d0 + height)
     }
 }
