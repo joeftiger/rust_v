@@ -15,6 +15,7 @@ pub mod point;
 pub mod ray;
 pub mod sphere;
 mod tests;
+pub mod tube;
 
 // macro_rules! hits {
 //     ($($name:ident => $ray:ident, $float:ident), +) => {

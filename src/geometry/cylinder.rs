@@ -17,6 +17,13 @@ pub struct Cylinder {
 }
 
 impl Cylinder {
+    pub fn new2(bot: Vec3, top: Vec3, radius: f32) -> Self {
+        let center = (bot + top) / 2.0;
+        let axis = top - bot;
+
+        Self::new(center, axis.normalized(), radius, axis.mag())
+    }
+
     pub fn new(center: Vec3, axis: Vec3, radius: f32, height: f32) -> Self {
         let a = axis * (height / 2.0);
         let v_caps = (center - a, center + a);
