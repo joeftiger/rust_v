@@ -1,5 +1,5 @@
 use crate::color::Color;
-use crate::render::reflection;
+use crate::render::bxdf::reflection;
 use crate::Spectrum;
 
 pub trait Fresnel: Send + Sync {

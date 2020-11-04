@@ -2,14 +2,14 @@ use crate::color::Color;
 use crate::geometry::aabb::Aabb;
 use crate::geometry::capsule::Capsule;
 use crate::geometry::sphere::Sphere;
-use crate::render::bxdf::LambertianReflection;
+use crate::geometry::tube::Tube;
+use crate::render::bxdf::lambertian::LambertianReflection;
 use crate::render::camera::Camera;
 use crate::render::light::Light;
 use crate::render::scene::Scene;
 use crate::render::scene_objects::SceneObject;
 use crate::Spectrum;
 use ultraviolet::Vec3;
-use crate::geometry::tube::Tube;
 
 pub const LEFT_WALL: f32 = -3.0;
 pub const RIGHT_WALL: f32 = 3.0;

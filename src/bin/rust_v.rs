@@ -4,7 +4,7 @@ use ultraviolet::Vec3;
 use rust_v::cornell_box;
 use rust_v::geometry::aabb::Aabb;
 use rust_v::geometry::sphere::Sphere;
-use rust_v::render::bxdf::LambertianReflection;
+use rust_v::render::bxdf::lambertian::LambertianReflection;
 use rust_v::render::camera::Camera;
 use rust_v::render::light::Light;
 use rust_v::render::renderer::debug::NormalRenderer;
