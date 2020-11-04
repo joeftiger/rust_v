@@ -1,41 +1,83 @@
 use ultraviolet::Vec3;
 
 use crate::geometry::aabb::Aabb;
+use crate::geometry::plane::Plane2;
 use crate::geometry::ray::Ray;
-use crate::geometry::{Geometry, GeometryInfo};
+use crate::geometry::{Container, DistanceExt, Geometry, GeometryInfo};
 use crate::math::solve_quadratic;
+use crate::util::MinMaxExt;
 
 /// A geometrical cylinder.
 #[derive(Debug, PartialEq)]
 pub struct Cylinder {
     pub center: Vec3,
-    pub axis: Vec3,
+    pub v_caps: (Vec3, Vec3),
+    pub p_caps: Plane2,
     pub radius: f32,
-    pub height: f32,
 }
 
 impl Cylinder {
     pub fn new(center: Vec3, axis: Vec3, radius: f32, height: f32) -> Self {
+        let a = axis * (height / 2.0);
+        let v_caps = (center - a, center + a);
+
+        let cos = center.dot(axis);
+        let angle = cos.acos() - std::f32::consts::FRAC_PI_2;
+
+        let d0 = angle.sin() * center.mag();
+        let d1 = d0 + height;
+        let p_caps = Plane2::new(axis, d0, d1);
+
         Self {
             center,
-            axis,
+            v_caps,
+            p_caps,
             radius,
-            height,
         }
     }
 
-    fn check_valid_t(&self, ray: &Ray, t: f32) -> bool {
+    fn check(&self, ray: &Ray, t: f32) -> Option<f32> {
         if t <= 0.0 {
-            return false;
+            return None;
+        }
+        let z = self.axis().dot(ray.at(t) - self.center);
+
+        if 2.0 * z.abs() <= self.height() {
+            Some(t)
+        } else {
+            None
+        }
+    }
+
+    fn check_cylinder(&self, ray: &Ray, t0: f32, t1: f32) -> Option<f32> {
+        let a = self.check(ray, t0);
+        let b = self.check(ray, t1);
+        f32::mmin_op2(a, b)
+    }
+
+    fn check_caps(&self, ray: &Ray) -> Option<GeometryInfo> {
+        let caps = self.p_caps.intersect(ray)?;
+        let (c0, c1) = self.v_caps;
+
+        if caps.point.distance(&c0) <= self.radius || caps.point.distance(&c1) <= self.radius {
+            return Some(caps);
         }
 
-        let z = self.axis.dot(ray.at(t) - self.center);
+        None
+    }
 
-        if 2.0 * z.abs() < self.height {
-            return true;
-        }
+    #[inline]
+    #[must_use]
+    pub fn axis(&self) -> Vec3 {
+        let (c0, c1) = self.v_caps;
+        (c1 - c0).normalized()
+    }
 
-        false
+    #[inline]
+    #[must_use]
+    pub fn height(&self) -> f32 {
+        let (c0, c1) = self.v_caps;
+        (c1 - c0).mag()
     }
 }
 
@@ -45,12 +87,19 @@ impl Default for Cylinder {
     }
 }
 
+impl Container for Cylinder {
+    fn contains(&self, obj: Vec3) -> bool {
+        let z = 2.0 * self.axis().dot(obj - self.center).abs();
+        self.p_caps.contains(obj) && z < self.height()
+    }
+}
+
 impl Geometry for Cylinder {
     fn bounding_box(&self) -> Aabb {
         let offset = Vec3::one() * self.radius;
 
-        let min = self.center - self.axis * self.height / 2.0;
-        let max = self.center + self.axis * self.height / 2.0;
+        let min = self.center - self.axis() * self.height() / 2.0;
+        let max = self.center + self.axis() * self.height() / 2.0;
         let min_original = min;
         let min = min.min_by_component(max);
         let max = max.max_by_component(min_original);
@@ -59,41 +108,40 @@ impl Geometry for Cylinder {
     }
 
     fn intersect(&self, ray: &Ray) -> Option<GeometryInfo> {
+        // Intersect with the infinite cylinder
         let dir = ray.direction;
         let oc = ray.origin - self.center;
 
-        let dir_parallel = self.axis.dot(dir);
-        let oc_parallel = self.axis.dot(oc);
+        let dir_parallel = self.axis().dot(dir);
+        let oc_parallel = self.axis().dot(oc);
 
         let a = dir.dot(dir) - dir_parallel * dir_parallel;
         let b = 2.0 * (dir.dot(oc) - dir_parallel * oc_parallel);
         let c = oc.dot(oc) - oc_parallel * oc_parallel - self.radius * self.radius;
 
-        // Find the closest valid solution
-        // (in front of the viewer and within the cylinder's height).
+        // Find the closest valid solution in front of the viewer).
         let (t0, t1) = solve_quadratic(a, b, c)?;
 
-        // get valid t
-        let mut t_min = None;
-        if self.check_valid_t(ray, t0) {
-            t_min = Some(t0)
-        }
-        if self.check_valid_t(ray, t1) {
-            if let Some(prev) = t_min {
-                t_min = Some(prev.min(t1));
-            } else {
-                t_min = Some(t1);
-            }
-        }
-        let t_min = t_min?;
+        // Check if the intersection height is between the caps
+        let t_min = self.check_cylinder(ray, t0, t1)?;
+        // Intersect with each cap (already checked against ray)
+        let caps = self.check_caps(ray);
 
-        if ray.t < t_min {
-            return None;
+        // check against ray
+        if t_min > ray.t {
+            return caps;
+        }
+
+        // check against caps
+        if let Some(i) = caps {
+            if i.t < t_min {
+                return caps;
+            }
         }
 
         let point = ray.at(t_min);
         let mut normal = (point - self.center) / self.radius;
-        normal -= normal.dot(self.axis) * self.axis;
+        normal -= normal.dot(self.axis()) * self.axis();
 
         // Choose the normal's orientation to be opposite the ray's
         // (in case the ray intersects the inside surface)
