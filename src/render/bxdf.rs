@@ -43,10 +43,11 @@ pub trait BxDF: Send + Sync {
         (self.get_type() & t) == t
     }
 
-    fn apply(&self, view: Vec3, from: Vec3) -> Spectrum;
+    fn apply(&self, normal: Vec3, view: Vec3, from: Vec3) -> Spectrum;
 
     fn apply_sample(
         &self,
+        normal: Vec3,
         view: Vec3,
         from: Vec3,
         sample: Vec2,
@@ -76,12 +77,12 @@ impl BxDF for ScaledBxDF {
         self.bxdf.get_type()
     }
 
-    fn apply(&self, view: Vec3, from: Vec3) -> Spectrum {
-        self.scale * self.bxdf.apply(view, from)
+    fn apply(&self, normal: Vec3,view: Vec3, from: Vec3) -> Spectrum {
+        self.scale * self.bxdf.apply(normal, view, from)
     }
 
     fn apply_sample(
-        &self,
+        &self,normal: Vec3,
         view: Vec3,
         from: Vec3,
         sample: Vec2,
@@ -91,7 +92,7 @@ impl BxDF for ScaledBxDF {
         self.scale
             * self
                 .bxdf
-                .apply_sample(view, from, sample, pdf, sampled_type)
+                .apply_sample(normal,view, from, sample, pdf, sampled_type)
     }
 
     fn rho(&self, w: Vec3, n_samples: u32, samples: Vec2) -> Spectrum {
@@ -118,13 +119,13 @@ impl BxDF for LambertianReflection {
         BxDFType::REFLECTION | BxDFType::DIFFUSE
     }
 
-    fn apply(&self, _: Vec3, _: Vec3) -> Spectrum {
-        self.r / std::f32::consts::PI
+    fn apply(&self, normal: Vec3, _: Vec3, from: Vec3) -> Spectrum {
+        self.r * normal.dot(from).max(0.0) / std::f32::consts::PI
     }
 
     #[allow(unused_variables)]
     fn apply_sample(
-        &self,
+        &self,normal: Vec3,
         view: Vec3,
         from: Vec3,
         sample: Vec2,
@@ -158,11 +159,11 @@ impl BxDF for LambertianTransmission {
         BxDFType::DIFFUSE | BxDFType::TRANSMISSION
     }
 
-    fn apply(&self, _: Vec3, _: Vec3) -> Spectrum {
-        self.t / std::f32::consts::PI
+    fn apply(&self,normal: Vec3, _: Vec3, from: Vec3) -> Spectrum {
+        self.t * normal.dot(from).max(0.0) / std::f32::consts::PI
     }
 
-    fn apply_sample(&self, _: Vec3, _: Vec3, _: Vec2, _: f32, _: BxDFType) -> Spectrum {
+    fn apply_sample(&self, _: Vec3, _: Vec3, _: Vec3, _: Vec2, _: f32, _: BxDFType) -> Spectrum {
         unimplemented!()
     }
 
@@ -192,13 +193,13 @@ impl BxDF for SpecularReflection {
         BxDFType::REFLECTION | BxDFType::SPECULAR
     }
 
-    fn apply(&self, _: Vec3, _: Vec3) -> Spectrum {
+    fn apply(&self, _: Vec3, _: Vec3, _: Vec3) -> Spectrum {
         Spectrum::black()
     }
 
     #[allow(unused_variables)]
     fn apply_sample(
-        &self,
+        &self,normal: Vec3,
         view: Vec3,
         from: Vec3,
         sample: Vec2,

@@ -168,13 +168,12 @@ impl RgbRenderer {
 
                 // normal diffuse color
                 // TODO: Subject to change
-                color += obj.bxdf.apply(view, to_light);
+                color += obj.bxdf.apply(normal, view, to_light);
 
                 if !self.scene.is_occluded(&ray) {
-                    let cos = normal.dot(to_light).max(0.0);
                     let intensity = light.intensity_at(point);
 
-                    color += obj.bxdf.apply(view, to_light) * intensity * cos;
+                    color += obj.bxdf.apply(normal, view, to_light) * intensity;
                 }
             }
 
