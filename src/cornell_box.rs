@@ -1,6 +1,6 @@
 use crate::color::Color;
 use crate::geometry::aabb::Aabb;
-use crate::geometry::cylinder::Cylinder;
+use crate::geometry::capsule::Capsule;
 use crate::geometry::sphere::Sphere;
 use crate::render::bxdf::LambertianReflection;
 use crate::render::camera::Camera;
@@ -9,6 +9,7 @@ use crate::render::scene::Scene;
 use crate::render::scene_objects::SceneObject;
 use crate::Spectrum;
 use ultraviolet::Vec3;
+use crate::geometry::tube::Tube;
 
 pub const LEFT_WALL: f32 = -3.0;
 pub const RIGHT_WALL: f32 = 3.0;
@@ -34,7 +35,8 @@ pub fn create_box() -> Scene {
 
     // objects
     scene.push_obj(sphere());
-    scene.push_obj(cylinder());
+    scene.push_obj(capsule());
+    scene.push_obj(tube());
 
     // light
     scene.push_light(light());
@@ -90,23 +92,40 @@ fn sphere() -> SceneObject {
     SceneObject::new(Box::new(sphere), Box::new(bxdf))
 }
 
-fn cylinder() -> SceneObject {
-    let height = (CEILING - FLOOR) / 3.0;
-    let center = Vec3::new(
+fn capsule() -> SceneObject {
+    let from = Vec3::new(
         LEFT_WALL * 1.5 + RIGHT_WALL,
-        FLOOR,
+        FLOOR + RADIUS,
         (FRONT + BACK_WALL) / 1.5,
     );
-    let center = center + Vec3::unit_y() * (height / 2.0);
 
-    let axis = Vec3::unit_y();
+    let height = (CEILING - FLOOR) / 4.0;
+    let height = height.min(FLOOR + RADIUS + 1.0);
 
-    let cylinder = Cylinder::new(center, axis, RADIUS, height);
+    let to = from + Vec3::unit_y() * height;
+
+    let capsule = Capsule::new(from, to, RADIUS);
 
     let color = Spectrum::white() * 0.75;
     let bxdf = LambertianReflection::new(color);
 
-    SceneObject::new(Box::new(cylinder), Box::new(bxdf))
+    SceneObject::new(Box::new(capsule), Box::new(bxdf))
+}
+
+fn tube() -> SceneObject {
+    let radius = RADIUS / 4.0;
+    let points = [
+        Vec3::unit_y() * radius - Vec3::unit_x() * 2.0 - Vec3::unit_z() * 3.0,
+        Vec3::unit_y() * radius - Vec3::unit_z() * 3.0,
+        Vec3::unit_y() * radius - Vec3::unit_x() - Vec3::unit_z() * f32::sqrt(2.0),
+        Vec3::unit_y() * radius - Vec3::unit_x() * 2.0 - Vec3::unit_z() * 3.0,
+    ];
+
+    let tube = Tube::new(&points, radius);
+    let color = (Spectrum::red() + Spectrum::blue()) / 2.0;
+    let bxdf = LambertianReflection::new(color);
+
+    SceneObject::new(Box::new(tube), Box::new(bxdf))
 }
 
 fn left_wall() -> SceneObject {
