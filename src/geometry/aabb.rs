@@ -18,6 +18,12 @@ impl Aabb {
         Self { min, max }
     }
 
+    pub fn infinite() -> Self {
+        let min = Vec3::one() * f32::NEG_INFINITY;
+        let max = Vec3::one() * f32::INFINITY;
+        Self { min, max }
+    }
+
     /// Be careful with this one!
     /// It can be used to outer join many aabbs with each other.
     pub fn inverted_infinite() -> Self {
