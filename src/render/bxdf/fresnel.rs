@@ -83,15 +83,15 @@ pub trait Fresnel: Send + Sync {
 }
 
 pub struct Dielectric {
-    pub eta_t: f32,
     pub eta_i: f32,
+    pub eta_t: f32,
 }
 
 impl Dielectric {
     /// - `eta_t`: refractive index of material the light is entering.
     /// - `eta_i`: refractive index of material the light is coming from.
-    pub fn new(eta_t: f32, eta_i: f32) -> Self {
-        Self { eta_t, eta_i }
+    pub fn new(eta_i: f32, eta_t: f32) -> Self {
+        Self { eta_i, eta_t }
     }
 }
 

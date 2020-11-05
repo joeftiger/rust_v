@@ -1,11 +1,12 @@
 pub mod fresnel;
 pub mod lambertian;
 pub mod specular;
+mod sampling;
 
 use crate::Spectrum;
 use ultraviolet::{Vec2, Vec3};
-use crate::geometry::AngularExt;
 use std::f32::consts::PI;
+use crate::render::bxdf::sampling::{sample_hemisphere, same_hemisphere};
 
 bitflags! {
     pub struct BxDFType: u8 {
@@ -107,7 +108,17 @@ pub trait BxDF: Send + Sync {
         normal: Vec3,
         outgoing: Vec3,
         sample: Vec2,
-    ) -> BxDFSample;
+    ) -> BxDFSample {
+        let mut incident = sample_hemisphere(normal, sample);
+        if !same_hemisphere(normal, incident, outgoing) {
+            incident = -incident;
+        }
+
+        let spectrum = self.evaluate(normal, incident, outgoing);
+        let pdf = self.pdf(normal, incident, outgoing);
+
+        BxDFSample::new(spectrum, incident, pdf)
+    }
 
     /// # Summary
     /// Computes the probability density function (_pdf_) for the pair of directions.
@@ -126,10 +137,6 @@ pub trait BxDF: Send + Sync {
             0.0
         }
     }
-}
-
-pub fn same_hemisphere(normal: Vec3, a: Vec3, b: Vec3) -> bool {
-    normal.angle_to(&a) <= PI && normal.angle_to(&b) <= PI
 }
 
 pub struct ScaledBxDF {

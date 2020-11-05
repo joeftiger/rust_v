@@ -1,6 +1,7 @@
-use crate::render::bxdf::{BxDF, BxDFType};
+use crate::render::bxdf::{BxDF, BxDFType, BxDFSample};
 use crate::Spectrum;
 use ultraviolet::{Vec2, Vec3};
+use std::f32::consts::PI;
 
 pub struct LambertianReflection {
     r: Spectrum,
@@ -17,29 +18,12 @@ impl BxDF for LambertianReflection {
         BxDFType::REFLECTION | BxDFType::DIFFUSE
     }
 
-    fn apply(&self, normal: Vec3, _: Vec3, from: Vec3) -> Spectrum {
-        self.r * normal.dot(from).max(0.0) / std::f32::consts::PI
+    fn evaluate(&self, normal: Vec3, _: Vec3, from: Vec3) -> Spectrum {
+        self.r * normal.dot(from).max(0.0) / PI
     }
 
-    #[allow(unused_variables)]
-    fn apply_sample(
-        &self,
-        normal: Vec3,
-        view: Vec3,
-        from: Vec3,
-        sample: Vec2,
-        pdf: f32,
-        sampled_type: BxDFType,
-    ) -> Spectrum {
+    fn sample(&self, _normal: Vec3, _outgoing: Vec3, _sample: Vec2) -> BxDFSample {
         unimplemented!()
-    }
-
-    fn rho(&self, _: Vec3, _: u32, _: Vec2) -> Spectrum {
-        self.r
-    }
-
-    fn rho2(&self, _: u32, _: Vec2, _: Vec2) -> Spectrum {
-        self.r
     }
 }
 
@@ -58,19 +42,7 @@ impl BxDF for LambertianTransmission {
         BxDFType::DIFFUSE | BxDFType::TRANSMISSION
     }
 
-    fn apply(&self, normal: Vec3, _: Vec3, from: Vec3) -> Spectrum {
-        self.t * normal.dot(from).max(0.0) / std::f32::consts::PI
-    }
-
-    fn apply_sample(&self, _: Vec3, _: Vec3, _: Vec3, _: Vec2, _: f32, _: BxDFType) -> Spectrum {
-        unimplemented!()
-    }
-
-    fn rho(&self, _: Vec3, _: u32, _: Vec2) -> Spectrum {
-        self.t
-    }
-
-    fn rho2(&self, _: u32, _: Vec2, _: Vec2) -> Spectrum {
-        self.t
+    fn evaluate(&self, normal: Vec3, _: Vec3, from: Vec3) -> Spectrum {
+        self.t * normal.dot(from).max(0.0) / PI
     }
 }
