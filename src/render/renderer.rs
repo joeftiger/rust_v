@@ -153,27 +153,26 @@ impl RgbRenderer {
         if let Some(si) = si {
             let point = si.info.point;
             let normal = si.info.normal;
-            let view = -si.info.ray.direction;
+            let incident = -si.info.ray.direction;
 
             let obj = self.scene.get_obj(si.obj_id);
 
             let mut color = Spectrum::default();
             for light in &self.scene.lights {
                 // exact vector
-                let to_light = light.direction_from(point);
+                let outgoing = light.direction_from(point);
 
                 // offset actual ray to avoid black pixels
                 let mut ray = light.ray_to(point);
                 ray.origin += normal * floats::BIG_EPSILON;
 
-                // normal diffuse color
-                // TODO: Subject to change
-                color += obj.bxdf.apply(normal, view, to_light);
+                let evaluation = obj.bxdf.evaluate(normal, incident, outgoing);
+                color += evaluation;
 
                 if !self.scene.is_occluded(&ray) {
                     let intensity = light.intensity_at(point);
 
-                    color += obj.bxdf.apply(normal, view, to_light) * intensity;
+                    color += evaluation * intensity;
                 }
             }
 

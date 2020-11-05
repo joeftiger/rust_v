@@ -1,6 +1,6 @@
-use ultraviolet::{Vec2, Vec3, Rotor3};
-use std::f32::consts::*;
 use crate::geometry::AngularExt;
+use std::f32::consts::*;
+use ultraviolet::{Rotor3, Vec2, Vec3};
 
 pub fn same_hemisphere(normal: Vec3, a: Vec3, b: Vec3) -> bool {
     normal.angle_to(&a) <= PI && normal.angle_to(&b) <= PI

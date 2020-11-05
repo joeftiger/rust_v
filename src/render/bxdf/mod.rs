@@ -1,12 +1,12 @@
 pub mod fresnel;
 pub mod lambertian;
-pub mod specular;
 mod sampling;
+pub mod specular;
 
+use crate::render::bxdf::sampling::{same_hemisphere, sample_hemisphere};
 use crate::Spectrum;
-use ultraviolet::{Vec2, Vec3};
 use std::f32::consts::PI;
-use crate::render::bxdf::sampling::{sample_hemisphere, same_hemisphere};
+use ultraviolet::{Vec2, Vec3};
 
 bitflags! {
     pub struct BxDFType: u8 {
@@ -54,7 +54,11 @@ pub struct BxDFSample {
 
 impl BxDFSample {
     pub fn new(spectrum: Spectrum, incident: Vec3, pdf: f32) -> Self {
-        Self { spectrum, incident, pdf }
+        Self {
+            spectrum,
+            incident,
+            pdf,
+        }
     }
 }
 
@@ -103,12 +107,7 @@ pub trait BxDF: Send + Sync {
     ///
     /// # Results
     /// * `BxDFSample` - The spectrum, incident and pdf at the intersection
-    fn sample(
-        &self,
-        normal: Vec3,
-        outgoing: Vec3,
-        sample: Vec2,
-    ) -> BxDFSample {
+    fn sample(&self, normal: Vec3, outgoing: Vec3, sample: Vec2) -> BxDFSample {
         let mut incident = sample_hemisphere(normal, sample);
         if !same_hemisphere(normal, incident, outgoing) {
             incident = -incident;
