@@ -1,10 +1,11 @@
 pub mod fresnel;
 pub mod lambertian;
-pub mod reflection;
 pub mod specular;
 
 use crate::Spectrum;
 use ultraviolet::{Vec2, Vec3};
+use crate::geometry::AngularExt;
+use std::f32::consts::PI;
 
 bitflags! {
     pub struct BxDFType: u8 {
@@ -39,28 +40,96 @@ impl BxDFType {
     }
 }
 
+/// # Summary
+/// Contains of
+/// * `spectrum` - An evaluated scaling spectrum
+/// * `incident` - An evaluated incident direction
+/// * `pdf` - An evaluated pdf
+pub struct BxDFSample {
+    pub spectrum: Spectrum,
+    pub incident: Vec3,
+    pub pdf: f32,
+}
+
+impl BxDFSample {
+    pub fn new(spectrum: Spectrum, incident: Vec3, pdf: f32) -> Self {
+        Self { spectrum, incident, pdf }
+    }
+}
+
+/// # Summary
+/// The common base shared between BRDFs and BTDFs.
+/// Provides methods for evaluating and sampling the distribution function for pairs of directions
+/// at an intersection
 pub trait BxDF: Send + Sync {
+    /// # Summary
+    /// Some light transport algorithms need to distinguish different BxDFTypes.
+    ///
+    /// # Results
+    /// `BxDFType` - The type of this BxDF
     fn get_type(&self) -> BxDFType;
 
+    /// # Summary
+    /// Allows matching the user-supplied type to this BxDF.
+    ///
+    /// # Results
+    /// * `bool` - Whether the type matches
     fn is_type(&self, t: BxDFType) -> bool {
         (self.get_type() & t) == t
     }
 
-    fn apply(&self, normal: Vec3, view: Vec3, from: Vec3) -> Spectrum;
+    /// # Summary
+    /// Evaluates the BxDF for the pair of incident and outgoing light directions and the
+    /// intersection normal.
+    ///
+    /// # Arguments
+    /// * `normal` - The normal vector at the intersection
+    /// * `incident` - The incident direction onto the intersection we evaluate
+    /// * `outgoing` - The outgoing light direction
+    ///
+    /// # Results
+    /// * `Spectrum` - The scaling spectrum at the intersection
+    fn evaluate(&self, normal: Vec3, incident: Vec3, outgoing: Vec3) -> Spectrum;
 
-    fn apply_sample(
+    /// # Summary
+    /// Samples an incident light direction for an outgoing light direction from the given sample
+    /// space.
+    ///
+    /// # Arguments
+    /// * `normal` - The normal vector at the intersection
+    /// * `outgoing` - The outgoing light direction
+    /// * `sample` - The sample space for randomization
+    ///
+    /// # Results
+    /// * `BxDFSample` - The spectrum, incident and pdf at the intersection
+    fn sample(
         &self,
         normal: Vec3,
-        view: Vec3,
-        from: Vec3,
+        outgoing: Vec3,
         sample: Vec2,
-        pdf: f32,
-        sampled_type: BxDFType,
-    ) -> Spectrum;
+    ) -> BxDFSample;
 
-    fn rho(&self, w: Vec3, n_samples: u32, samples: Vec2) -> Spectrum;
+    /// # Summary
+    /// Computes the probability density function (_pdf_) for the pair of directions.
+    ///
+    /// # Arguments
+    /// * `normal` - The normal vector at the intersection
+    /// * `incident` - The incident direction onto the intersection we evaluate
+    /// * `outgoing` - The outgoing light direction
+    ///
+    /// # Results
+    /// * `f32` - The evaluated pdf
+    fn pdf(&self, normal: Vec3, incident: Vec3, outgoing: Vec3) -> f32 {
+        if same_hemisphere(normal, incident, outgoing) {
+            normal.dot(incident).abs() * PI
+        } else {
+            0.0
+        }
+    }
+}
 
-    fn rho2(&self, n_samples: u32, samples1: Vec2, samples2: Vec2) -> Spectrum;
+pub fn same_hemisphere(normal: Vec3, a: Vec3, b: Vec3) -> bool {
+    normal.angle_to(&a) <= PI && normal.angle_to(&b) <= PI
 }
 
 pub struct ScaledBxDF {
@@ -80,30 +149,17 @@ impl BxDF for ScaledBxDF {
         self.bxdf.get_type()
     }
 
-    fn apply(&self, normal: Vec3, view: Vec3, from: Vec3) -> Spectrum {
-        self.scale * self.bxdf.apply(normal, view, from)
+    fn evaluate(&self, normal: Vec3, view: Vec3, from: Vec3) -> Spectrum {
+        self.scale * self.bxdf.evaluate(normal, view, from)
     }
 
-    fn apply_sample(
-        &self,
-        normal: Vec3,
-        view: Vec3,
-        from: Vec3,
-        sample: Vec2,
-        pdf: f32,
-        sampled_type: BxDFType,
-    ) -> Spectrum {
-        self.scale
-            * self
-                .bxdf
-                .apply_sample(normal, view, from, sample, pdf, sampled_type)
+    fn sample(&self, normal: Vec3, outgoing: Vec3, sample: Vec2) -> BxDFSample {
+        let mut sample = self.bxdf.sample(normal, outgoing, sample);
+        sample.spectrum *= self.scale;
+        sample
     }
 
-    fn rho(&self, w: Vec3, n_samples: u32, samples: Vec2) -> Spectrum {
-        self.scale * self.bxdf.rho(w, n_samples, samples)
-    }
-
-    fn rho2(&self, n_samples: u32, samples1: Vec2, samples2: Vec2) -> Spectrum {
-        self.scale * self.bxdf.rho2(n_samples, samples1, samples2)
+    fn pdf(&self, normal: Vec3, incident: Vec3, outgoing: Vec3) -> f32 {
+        self.bxdf.pdf(normal, incident, outgoing)
     }
 }
