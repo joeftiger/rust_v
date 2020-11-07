@@ -27,7 +27,7 @@ impl Capsule {
 
 impl Container for Capsule {
     fn contains(&self, obj: Vec3) -> bool {
-        self.top.contains(obj) || self.bot.contains(obj)
+        self.top.contains(obj) || self.bot.contains(obj) || self.cylinder.contains(obj)
     }
 }
 
@@ -37,6 +37,7 @@ impl Geometry for Capsule {
     }
 
     fn intersect(&self, ray: &Ray) -> Option<GeometryInfo> {
+        // FIXME: Intersections from the inside are not handled correctly!
         let bot = self.bot.intersect(ray);
         let top = self.top.intersect(ray);
         let cylinder = self.cylinder.intersect(ray);
