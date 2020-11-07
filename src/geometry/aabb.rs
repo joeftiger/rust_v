@@ -130,13 +130,17 @@ impl Geometry for Aabb {
         // forward
         closest = compare_closest(max.z, Vec3::unit_z(), closest);
 
+        let closest = closest.expect("Hit point not in range of any side");
+        let mut normal = closest.1;
+
+        // Choose the normal's orientation to be opposite the ray's
+        // (in case the ray intersects the inside surface)
+        if normal.dot(ray.direction) > 0.0 {
+            normal = -normal;
+        }
+
         // approximating epsilon is too small (unlikely) or the given hit was illegal
-        Some(GeometryInfo::new(
-            *ray,
-            t_min,
-            point,
-            closest.expect("Hit point not in range of any side!").1,
-        ))
+        Some(GeometryInfo::new(*ray, t_min, point, normal))
     }
 }
 
