@@ -11,5 +11,6 @@ pub mod math;
 pub mod render;
 pub mod store;
 pub mod util;
+pub mod formats;
 
 pub type Spectrum = Srgb;
