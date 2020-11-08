@@ -1,4 +1,3 @@
-
 /// Tries to load the given .obj file content
 /// WIP and not really well done.
 pub fn load(content: String) -> ObjFile {
@@ -25,58 +24,55 @@ pub fn load(content: String) -> ObjFile {
     obj_file
 }
 
-fn parse_f32(string: &mut dyn Iterator<Item=&str>, default: (f32, f32, f32, f32)) -> (f32, f32, f32, f32) {
+fn parse_f32(
+    string: &mut dyn Iterator<Item = &str>,
+    default: (f32, f32, f32, f32),
+) -> (f32, f32, f32, f32) {
     let mut f32s = default;
-    string.enumerate()
-        .for_each(|(i, s)| {
-            match i {
-                0 => f32s.0 = s.parse().unwrap(),
-                1 => f32s.1 = s.parse().unwrap(),
-                2 => f32s.2 = s.parse().unwrap(),
-                3 => f32s.3 = s.parse().unwrap(),
-                _ => panic!()
-            }
-        });
+    string.enumerate().for_each(|(i, s)| match i {
+        0 => f32s.0 = s.parse().unwrap(),
+        1 => f32s.1 = s.parse().unwrap(),
+        2 => f32s.2 = s.parse().unwrap(),
+        3 => f32s.3 = s.parse().unwrap(),
+        _ => panic!(),
+    });
 
     f32s
 }
 
-fn parse_usize(string: &mut dyn Iterator<Item=&str>) -> (usize, usize, usize) {
+fn parse_usize(string: &mut dyn Iterator<Item = &str>) -> (usize, usize, usize) {
     let mut usizes = (usize::MAX, usize::MAX, usize::MAX);
-    string.enumerate()
-        .for_each(|(i, s)| {
-            match i {
-                0 => usizes.0 = s.parse().unwrap(),
-                1 => usizes.1 = s.parse().unwrap(),
-                2 => usizes.2 = s.parse().unwrap(),
-                _ => panic!()
-            }
-        });
+    string.enumerate().for_each(|(i, s)| match i {
+        0 => usizes.0 = s.parse().unwrap(),
+        1 => usizes.1 = s.parse().unwrap(),
+        2 => usizes.2 = s.parse().unwrap(),
+        _ => panic!(),
+    });
 
     usizes
 }
 
-fn parse_v(string: &mut dyn Iterator<Item=&str>) -> ObjVertex {
+fn parse_v(string: &mut dyn Iterator<Item = &str>) -> ObjVertex {
     let f32s = parse_f32(string, (f32::NAN, f32::NAN, f32::NAN, 1.0));
 
     ObjVertex::from(f32s)
 }
 
-fn parse_vt(string: &mut dyn Iterator<Item=&str>) -> ObjTextureCoord {
+fn parse_vt(string: &mut dyn Iterator<Item = &str>) -> ObjTextureCoord {
     let f32s = parse_f32(string, (f32::NAN, 0.0, 0.0, f32::NAN));
     let f32s = (f32s.0, f32s.1, f32s.2);
 
     ObjTextureCoord::from(f32s)
 }
 
-fn parse_vn(string: &mut dyn Iterator<Item=&str>) -> ObjNormal {
+fn parse_vn(string: &mut dyn Iterator<Item = &str>) -> ObjNormal {
     let f32s = parse_f32(string, (f32::NAN, f32::NAN, f32::NAN, f32::NAN));
     let f32s = (f32s.0, f32s.1, f32s.2);
 
     ObjNormal::from(f32s)
 }
 
-fn parse_vp(string: &mut dyn Iterator<Item=&str>) -> ObjParamSpaceValue {
+fn parse_vp(string: &mut dyn Iterator<Item = &str>) -> ObjParamSpaceValue {
     let f32s = parse_f32(string, (f32::NAN, f32::NAN, f32::NAN, f32::NAN));
     let f32s = (f32s.0, f32s.1, f32s.2);
 
@@ -84,13 +80,13 @@ fn parse_vp(string: &mut dyn Iterator<Item=&str>) -> ObjParamSpaceValue {
 }
 
 // TODO: Parse this correctly!
-fn parse_f(string: &mut dyn Iterator<Item=&str>) -> ObjFace {
+fn parse_f(string: &mut dyn Iterator<Item = &str>) -> ObjFace {
     let usizes = parse_usize(string);
 
     ObjFace::from(usizes)
 }
 
-fn parse_l(string: &mut dyn Iterator<Item=&str>) -> ObjLine {
+fn parse_l(string: &mut dyn Iterator<Item = &str>) -> ObjLine {
     let vertices: Vec<usize> = string.map(|s| s.parse::<usize>().unwrap()).collect();
 
     ObjLine::from(vertices)
@@ -220,11 +216,11 @@ impl ToString for ObjFace {
                 );
             }
 
-            return format!("f {}/{} {}/{} {}/{}", v.0, t.0, v.1, t.1, v.2, t.2, );
+            return format!("f {}/{} {}/{} {}/{}", v.0, t.0, v.1, t.1, v.2, t.2,);
         }
 
         if let Some(n) = self.vn {
-            return format!("f {}//{} {}//{} {}//{}", v.0, n.0, v.1, n.1, v.2, n.2, );
+            return format!("f {}//{} {}//{} {}//{}", v.0, n.0, v.1, n.1, v.2, n.2,);
         }
 
         format!("f {} {} {}", v.0, v.1, v.2)
@@ -233,17 +229,21 @@ impl ToString for ObjFace {
 
 impl From<(usize, usize, usize)> for ObjFace {
     fn from(v: (usize, usize, usize)) -> Self {
-        Self { v, vt: None, vn: None }
+        Self {
+            v,
+            vt: None,
+            vn: None,
+        }
     }
 }
 
 #[allow(clippy::type_complexity)]
 impl
-From<(
-    (usize, usize, usize),
-    Option<(usize, usize, usize)>,
-    Option<(usize, usize, usize)>,
-)> for ObjFace
+    From<(
+        (usize, usize, usize),
+        Option<(usize, usize, usize)>,
+        Option<(usize, usize, usize)>,
+    )> for ObjFace
 {
     fn from(
         vtx: (
@@ -314,7 +314,7 @@ impl ObjFile {
     pub fn add_l(&mut self, l: ObjLine) {
         self.l.push(l);
     }
-    
+
     pub fn get_v(&self, index: usize) -> &ObjVertex {
         &self.v[index - 1]
     }
@@ -337,37 +337,31 @@ impl ObjFile {
     }
 
     pub fn assert_ok(&self) {
-        self.f
-            .iter()
-            .for_each(|f| {
-                let len = self.v.len();
-                assert!(f.v.0 <= len);
-                assert!(f.v.1 <= len);
-                assert!(f.v.2 <= len);
+        self.f.iter().for_each(|f| {
+            let len = self.v.len();
+            assert!(f.v.0 <= len);
+            assert!(f.v.1 <= len);
+            assert!(f.v.2 <= len);
 
-                if let Some(vt) = f.vt {
-                    let len = self.vt.len();
-                    assert!(vt.0 <= len);
-                    assert!(vt.1 <= len);
-                    assert!(vt.2 <= len);
-                }
+            if let Some(vt) = f.vt {
+                let len = self.vt.len();
+                assert!(vt.0 <= len);
+                assert!(vt.1 <= len);
+                assert!(vt.2 <= len);
+            }
 
-                if let Some(vn) = f.vn {
-                    let len = self.vn.len();
-                    assert!(vn.0 <= len);
-                    assert!(vn.1 <= len);
-                    assert!(vn.2 <= len);
-                }
-            });
+            if let Some(vn) = f.vn {
+                let len = self.vn.len();
+                assert!(vn.0 <= len);
+                assert!(vn.1 <= len);
+                assert!(vn.2 <= len);
+            }
+        });
 
-        self.l
-            .iter()
-            .for_each(|l| {
-                let len = self.v.len();
-                l.v
-                    .iter()
-                    .for_each(|u| assert!(*u < len));
-            })
+        self.l.iter().for_each(|l| {
+            let len = self.v.len();
+            l.v.iter().for_each(|u| assert!(*u < len));
+        })
     }
 }
 

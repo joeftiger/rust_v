@@ -1,12 +1,12 @@
 use crate::floats;
+use crate::formats::obj::ObjFile;
 use crate::geometry::aabb::Aabb;
 use crate::geometry::ray::Ray;
 use crate::geometry::{Geometry, GeometryInfo};
+use rayon::prelude::*;
+use std::ops::Deref;
 use std::sync::{Arc, Mutex};
 use ultraviolet::Vec3;
-use crate::formats::obj::ObjFile;
-use std::ops::Deref;
-use rayon::prelude::*;
 
 pub struct Triangle {
     a: Arc<Vec3>,
@@ -89,7 +89,11 @@ impl Mesh {
 
         debug_assert!(aabb.is_valid());
 
-        Self { vertices, triangles, aabb }
+        Self {
+            vertices,
+            triangles,
+            aabb,
+        }
     }
 }
 
@@ -124,25 +128,26 @@ impl Geometry for Mesh {
 
 impl From<ObjFile> for Mesh {
     fn from(file: ObjFile) -> Self {
-        debug_assert!({file.assert_ok(); true});
+        debug_assert!({
+            file.assert_ok();
+            true
+        });
 
         let mut mesh = Mesh::default();
-        file.v.iter()
-            .for_each(|v| {
-                let vertex = Vec3::new(v.0, v.1, v.2);
-                mesh.vertices.push(Arc::new(vertex));
-            });
-        file.f.iter()
-            .for_each(|f| {
-                let v = f.v;
-                // off by one due to .obj counting
-                let a = mesh.vertices[v.0 - 1].clone();
-                let b = mesh.vertices[v.1 - 1].clone();
-                let c = mesh.vertices[v.2 - 1].clone();
+        file.v.iter().for_each(|v| {
+            let vertex = Vec3::new(v.0, v.1, v.2);
+            mesh.vertices.push(Arc::new(vertex));
+        });
+        file.f.iter().for_each(|f| {
+            let v = f.v;
+            // off by one due to .obj counting
+            let a = mesh.vertices[v.0 - 1].clone();
+            let b = mesh.vertices[v.1 - 1].clone();
+            let c = mesh.vertices[v.2 - 1].clone();
 
-                let triangle = Triangle::new(a, b, c);
-                mesh.triangles.push(triangle);
-            });
+            let triangle = Triangle::new(a, b, c);
+            mesh.triangles.push(triangle);
+        });
 
         mesh
     }
