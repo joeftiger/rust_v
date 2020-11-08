@@ -103,26 +103,26 @@ impl Geometry for Mesh {
     }
 
     fn intersect(&self, ray: &Ray) -> Option<GeometryInfo> {
-        let info: Mutex<Option<GeometryInfo>> = Mutex::new(None);
+        let mutex: Mutex<Option<GeometryInfo>> = Mutex::new(None);
         // let mut info: Option<GeometryInfo> = None;
         self.triangles.par_iter().for_each(|t: &Triangle| {
             let intersection = t.intersect(ray);
 
             {
-                let mut saved = info.lock().unwrap();
+                let mut current_info = mutex.lock().unwrap();
                 if let Some(i) = intersection {
-                    if saved.is_none() {
-                        *saved = Some(i);
+                    if current_info.is_none() {
+                        *current_info = Some(i);
                         return;
                     }
-                    if i.t < saved.unwrap().t {
-                        *saved = Some(i);
+                    if i.t < current_info.unwrap().t {
+                        *current_info = Some(i);
                     }
                 }
             }
         });
 
-        info.into_inner().unwrap()
+        mutex.into_inner().unwrap()
     }
 }
 
