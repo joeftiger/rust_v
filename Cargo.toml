@@ -27,6 +27,10 @@ ultraviolet = { version = "", features = ["int" ] }
 [dev-dependencies]
 criterion= ""
 
+[[bench]]
+name = "bxdf_inlines"
+harness = false
+
 [profile.release]
 codegen-units = 1
 opt-level = 3
