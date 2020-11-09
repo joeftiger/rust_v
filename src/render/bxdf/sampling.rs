@@ -11,9 +11,9 @@ use ultraviolet::{Vec2, Vec3};
 /// * `Vec2` - A concentric sample
 pub fn concentric_sample_disk(sample: &Vec2) -> Vec2 {
     debug_assert!(sample.x >= 0.0);
-    debug_assert!(sample.x <= 1.0);
+    debug_assert!(sample.x < 1.0);
     debug_assert!(sample.y >= 0.0);
-    debug_assert!(sample.y <= 1.0);
+    debug_assert!(sample.y < 1.0);
 
     // Map uniform random numbers to [-1,1]^2
     let offset = 2.0 * *sample - Vec2::one();
@@ -47,9 +47,9 @@ pub fn concentric_sample_disk(sample: &Vec2) -> Vec2 {
 /// * `Vec3` - A point on the hemisphere around `(0, 0, 1)`
 pub fn cos_sample_hemisphere(sample: &Vec2) -> Vec3 {
     debug_assert!(sample.x >= 0.0);
-    debug_assert!(sample.x <= 1.0);
+    debug_assert!(sample.x < 1.0);
     debug_assert!(sample.y >= 0.0);
-    debug_assert!(sample.y <= 1.0);
+    debug_assert!(sample.y < 1.0);
 
     let d = concentric_sample_disk(sample);
     let z = f32::sqrt(f32::max(0.0, 1.0 - d.x * d.x - d.y * d.y));
