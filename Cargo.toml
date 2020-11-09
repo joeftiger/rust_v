@@ -10,7 +10,7 @@ edition = "2018"
 # bitmask flag generator 
 bitflags = ""
 # cli help/parsing etc.
-clap = ""
+clap = { version = "", features = ["yaml"] }
 # image loading / saving
 image = ""
 # num of logical / physical cpus
@@ -26,6 +26,10 @@ ultraviolet = { version = "", features = ["int" ] }
 
 [dev-dependencies]
 criterion= ""
+
+[features]
+default = ["live-window"]
+live-window = []
 
 [[bench]]
 name = "bxdf_inlines"
