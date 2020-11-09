@@ -11,12 +11,12 @@ edition = "2018"
 bitflags = ""
 # cli help/parsing etc.
 clap = ""
-# fast random types
-fastrand = ""
 # image loading / saving
 image = ""
 # num of logical / physical cpus
 num_cpus = ""
+# random types
+rand = ""
 # parallelism
 rayon = ""
 # live image of rendering
