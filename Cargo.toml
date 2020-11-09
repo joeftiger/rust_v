@@ -22,7 +22,10 @@ rayon = ""
 # live image of rendering
 show-image = { version = "", features = ["image", "save"] }
 # linear algebra
-ultraviolet = ""
+ultraviolet = { version = "", features = ["int" ] }
+
+[dev-dependencies]
+criterion= ""
 
 [profile.release]
 codegen-units = 1
