@@ -35,7 +35,7 @@ impl Geometry for Triangle {
         let h = ray.direction.cross(ac);
 
         let det = ab.dot(h);
-        if det < floats::DEFAULT_EPSILON {
+        if det < floats::EPSILON {
             return None;
         }
 

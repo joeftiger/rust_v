@@ -41,7 +41,7 @@ impl Plane {
 
     pub fn intersect(&self, ray: &Ray) -> Option<GeometryInfo> {
         let denom = self.normal.dot(ray.direction);
-        if denom < floats::DEFAULT_EPSILON {
+        if denom < floats::EPSILON {
             return None;
         }
 

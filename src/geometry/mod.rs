@@ -84,8 +84,8 @@ macro_rules! geometry_info {
 }
 
 geometry_info!(
-    GeometryInfo => Ray, f32, Vec3, floats::DEFAULT_EPSILON, f32::INFINITY,
-    GeometryInfox4 => Ray4, f32x4, Vec3x4, f32x4::splat(floats::DEFAULT_EPSILON), f32x4::splat(f32::INFINITY)
+    GeometryInfo => Ray, f32, Vec3, floats::EPSILON, f32::INFINITY,
+    GeometryInfox4 => Ray4, f32x4, Vec3x4, f32x4::splat(floats::EPSILON), f32x4::splat(f32::INFINITY)
 );
 
 impl MinMaxExt for GeometryInfo {
