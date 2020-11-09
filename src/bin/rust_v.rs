@@ -3,10 +3,10 @@ extern crate clap;
 
 use clap::{App, ArgMatches};
 
-use rust_v::render::renderer::{Renderer, RgbRenderer};
-use rust_v::render::renderer::debug::NormalRenderer;
-use rust_v::render::window::RenderWindow;
 use rust_v::cornell_box;
+use rust_v::render::renderer::debug::NormalRenderer;
+use rust_v::render::renderer::{Renderer, RgbRenderer};
+use rust_v::render::window::RenderWindow;
 
 const LIVE_WINDOW: &str = "live_window";
 const DEMO: &str = "demo";
@@ -17,9 +17,9 @@ const OUTPUT: &str = "OUTPUT";
 
 fn main() {
     #[cfg(not(feature = "live-window"))]
-        let yaml = load_yaml!("cli.yml");
+    let yaml = load_yaml!("cli.yml");
     #[cfg(feature = "live-window")]
-        let yaml = load_yaml!("cli-live-window.yml");
+    let yaml = load_yaml!("cli-live-window.yml");
 
     let matches = App::from_yaml(yaml).get_matches();
 
@@ -47,8 +47,8 @@ fn render(matches: &ArgMatches, mut renderer: Box<dyn Renderer>) {
 fn render(matches: &ArgMatches, renderer: Box<dyn Renderer>) {
     if matches.is_present(LIVE_WINDOW) {
         RenderWindow::new("Rust-V".to_string(), renderer)
-                .expect("Can't create window")
-                .start_rendering();
+            .expect("Can't create window")
+            .start_rendering();
     } else {
         render_and_save(matches, renderer);
     }
@@ -59,14 +59,18 @@ fn render_and_save(matches: &ArgMatches, mut renderer: Box<dyn Renderer>) {
     let image = renderer.get_image_u16();
 
     if let Some(output) = matches.value_of_os(OUTPUT) {
-        image.save(&output)
+        image
+            .save(&output)
             .unwrap_or_else(|_| panic!("Could not save to: {:?}", output));
     } else {
         let start = std::time::SystemTime::now();
-        let since = start.duration_since(std::time::UNIX_EPOCH).expect("Time went backwards");
+        let since = start
+            .duration_since(std::time::UNIX_EPOCH)
+            .expect("Time went backwards");
         let file = format!("{}.png", since.as_nanos());
 
-        image.save(&file)
+        image
+            .save(&file)
             .unwrap_or_else(|_| panic!("Could not save to: {}", file));
     }
 }
