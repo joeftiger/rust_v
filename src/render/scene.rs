@@ -55,15 +55,9 @@ impl Scene {
         self.objects.iter().for_each(|so| {
             let new_info_op = so.intersect(&ray);
             if let Some(new_info) = new_info_op {
-                if let Some(curr_info) = info {
-                    if new_info.t < curr_info.t {
-                        obj = Some(so);
-                        info = new_info_op;
-                        ray.t = new_info.t;
-                    }
-                } else {
-                    info = new_info_op;
-                }
+                obj = Some(so);
+                info = new_info_op;
+                ray.t = new_info.t;
             }
         });
 
