@@ -155,8 +155,6 @@ impl RgbRenderer {
             let normal = si.info.normal;
             let incident = -si.info.ray.direction;
 
-            let obj = self.scene.get_obj(si.obj_id);
-
             let mut color = Spectrum::default();
             for light in &self.scene.lights {
                 // exact vector
@@ -166,7 +164,7 @@ impl RgbRenderer {
                 let mut ray = light.ray_to(point);
                 ray.origin += normal * floats::BIG_EPSILON;
 
-                let evaluation = obj.bxdf.evaluate(normal, incident, outgoing);
+                let evaluation = si.obj.bxdf.evaluate(normal, incident, outgoing);
                 color += evaluation;
 
                 if !self.scene.is_occluded(&ray) {
