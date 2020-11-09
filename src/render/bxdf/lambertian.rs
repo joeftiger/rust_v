@@ -1,7 +1,7 @@
 use crate::render::bxdf::{BxDF, BxDFSample, BxDFType};
 use crate::Spectrum;
-use std::f32::consts::PI;
-use ultraviolet::{Vec2, Vec3};
+use std::f32::consts::FRAC_1_PI;
+use ultraviolet::Vec3;
 
 pub struct LambertianReflection {
     r: Spectrum,
@@ -18,12 +18,8 @@ impl BxDF for LambertianReflection {
         BxDFType::REFLECTION | BxDFType::DIFFUSE
     }
 
-    fn evaluate(&self, normal: Vec3, _: Vec3, outgoing: Vec3) -> Spectrum {
-        self.r * normal.dot(outgoing).max(0.0) / PI
-    }
-
-    fn sample(&self, _normal: Vec3, _outgoing: Vec3, _sample: Vec2) -> BxDFSample {
-        unimplemented!()
+    fn evaluate(&self, _incident: &Vec3, _outgoing: &Vec3) -> Spectrum {
+        self.r * FRAC_1_PI
     }
 }
 
@@ -42,7 +38,7 @@ impl BxDF for LambertianTransmission {
         BxDFType::DIFFUSE | BxDFType::TRANSMISSION
     }
 
-    fn evaluate(&self, normal: Vec3, _: Vec3, outgoing: Vec3) -> Spectrum {
-        self.t * normal.dot(outgoing).max(0.0) / PI
+    fn evaluate(&self, _incident: &Vec3, _outgoing: &Vec3) -> Spectrum {
+        self.t * FRAC_1_PI
     }
 }

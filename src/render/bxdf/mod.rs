@@ -1,12 +1,94 @@
 pub mod fresnel;
 pub mod lambertian;
-mod sampling;
+pub mod sampling;
 pub mod specular;
 
-use crate::render::bxdf::sampling::{same_hemisphere, sample_hemisphere};
+use crate::floats;
+
+use crate::render::bxdf::sampling::cos_sample_hemisphere;
 use crate::Spectrum;
-use std::f32::consts::PI;
+use std::f32::consts::FRAC_1_PI;
 use ultraviolet::{Vec2, Vec3};
+
+#[inline(always)]
+pub fn cos_theta(v: &Vec3) -> f32 {
+    v.z
+}
+
+#[inline(always)]
+pub fn cos_theta_abs(v: &Vec3) -> f32 {
+    v.z.abs()
+}
+
+#[inline(always)]
+pub fn cos2_theta(v: &Vec3) -> f32 {
+    v.z * v.z
+}
+
+#[inline(always)]
+pub fn sin2_theta(v: &Vec3) -> f32 {
+    f32::max(0.0, 1.0 - cos2_theta(v))
+}
+
+#[inline(always)]
+pub fn sin_theta(v: &Vec3) -> f32 {
+    sin2_theta(v).sqrt()
+}
+
+#[inline(always)]
+pub fn tan_theta(v: &Vec3) -> f32 {
+    sin_theta(v) / cos_theta(v)
+}
+
+#[inline(always)]
+pub fn tan2_theta(v: &Vec3) -> f32 {
+    sin2_theta(v) / cos2_theta(v)
+}
+
+#[inline(always)]
+pub fn cos_phi(v: &Vec3) -> f32 {
+    let sin_theta = sin_theta(v);
+    if sin_theta == 0.0 {
+        0.0
+    } else {
+        floats::fast_clamp(v.x / sin_theta, -1.0, 1.0)
+    }
+}
+
+#[inline(always)]
+pub fn sin_phi(v: &Vec3) -> f32 {
+    let sin_theta = sin_theta(v);
+    if sin_theta == 0.0 {
+        0.0
+    } else {
+        floats::fast_clamp(v.y / sin_theta, -1.0, 1.0)
+    }
+}
+
+#[inline(always)]
+pub fn cos2_phi(v: &Vec3) -> f32 {
+    let cos_phi = cos_phi(v);
+    cos_phi * cos_phi
+}
+
+#[inline(always)]
+pub fn sin2_phi(v: &Vec3) -> f32 {
+    let sin_phi = sin_phi(v);
+    sin_phi * sin_phi
+}
+
+#[inline(always)]
+pub fn cos_d_phi(a: &Vec3, b: &Vec3) -> f32 {
+    let abxy = a.x * b.x + a.y * b.y;
+    let axy = a.x * a.x + a.y * a.y;
+    let bxy = b.x * b.x + b.y * b.y;
+    floats::fast_clamp(abxy / f32::sqrt(axy * bxy), -1.0, 1.0)
+}
+
+#[inline(always)]
+pub fn same_hemisphere(a: &Vec3, b: &Vec3) -> bool {
+    a.z * b.z > 0.0
+}
 
 bitflags! {
     pub struct BxDFType: u8 {
@@ -94,7 +176,7 @@ pub trait BxDF: Send + Sync {
     ///
     /// # Results
     /// * `Spectrum` - The scaling spectrum at the intersection
-    fn evaluate(&self, normal: Vec3, incident: Vec3, outgoing: Vec3) -> Spectrum;
+    fn evaluate(&self, incident: &Vec3, outgoing: &Vec3) -> Spectrum;
 
     /// # Summary
     /// Samples an incident light direction for an outgoing light direction from the given sample
@@ -107,14 +189,14 @@ pub trait BxDF: Send + Sync {
     ///
     /// # Results
     /// * `BxDFSample` - The spectrum, incident and pdf at the intersection
-    fn sample(&self, normal: Vec3, outgoing: Vec3, sample: Vec2) -> BxDFSample {
-        let mut incident = sample_hemisphere(normal, sample);
-        if !same_hemisphere(normal, incident, outgoing) {
-            incident = -incident;
+    fn sample(&self, outgoing: &Vec3, sample: &Vec2) -> BxDFSample {
+        let mut incident = cos_sample_hemisphere(sample);
+        if incident.z < 0.0 {
+            incident.z = -incident.z;
         }
 
-        let spectrum = self.evaluate(normal, incident, outgoing);
-        let pdf = self.pdf(normal, incident, outgoing);
+        let spectrum = self.evaluate(&incident, outgoing);
+        let pdf = self.pdf(&incident, outgoing);
 
         BxDFSample::new(spectrum, incident, pdf)
     }
@@ -129,9 +211,9 @@ pub trait BxDF: Send + Sync {
     ///
     /// # Results
     /// * `f32` - The evaluated pdf
-    fn pdf(&self, normal: Vec3, incident: Vec3, outgoing: Vec3) -> f32 {
-        if same_hemisphere(normal, incident, outgoing) {
-            normal.dot(incident).abs() * PI
+    fn pdf(&self, incident: &Vec3, outgoing: &Vec3) -> f32 {
+        if same_hemisphere(incident, outgoing) {
+            cos_theta(incident).abs() * FRAC_1_PI
         } else {
             0.0
         }
@@ -155,17 +237,17 @@ impl BxDF for ScaledBxDF {
         self.bxdf.get_type()
     }
 
-    fn evaluate(&self, normal: Vec3, view: Vec3, from: Vec3) -> Spectrum {
-        self.scale * self.bxdf.evaluate(normal, view, from)
+    fn evaluate(&self, view: &Vec3, from: &Vec3) -> Spectrum {
+        self.scale * self.bxdf.evaluate(view, from)
     }
 
-    fn sample(&self, normal: Vec3, outgoing: Vec3, sample: Vec2) -> BxDFSample {
-        let mut sample = self.bxdf.sample(normal, outgoing, sample);
+    fn sample(&self, outgoing: &Vec3, sample: &Vec2) -> BxDFSample {
+        let mut sample = self.bxdf.sample(outgoing, sample);
         sample.spectrum *= self.scale;
         sample
     }
 
-    fn pdf(&self, normal: Vec3, incident: Vec3, outgoing: Vec3) -> f32 {
-        self.bxdf.pdf(normal, incident, outgoing)
+    fn pdf(&self, incident: &Vec3, outgoing: &Vec3) -> f32 {
+        self.bxdf.pdf(incident, outgoing)
     }
 }
