@@ -4,6 +4,9 @@ A Rust-written ray tracer for my B.Sc. thesis.
 The _V_ stands for a ray reflection, and therefore figuratively for ray tracing.
 
 ## Building
+### Features
+`live-window` to have a window progressively showing the rendering progress. This is currently enabled by default, you can remove it in the `Cargo.toml`.
+
 ### Cargo
 On the first build, _Cargo_ will need to download some crates as dependencies, just sit tight and wait a while. \
 Run: \
@@ -28,3 +31,7 @@ The window allows you some commands like following:
 - `Enter`: Save current rendering as 16-bit PNG (hardcoded path to `./rendering.png` for now, sorry!)
 - `Ctrl + s`: Save current rendering as 8-bit PNG (with GUI ;-)
 - `←↑→↓` (Arrow keys): Rotate camera
+
+## Progress
+I currently keep track of my progress on [Trello](https://trello.com/b/hMhdBrAU/rust-v). I try to keep it up-to-date,
+but don't throw bricks at me if I forgot something. :)
