@@ -23,6 +23,10 @@ pub const RADIUS: f32 = 1.0;
 
 pub const FOVY: f32 = 70.0;
 
+pub fn create(width: u32, height: u32) -> (Scene, Camera) {
+    (create_box(), create_camera(width, height))
+}
+
 pub fn create_box() -> Scene {
     let mut scene = Scene::default();
 
