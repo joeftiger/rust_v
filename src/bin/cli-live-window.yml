@@ -1,0 +1,33 @@
+name: Rust-V
+version: "0.0.4"
+author: Julius Oeftiger <julius.oeftiger@students.unibe.ch>
+about: A rust ray tracer supporting rgb and spectral ray tracing. Currently WIP.
+args:
+  - live_window:
+      short: l
+      long: live
+      help: Use a live window to progressively show rendering. The window allows saving with [Ctrl + S].
+      required: false
+  - INPUT:
+      help: The scene input file <JSON>
+      required: false
+  - OUTPUT:
+      short: o
+      long: output
+      help: The output path to save the rendered PNG.
+      required: false
+subcommands:
+  - demo:
+      version: "0.1"
+      author: Julius Oeftiger <julius.oeftiger@students.unibe.ch>
+      about: The cornell box demo scene.
+      args:
+        - live_window:
+            short: l
+            long: live
+            help: Use a live window to progressively show rendering. The window allows saving with [Ctrl + S].
+            required: false
+        - DEBUG:
+            long: debug
+            help: Use a debugging renderer to render surface normals.
+            required: false
