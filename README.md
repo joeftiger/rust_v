@@ -5,7 +5,13 @@ The _V_ stands for a ray reflection, and therefore figuratively for ray tracing.
 
 ## Building
 ### Features
-`live-window` to have a window progressively showing the rendering progress. This is currently enabled by default, you can remove it in the `Cargo.toml`.
+#### `live-window`
+By passing `--live` as runtime argument, the rendering will open in a window , showing you the progress. \
+The window allows you some commands like following:
+- `Backspace`: Reset render progress (start again)
+- `Enter`: Save current rendering as 16-bit PNG (hardcoded path to `./rendering.png` for now, sorry!)
+- `Ctrl + s`: Save current rendering as 8-bit PNG (with GUI ;-)
+- `←↑→↓` (Arrow keys): Rotate camera
 
 ### Cargo
 On the first build, _Cargo_ will need to download some crates as dependencies, just sit tight and wait a while. \
@@ -25,7 +31,7 @@ If you want to run the program immediately (help), use \
 3. Build / Run (and have fun ;-)
 
 ## _Live_ View
-By passing `--live` as argument, the rendering will open in a window , showing you the progress. \
+By passing `--live` as runtime argument, the rendering will open in a window , showing you the progress. \
 The window allows you some commands like following:
 - `Backspace`: Reset render progress (start again)
 - `Enter`: Save current rendering as 16-bit PNG (hardcoded path to `./rendering.png` for now, sorry!)
