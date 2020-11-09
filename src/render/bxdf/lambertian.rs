@@ -1,4 +1,4 @@
-use crate::render::bxdf::{BxDF, BxDFSample, BxDFType};
+use crate::render::bxdf::{BxDF, BxDFType};
 use crate::Spectrum;
 use std::f32::consts::FRAC_1_PI;
 use ultraviolet::Vec3;

@@ -164,7 +164,7 @@ impl RgbRenderer {
                 let mut ray = light.ray_to(point);
                 ray.origin += normal * floats::BIG_EPSILON;
 
-                let evaluation = si.obj.bxdf.evaluate(normal, incident, outgoing);
+                let evaluation = si.obj.bxdf.evaluate(&incident, &outgoing);
                 color += evaluation;
 
                 if !self.scene.is_occluded(&ray) {
