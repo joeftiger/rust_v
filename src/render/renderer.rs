@@ -1,177 +1,58 @@
 use crate::render::camera::Camera;
 use crate::render::scene::Scene;
-use crate::{floats, Spectrum};
 use image::{ImageBuffer, Rgb};
-
-pub trait Renderer: Send + Sync {
-    fn is_done(&self) -> bool;
-
-    fn reset(&mut self);
-
-    fn render_all(&mut self);
-
-    fn render_pass(&mut self);
-
-    fn get_camera(&mut self) -> &mut Camera;
-
-    fn get_image_u8(&self) -> ImageBuffer<Rgb<u8>, Vec<u8>>;
-
-    fn get_image_u16(&self) -> ImageBuffer<Rgb<u16>, Vec<u16>>;
-}
+use crate::render::sampler::Sampler;
+use crate::render::integrator::Integrator;
+use std::ops::DerefMut;
+use crate::render::bxdf::BxDFType;
 
 fn convert_u16_to_u8(vec: Vec<u16>) -> Vec<u8> {
     vec.iter().map(|b16| (b16 / 2u16.pow(8)) as u8).collect()
 }
 
-#[allow(dead_code)]
-pub mod debug {
-    use crate::render::camera::Camera;
-    use crate::render::renderer::{convert_u16_to_u8, Renderer};
-    use crate::render::scene::Scene;
-    use crate::Spectrum;
-    use image::{ImageBuffer, Rgb};
-    use ultraviolet::Vec3;
-
-    pub struct NormalRenderer {
-        scene: Scene,
-        camera: Camera,
-        image: ImageBuffer<Rgb<u16>, Vec<u16>>,
-        progress: u32,
-    }
-
-    unsafe impl Send for NormalRenderer {}
-    unsafe impl Sync for NormalRenderer {}
-
-    impl NormalRenderer {
-        pub fn new(scene: Scene, camera: Camera) -> Self {
-            let image = ImageBuffer::new(camera.width, camera.height);
-
-            Self {
-                scene,
-                camera,
-                image,
-                progress: 0,
-            }
-        }
-
-        fn render(&self, x: u32, y: u32) -> Rgb<u16> {
-            let ray = self.camera.primary_ray(x, y);
-
-            let si = self.scene.intersect(&ray);
-
-            if let Some(si) = si {
-                let normal = (si.info.normal + Vec3::one()) / 2.0;
-                let color = Spectrum::from(normal);
-
-                color.into()
-            } else {
-                Rgb::from([0, 0, 0])
-            }
-        }
-
-        fn inc_progress(&mut self) {
-            self.progress += 1;
-        }
-    }
-
-    impl Renderer for NormalRenderer {
-        fn is_done(&self) -> bool {
-            self.progress >= self.image.width() * self.image.height()
-        }
-
-        fn reset(&mut self) {
-            self.progress = 0;
-        }
-
-        fn render_all(&mut self) {
-            if !self.is_done() {
-                for x in 0..self.image.width() {
-                    for y in 0..self.image.height() {
-                        let pixel = self.render(x, y);
-                        self.image.put_pixel(x, y, pixel);
-                    }
-                }
-            }
-        }
-
-        fn render_pass(&mut self) {
-            if !self.is_done() {
-                let x = self.progress % self.image.width();
-                let y = self.progress / self.image.width();
-
-                let pixel = self.render(x, y);
-
-                self.image.put_pixel(x, y, pixel);
-                self.inc_progress();
-            }
-        }
-
-        fn get_camera(&mut self) -> &mut Camera {
-            &mut self.camera
-        }
-
-        fn get_image_u8(&self) -> ImageBuffer<Rgb<u8>, Vec<u8>> {
-            let data = convert_u16_to_u8(self.image.to_vec());
-
-            ImageBuffer::from_vec(self.image.width(), self.image.height(), data)
-                .expect("Could not convert u16 image to u8")
-        }
-
-        fn get_image_u16(&self) -> ImageBuffer<Rgb<u16>, Vec<u16>> {
-            self.image.clone()
-        }
-    }
-}
-
-pub struct RgbRenderer {
+pub struct Renderer {
     scene: Scene,
     camera: Camera,
+    sampler: Box<dyn Sampler>,
+    integrator: Box<dyn Integrator>,
     image: ImageBuffer<Rgb<u16>, Vec<u16>>,
     progress: u32,
 }
 
-unsafe impl Send for RgbRenderer {}
-unsafe impl Sync for RgbRenderer {}
+unsafe impl Send for Renderer {}
+unsafe impl Sync for Renderer {}
 
-impl RgbRenderer {
-    pub fn new(scene: Scene, camera: Camera) -> Self {
+impl Renderer {
+    pub fn new(scene: Scene, camera: Camera,
+               sampler: Box<dyn Sampler>,
+               integrator: Box<dyn Integrator>,) -> Self {
         let image = ImageBuffer::new(camera.width, camera.height);
 
         Self {
             scene,
             camera,
+            sampler,
+            integrator,
             image,
             progress: 0,
         }
     }
 
-    fn render(&self, x: u32, y: u32) -> Rgb<u16> {
+    fn render(&mut self, x: u32, y: u32) -> Rgb<u16> {
         let ray = self.camera.primary_ray(x, y);
 
         let si = self.scene.intersect(&ray);
 
         if let Some(si) = si {
-            let point = si.info.point;
-            let normal = si.info.normal;
-            let incident = -si.info.ray.direction;
+            let mut color = self.integrator.illumination(&self.scene, &si);
+            let bsdf = &si.obj.bsdf;
 
-            let mut color = Spectrum::default();
-            for light in &self.scene.lights {
-                // exact vector
-                let outgoing = light.direction_from(point);
+            if bsdf.is_type(BxDFType::SPECULAR | BxDFType::REFLECTION) {
+                color += self.integrator.specular_reflection(&self.scene, &si, self.sampler.deref_mut());
+            }
 
-                // offset actual ray to avoid black pixels
-                let mut ray = light.ray_to(point);
-                ray.origin += normal * floats::BIG_EPSILON;
-
-                let evaluation = si.obj.bxdf.evaluate(&incident, &outgoing);
-                color += evaluation;
-
-                if !self.scene.is_occluded(&ray) {
-                    let intensity = light.intensity_at(point);
-
-                    color += evaluation * intensity;
-                }
+            if bsdf.is_type(BxDFType::SPECULAR | BxDFType::TRANSMISSION) {
+                color += self.integrator.specular_transmission(&self.scene, &si);
             }
 
             color.into()
@@ -183,18 +64,16 @@ impl RgbRenderer {
     fn inc_progress(&mut self) {
         self.progress += 1;
     }
-}
 
-impl Renderer for RgbRenderer {
-    fn is_done(&self) -> bool {
+    pub fn is_done(&self) -> bool {
         self.progress >= self.image.width() * self.image.height()
     }
 
-    fn reset(&mut self) {
+    pub fn reset(&mut self) {
         self.progress = 0;
     }
 
-    fn render_all(&mut self) {
+    pub fn render_all(&mut self) {
         if !self.is_done() {
             for x in 0..self.image.width() {
                 for y in 0..self.image.height() {
@@ -205,7 +84,7 @@ impl Renderer for RgbRenderer {
         }
     }
 
-    fn render_pass(&mut self) {
+    pub fn render_pass(&mut self) {
         if !self.is_done() {
             let x = self.progress % self.image.width();
             let y = self.progress / self.image.width();
@@ -217,18 +96,18 @@ impl Renderer for RgbRenderer {
         }
     }
 
-    fn get_camera(&mut self) -> &mut Camera {
+    pub fn get_camera(&mut self) -> &mut Camera {
         &mut self.camera
     }
 
-    fn get_image_u8(&self) -> ImageBuffer<Rgb<u8>, Vec<u8>> {
+    pub fn get_image_u8(&self) -> ImageBuffer<Rgb<u8>, Vec<u8>> {
         let data = convert_u16_to_u8(self.image.to_vec());
 
         ImageBuffer::from_vec(self.image.width(), self.image.height(), data)
             .expect("Could not convert u16 image to u8")
     }
 
-    fn get_image_u16(&self) -> ImageBuffer<Rgb<u16>, Vec<u16>> {
+    pub fn get_image_u16(&self) -> ImageBuffer<Rgb<u16>, Vec<u16>> {
         self.image.clone()
     }
 }

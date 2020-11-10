@@ -19,7 +19,7 @@ enum Direction {
 
 pub struct RenderWindow {
     window: Window,
-    renderer: Box<dyn Renderer>,
+    renderer: Renderer,
     should_exit: bool,
     should_update_render: bool,
 }
@@ -28,7 +28,7 @@ unsafe impl Send for RenderWindow {}
 unsafe impl Sync for RenderWindow {}
 
 impl RenderWindow {
-    pub fn new(name: String, mut renderer: Box<dyn Renderer>) -> Result<Self, String> {
+    pub fn new(name: String, mut renderer: Renderer) -> Result<Self, String> {
         let camera = renderer.get_camera();
 
         let div = f32::max(camera.width as f32 / 900.0, camera.height as f32 / 900.0).max(1.0);

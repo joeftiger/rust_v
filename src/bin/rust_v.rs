@@ -4,9 +4,12 @@ extern crate clap;
 use clap::{App, ArgMatches};
 
 use rust_v::cornell_box;
-use rust_v::render::renderer::debug::NormalRenderer;
-use rust_v::render::renderer::{Renderer, RgbRenderer};
+use rust_v::render::renderer::Renderer;
 use rust_v::render::window::RenderWindow;
+use rust_v::render::sampler::RandomSampler;
+use rust_v::render::integrator::whitted::Whitted;
+use rust_v::render::integrator::debug_normals::DebugNormals;
+use rust_v::render::integrator::Integrator;
 
 const LIVE_WINDOW: &str = "live_window";
 const DEMO: &str = "demo";
@@ -26,13 +29,17 @@ fn main() {
     if let Some(demo) = matches.subcommand_matches(DEMO) {
         let (scene, camera) = cornell_box::create(900, 900);
 
-        let renderer: Box<dyn Renderer> = {
+        let sampler = Box::new(RandomSampler);
+
+        let integrator: Box<dyn Integrator> = {
             if demo.is_present(DEBUG_RENDERER) {
-                Box::new(NormalRenderer::new(scene, camera))
+                Box::new(DebugNormals)
             } else {
-                Box::new(RgbRenderer::new(scene, camera))
+                Box::new(Whitted)
             }
         };
+
+        let renderer = Renderer::new(scene, camera, sampler, integrator);
 
         render(demo, renderer);
     }
@@ -44,7 +51,7 @@ fn render(matches: &ArgMatches, mut renderer: Box<dyn Renderer>) {
 }
 
 #[cfg(feature = "live-window")]
-fn render(matches: &ArgMatches, renderer: Box<dyn Renderer>) {
+fn render(matches: &ArgMatches, renderer: Renderer) {
     if matches.is_present(LIVE_WINDOW) {
         RenderWindow::new("Rust-V".to_string(), renderer)
             .expect("Can't create window")
@@ -54,7 +61,7 @@ fn render(matches: &ArgMatches, renderer: Box<dyn Renderer>) {
     }
 }
 
-fn render_and_save(matches: &ArgMatches, mut renderer: Box<dyn Renderer>) {
+fn render_and_save(matches: &ArgMatches, mut renderer: Renderer) {
     renderer.render_all();
     let image = renderer.get_image_u16();
 
