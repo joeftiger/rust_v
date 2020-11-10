@@ -17,7 +17,7 @@ pub trait Integrator {
         let outgoing = -intersection.info.ray.direction;
 
         let sample = sampler.get_2d();
-        let bsdf = &intersection.obj.bxdf;
+        let bsdf = &intersection.obj.bsdf;
 
         unimplemented!()
     }
