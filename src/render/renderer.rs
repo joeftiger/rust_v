@@ -5,16 +5,31 @@ use crate::render::sampler::Sampler;
 use crate::render::integrator::Integrator;
 use std::ops::DerefMut;
 use crate::render::bxdf::BxDFType;
+use crate::Spectrum;
+use crate::color::Color;
 
 fn convert_u16_to_u8(vec: Vec<u16>) -> Vec<u8> {
     vec.iter().map(|b16| (b16 / 2u16.pow(8)) as u8).collect()
 }
+
+// #[derive(Default)]
+// struct SpectrumStatistic {
+//     spectrum: Spectrum,
+//     num: usize,
+// }
+//
+// impl SpectrumStatistic {
+//     pub fn average(&self) -> Spectrum {
+//         self.spectrum / self.num as f32
+//     }
+// }
 
 pub struct Renderer {
     scene: Scene,
     camera: Camera,
     sampler: Box<dyn Sampler>,
     integrator: Box<dyn Integrator>,
+    // spectrum_statistics: Vec<SpectrumStatistic>,
     image: ImageBuffer<Rgb<u16>, Vec<u16>>,
     progress: u32,
 }
@@ -28,49 +43,54 @@ impl Renderer {
                integrator: Box<dyn Integrator>,) -> Self {
         let image = ImageBuffer::new(camera.width, camera.height);
 
+        // let capacity = (image.width() * image.height()) as usize;
+        // let spectrum_statistics = (0..capacity).map(|_| SpectrumStatistic::default()).collect();
+
         Self {
             scene,
             camera,
             sampler,
             integrator,
+            // spectrum_statistics,
             image,
             progress: 0,
         }
     }
 
-    fn render(&mut self, x: u32, y: u32) -> Rgb<u16> {
+    fn render(&mut self, x: u32, y: u32) -> Spectrum {
         let ray = self.camera.primary_ray(x, y);
 
         let si = self.scene.intersect(&ray);
 
         if let Some(si) = si {
-            let mut color = self.integrator.illumination(&self.scene, &si);
+            let sampler = self.sampler.deref_mut();
+
+            let mut color = self.integrator.illumination(&self.scene, &si, sampler);
+
             let bsdf = &si.obj.bsdf;
-
             if bsdf.is_type(BxDFType::SPECULAR | BxDFType::REFLECTION) {
-                color += self.integrator.specular_reflection(&self.scene, &si, self.sampler.deref_mut());
+                color += self.integrator.specular_reflection(&self.scene, &si, sampler);
             }
-
             if bsdf.is_type(BxDFType::SPECULAR | BxDFType::TRANSMISSION) {
-                color += self.integrator.specular_transmission(&self.scene, &si);
+                color += self.integrator.specular_transmission(&self.scene, &si, sampler);
             }
 
-            color.into()
+            color
         } else {
-            Rgb::from([0, 0, 0])
+            Spectrum::black()
         }
-    }
-
-    fn inc_progress(&mut self) {
-        self.progress += 1;
     }
 
     pub fn is_done(&self) -> bool {
         self.progress >= self.image.width() * self.image.height()
     }
 
-    pub fn reset(&mut self) {
+    pub fn reset_progress(&mut self) {
         self.progress = 0;
+    }
+
+    pub fn reset_image(&mut self) {
+        self.image.iter_mut().for_each(|pixel| *pixel = 0);
     }
 
     pub fn render_all(&mut self) {
@@ -78,7 +98,7 @@ impl Renderer {
             for x in 0..self.image.width() {
                 for y in 0..self.image.height() {
                     let pixel = self.render(x, y);
-                    self.image.put_pixel(x, y, pixel);
+                    self.image.put_pixel(x, y, pixel.into());
                 }
             }
         }
@@ -91,8 +111,14 @@ impl Renderer {
 
             let pixel = self.render(x, y);
 
-            self.image.put_pixel(x, y, pixel);
-            self.inc_progress();
+            // let index = (x * self.image.width() + y) as usize;
+            // let mut stats = &mut self.spectrum_statistics[index];
+            // stats.spectrum += pixel;
+            // stats.num += 1;
+
+            self.image.put_pixel(x, y, pixel.into());
+
+            self.progress += 1;
         }
     }
 

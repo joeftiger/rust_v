@@ -21,7 +21,7 @@ pub struct RenderWindow {
     window: Window,
     renderer: Renderer,
     should_exit: bool,
-    should_update_render: bool,
+    should_reset_image: bool,
 }
 
 unsafe impl Send for RenderWindow {}
@@ -45,7 +45,7 @@ impl RenderWindow {
             window: make_window_full(options)?,
             renderer,
             should_exit: false,
-            should_update_render: false,
+            should_reset_image: false,
         })
     }
 
@@ -81,9 +81,10 @@ impl RenderWindow {
                 return;
             }
 
-            if self.should_update_render {
-                self.should_update_render = false;
-                self.renderer.reset();
+            if self.should_reset_image {
+                self.should_reset_image = false;
+                self.renderer.reset_progress();
+                self.renderer.reset_image();
             }
 
             let now = Instant::now();
@@ -99,7 +100,7 @@ impl RenderWindow {
                 .expect("Unable to update image in window");
 
             if self.renderer.is_done() {
-                return;
+                self.renderer.reset_progress();
             }
         }
     }
@@ -116,7 +117,7 @@ impl RenderWindow {
 
     fn waiting_loop(&mut self, wait_key: Duration) {
         while let Ok(event) = self.window.wait_key(wait_key) {
-            if self.should_exit || self.should_update_render {
+            if self.should_exit || self.should_reset_image {
                 return;
             }
 
@@ -129,7 +130,7 @@ impl RenderWindow {
     fn handle_input(&mut self, input: KeyCode) {
         match input {
             KeyCode::Escape => self.should_exit = true,
-            KeyCode::Backspace => self.should_update_render = true,
+            KeyCode::Backspace => self.should_reset_image = true,
             KeyCode::Enter => {
                 println!("Saving to ./rendering ...");
                 self.renderer
@@ -171,7 +172,7 @@ impl RenderWindow {
 
             // important
             camera.reset();
-            self.should_update_render = true;
+            self.should_reset_image = true;
         }
     }
 }

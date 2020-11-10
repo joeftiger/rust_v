@@ -8,7 +8,7 @@ use crate::render::bxdf::BxDFType;
 use crate::color::Color;
 
 pub trait Integrator {
-    fn illumination(&self, scene: &Scene, intersection: &SceneIntersection) -> Spectrum;
+    fn illumination(&self, scene: &Scene, intersection: &SceneIntersection, sampler: &mut dyn Sampler) -> Spectrum;
 
     fn specular_reflection(
         &self,
@@ -31,7 +31,7 @@ pub trait Integrator {
             let reflected_ray = intersection.info.create_ray(sample.incident);
 
             if let Some(i) = scene.intersect(&reflected_ray) {
-                let illumination = self.illumination(scene, &i);
+                let illumination = self.illumination(scene, &i, sampler);
 
                 reflection = sample.spectrum * illumination * cos / sample.pdf;
             }
@@ -41,5 +41,5 @@ pub trait Integrator {
         reflection
     }
 
-    fn specular_transmission(&self, scene: &Scene, intersection: &SceneIntersection) -> Spectrum;
+    fn specular_transmission(&self, scene: &Scene, intersection: &SceneIntersection, sampler: &mut dyn Sampler) -> Spectrum;
 }
