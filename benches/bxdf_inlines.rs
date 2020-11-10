@@ -32,6 +32,9 @@ pub fn criterion_benchmark(c: &mut Criterion) {
     let v = Vec3::one() * black_box(1.0);
     let w = Vec3::one() * black_box(1.0);
     group.bench_function("cos_d_phi", |b| b.iter(|| bxdf::cos_d_phi(&v, &w)));
+
+    let v = Vec3::one() * black_box(1.0);
+    group.bench_function("world_to_local", |b| b.iter(|| bxdf::world_to_bxdf(&v)));
 }
 
 criterion_group!(benches, criterion_benchmark);
