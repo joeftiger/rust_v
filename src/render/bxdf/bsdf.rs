@@ -17,6 +17,10 @@ impl BSDF {
         self.bxdfs.len()
     }
 
+    pub fn is_type(&self, t: BxDFType) -> bool {
+        self.bxdfs.iter().any(|bxdf| bxdf.is_type(t))
+    }
+
     pub fn num_types(&self, t: BxDFType) -> usize {
         self.bxdfs.iter().filter(|bxdf| bxdf.is_type(t)).count()
     }
@@ -24,6 +28,8 @@ impl BSDF {
     fn random_matching_bxdf(&self, t: BxDFType) -> &dyn BxDF {
         let count = self.num_types(t);
         let index = (fastrand::f32() * count as f32) as usize;
+
+        println!("{:?}", t);
 
         let bxdf = self.bxdfs.iter().filter(|bxdf| bxdf.is_type(t)).nth(index);
         debug_assert!(bxdf.is_some());
