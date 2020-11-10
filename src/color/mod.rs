@@ -229,6 +229,7 @@ pub trait Color:
     + Debug
     + Into<Rgb<u8>>
     + Into<Rgb<u16>>
+    + Sum
 {
     /// Whether this color is black. Some computations can be omitted, if the color is black.
     fn is_black(&self) -> bool;
