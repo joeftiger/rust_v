@@ -1,3 +1,6 @@
+// To allow debug checks
+#![allow(clippy::float_cmp)]
+
 #[macro_use]
 extern crate bitflags;
 
