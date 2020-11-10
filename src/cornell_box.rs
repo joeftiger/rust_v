@@ -77,7 +77,7 @@ fn light() -> Light {
 
     let color = Spectrum::white();
 
-    Light::new(point, color, 20.0)
+    Light::new(point, color, 8.0)
 }
 
 fn sphere() -> SceneObject {
