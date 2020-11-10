@@ -1,15 +1,20 @@
-use crate::render::integrator::Integrator;
-use crate::render::scene::{SceneIntersection, Scene};
-use crate::{Spectrum, floats};
-use crate::render::sampler::Sampler;
 use crate::color::Color;
 use crate::render::bxdf::BxDFType;
+use crate::render::integrator::Integrator;
+use crate::render::sampler::Sampler;
+use crate::render::scene::{Scene, SceneIntersection};
+use crate::{floats, Spectrum};
 
 pub struct Whitted;
 
 #[allow(unused_variables)]
 impl Integrator for Whitted {
-    fn illumination(&self, scene: &Scene, intersection: &SceneIntersection, sampler: &mut dyn Sampler) -> Spectrum {
+    fn illumination(
+        &self,
+        scene: &Scene,
+        intersection: &SceneIntersection,
+        sampler: &mut dyn Sampler,
+    ) -> Spectrum {
         let bsdf = &intersection.obj.bsdf;
 
         let outgoing = &-intersection.info.ray.direction;
@@ -40,7 +45,12 @@ impl Integrator for Whitted {
         color
     }
 
-    fn specular_transmission(&self, scene: &Scene, intersection: &SceneIntersection, sampler: &mut dyn Sampler) -> Spectrum {
+    fn specular_transmission(
+        &self,
+        scene: &Scene,
+        intersection: &SceneIntersection,
+        sampler: &mut dyn Sampler,
+    ) -> Spectrum {
         0.0.into()
     }
 }

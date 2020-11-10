@@ -1,12 +1,12 @@
-use crate::render::camera::Camera;
-use crate::render::scene::Scene;
-use image::{ImageBuffer, Rgb};
-use crate::render::sampler::Sampler;
-use crate::render::integrator::Integrator;
-use std::ops::DerefMut;
-use crate::render::bxdf::BxDFType;
-use crate::Spectrum;
 use crate::color::Color;
+use crate::render::bxdf::BxDFType;
+use crate::render::camera::Camera;
+use crate::render::integrator::Integrator;
+use crate::render::sampler::Sampler;
+use crate::render::scene::Scene;
+use crate::Spectrum;
+use image::{ImageBuffer, Rgb};
+use std::ops::DerefMut;
 
 fn convert_u16_to_u8(vec: Vec<u16>) -> Vec<u8> {
     vec.iter().map(|b16| (b16 / 2u16.pow(8)) as u8).collect()
@@ -38,9 +38,12 @@ unsafe impl Send for Renderer {}
 unsafe impl Sync for Renderer {}
 
 impl Renderer {
-    pub fn new(scene: Scene, camera: Camera,
-               sampler: Box<dyn Sampler>,
-               integrator: Box<dyn Integrator>,) -> Self {
+    pub fn new(
+        scene: Scene,
+        camera: Camera,
+        sampler: Box<dyn Sampler>,
+        integrator: Box<dyn Integrator>,
+    ) -> Self {
         let image = ImageBuffer::new(camera.width, camera.height);
 
         // let capacity = (image.width() * image.height()) as usize;
@@ -69,10 +72,14 @@ impl Renderer {
 
             let bsdf = &si.obj.bsdf;
             if bsdf.is_type(BxDFType::SPECULAR | BxDFType::REFLECTION) {
-                color += self.integrator.specular_reflection(&self.scene, &si, sampler);
+                color += self
+                    .integrator
+                    .specular_reflection(&self.scene, &si, sampler);
             }
             if bsdf.is_type(BxDFType::SPECULAR | BxDFType::TRANSMISSION) {
-                color += self.integrator.specular_transmission(&self.scene, &si, sampler);
+                color += self
+                    .integrator
+                    .specular_transmission(&self.scene, &si, sampler);
             }
 
             color

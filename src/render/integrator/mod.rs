@@ -1,14 +1,19 @@
 pub mod debug_normals;
 pub mod whitted;
 
+use crate::color::Color;
+use crate::render::bxdf::BxDFType;
 use crate::render::sampler::Sampler;
 use crate::render::scene::{Scene, SceneIntersection};
 use crate::Spectrum;
-use crate::render::bxdf::BxDFType;
-use crate::color::Color;
 
 pub trait Integrator {
-    fn illumination(&self, scene: &Scene, intersection: &SceneIntersection, sampler: &mut dyn Sampler) -> Spectrum;
+    fn illumination(
+        &self,
+        scene: &Scene,
+        intersection: &SceneIntersection,
+        sampler: &mut dyn Sampler,
+    ) -> Spectrum;
 
     fn specular_reflection(
         &self,
@@ -35,11 +40,15 @@ pub trait Integrator {
 
                 reflection = sample.spectrum * illumination * cos / sample.pdf;
             }
-
         }
 
         reflection
     }
 
-    fn specular_transmission(&self, scene: &Scene, intersection: &SceneIntersection, sampler: &mut dyn Sampler) -> Spectrum;
+    fn specular_transmission(
+        &self,
+        scene: &Scene,
+        intersection: &SceneIntersection,
+        sampler: &mut dyn Sampler,
+    ) -> Spectrum;
 }
