@@ -2,6 +2,7 @@ pub mod fresnel;
 pub mod lambertian;
 pub mod sampling;
 pub mod specular;
+pub mod bsdf;
 
 use crate::floats;
 
@@ -12,17 +13,12 @@ use ultraviolet::{Vec2, Vec3};
 
 #[inline(always)]
 pub fn cos_theta(v: &Vec3) -> f32 {
-    v.z
-}
-
-#[inline(always)]
-pub fn cos_theta_abs(v: &Vec3) -> f32 {
-    v.z.abs()
+    v.y
 }
 
 #[inline(always)]
 pub fn cos2_theta(v: &Vec3) -> f32 {
-    v.z * v.z
+    cos_theta(v) * cos_theta(v)
 }
 
 #[inline(always)]
@@ -61,7 +57,7 @@ pub fn sin_phi(v: &Vec3) -> f32 {
     if sin_theta == 0.0 {
         0.0
     } else {
-        floats::fast_clamp(v.y / sin_theta, -1.0, 1.0)
+        floats::fast_clamp(v.z / sin_theta, -1.0, 1.0)
     }
 }
 
@@ -79,15 +75,15 @@ pub fn sin2_phi(v: &Vec3) -> f32 {
 
 #[inline(always)]
 pub fn cos_d_phi(a: &Vec3, b: &Vec3) -> f32 {
-    let abxy = a.x * b.x + a.y * b.y;
-    let axy = a.x * a.x + a.y * a.y;
-    let bxy = b.x * b.x + b.y * b.y;
-    floats::fast_clamp(abxy / f32::sqrt(axy * bxy), -1.0, 1.0)
+    let abxz = a.x * b.x + a.z * b.z;
+    let axz = a.x * a.x + a.z * a.z;
+    let bxz = b.x * b.x + b.z * b.z;
+    floats::fast_clamp(abxz / f32::sqrt(axz * bxz), -1.0, 1.0)
 }
 
 #[inline(always)]
 pub fn same_hemisphere(a: &Vec3, b: &Vec3) -> bool {
-    a.z * b.z > 0.0
+    a.y * b.y > 0.0
 }
 
 bitflags! {
@@ -191,8 +187,8 @@ pub trait BxDF: Send + Sync {
     /// * `BxDFSample` - The spectrum, incident and pdf at the intersection
     fn sample(&self, outgoing: &Vec3, sample: &Vec2) -> BxDFSample {
         let mut incident = cos_sample_hemisphere(sample);
-        if incident.z < 0.0 {
-            incident.z = -incident.z;
+        if incident.y < 0.0 {
+            incident.y = -incident.y;
         }
 
         let spectrum = self.evaluate(&incident, outgoing);
