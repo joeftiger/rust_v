@@ -1,15 +1,15 @@
+pub mod bsdf;
 pub mod fresnel;
 pub mod lambertian;
 pub mod sampling;
 pub mod specular;
-pub mod bsdf;
 
 use crate::floats;
 
 use crate::render::bxdf::sampling::cos_sample_hemisphere;
 use crate::Spectrum;
 use std::f32::consts::FRAC_1_PI;
-use ultraviolet::{Vec2, Vec3};
+use ultraviolet::{Rotor3, Vec2, Vec3};
 
 #[inline(always)]
 pub fn cos_theta(v: &Vec3) -> f32 {
@@ -84,6 +84,11 @@ pub fn cos_d_phi(a: &Vec3, b: &Vec3) -> f32 {
 #[inline(always)]
 pub fn same_hemisphere(a: &Vec3, b: &Vec3) -> bool {
     a.y * b.y > 0.0
+}
+
+#[inline(always)]
+pub fn world_to_bxdf(v: &Vec3) -> Rotor3 {
+    Rotor3::from_rotation_between(*v, Vec3::unit_y())
 }
 
 bitflags! {
