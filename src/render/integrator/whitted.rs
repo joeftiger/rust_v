@@ -1,4 +1,5 @@
 use crate::color::Color;
+use crate::geometry::ray::Ray;
 use crate::render::bxdf::BxDFType;
 use crate::render::integrator::Integrator;
 use crate::render::sampler::Sampler;
@@ -24,9 +25,8 @@ impl Integrator for Whitted {
         let mut color = Spectrum::black();
 
         for light in &scene.lights {
-            let mut ray = light.ray_from(point);
-            ray.origin += *normal * floats::EPSILON;
-            ray.t -= floats::BIG_EPSILON;
+            let mut ray = Ray::in_range(point, &light.position());
+            ray.t_start += floats::EPSILON;
 
             let c = bsdf.evaluate(normal, &ray.direction, outgoing, BxDFType::ALL);
 
@@ -37,7 +37,7 @@ impl Integrator for Whitted {
                     let cos = ray.direction.dot(*normal).abs();
                     // let pdf = bsdf.pdf(normal, &ray.direction, outgoing, BxDFType::ALL);
 
-                    color += c * light.intensity_at(point) * cos;
+                    color += c * cos;
                 }
             }
         }

@@ -1,48 +1,127 @@
 use ultraviolet::Vec3;
 
 use crate::geometry::ray::Ray;
-use crate::Spectrum;
+use crate::render::scene::{Scene, SceneIntersection};
+use crate::{floats, Spectrum};
 
-pub struct Light {
-    pub point: Vec3,
-    pub color: Spectrum,
-    pub intensity: f32,
+bitflags! {
+    pub struct LightType: u8 {
+        const DELTA_POSITION = 1 << 0;
+        const DELTA_DIRECTION = 1 << 1;
+        const AREA = 1 << 2;
+        const INFINITY = 1 << 3;
+    }
 }
 
-impl Light {
-    pub fn new(point: Vec3, color: Spectrum, intensity: f32) -> Self {
+pub struct OcclusionTester {
+    ray: Ray,
+}
+
+impl OcclusionTester {
+    pub fn new(from: Vec3, to: Vec3) -> Self {
+        let mut ray = Ray::in_range(&from, &to);
+        ray.t_start = floats::BIG_EPSILON;
+        Self { ray }
+    }
+
+    fn unoccluded(&self, scene: &Scene) -> bool {
+        !scene.is_occluded(&self.ray)
+    }
+
+    // fn transmittance(&self, scene: &Scene, sampler: &Sampler) -> Spectrum;
+}
+
+pub struct LightSample {
+    spectrum: Spectrum,
+    pdf: f32,
+    visibility_tester: OcclusionTester,
+}
+
+impl LightSample {
+    pub fn new(spectrum: Spectrum, pdf: f32, visibility_tester: OcclusionTester) -> Self {
         Self {
-            point,
-            color,
+            spectrum,
+            pdf,
+            visibility_tester,
+        }
+    }
+}
+
+pub trait Light {
+    fn num_samples(&self) -> usize;
+
+    fn get_type(&self) -> LightType;
+
+    fn is_type(&self, t: LightType) -> bool {
+        (self.get_type() & t) == t
+    }
+
+    fn power(&self) -> &Spectrum;
+
+    fn position(&self) -> Vec3;
+
+    fn is_delta_type(&self) -> bool {
+        let t = self.get_type();
+        (t & LightType::DELTA_POSITION) == LightType::DELTA_POSITION
+            || (t & LightType::DELTA_DIRECTION) == LightType::DELTA_DIRECTION
+    }
+
+    fn sample(&self, intersection: &SceneIntersection) -> LightSample;
+}
+
+pub struct PointLight {
+    pub position: Vec3,
+    pub intensity: Spectrum,
+}
+
+impl PointLight {
+    pub fn new(position: Vec3, intensity: Spectrum) -> Self {
+        Self {
+            position,
             intensity,
         }
     }
 
     pub fn direction_from(&self, point: &Vec3) -> Vec3 {
-        (self.point - *point).normalized()
+        (self.position - *point).normalized()
     }
 
     pub fn direction_to(&self, point: &Vec3) -> Vec3 {
-        (*point - self.point).normalized()
-    }
-
-    pub fn ray_to(&self, point: &Vec3) -> Ray {
-        let diff = *point - self.point;
-        Ray::new(self.point, diff.normalized(), diff.mag())
-    }
-
-    pub fn ray_from(&self, point: &Vec3) -> Ray {
-        let diff = self.point - *point;
-        Ray::new(self.point, diff.normalized(), diff.mag())
+        (*point - self.position).normalized()
     }
 
     pub fn distance(&self, point: &Vec3) -> f32 {
-        (self.point - *point).mag()
+        (self.position - *point).mag()
+    }
+}
+
+impl Light for PointLight {
+    fn num_samples(&self) -> usize {
+        1
     }
 
-    pub fn intensity_at(&self, point: &Vec3) -> Spectrum {
-        let dist = self.distance(point);
+    fn get_type(&self) -> LightType {
+        LightType::DELTA_POSITION | LightType::DELTA_DIRECTION
+    }
 
-        self.color * (self.intensity / (dist * dist))
+    fn power(&self) -> &Spectrum {
+        &self.intensity
+    }
+
+    fn position(&self) -> Vec3 {
+        self.position
+    }
+
+    fn sample(&self, intersection: &SceneIntersection) -> LightSample {
+        let dir = self.position - intersection.info.point;
+
+        let incident = dir.normalized();
+        let pdf = 1.0;
+        let occlusion_tester = OcclusionTester::new(intersection.info.point, self.position);
+
+        let intensity = self.intensity / dir.mag_sq();
+
+        LightSample::new(intensity, pdf, occlusion_tester);
+        unimplemented!()
     }
 }

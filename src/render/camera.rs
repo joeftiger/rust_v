@@ -64,7 +64,7 @@ impl Camera {
         let direction =
             self.lower_left + (x as f32) * self.x_dir + (y as f32) * self.y_dir - origin;
 
-        Ray::new(origin, direction, f32::INFINITY)
+        Ray::new(origin, direction)
     }
 
     pub fn reset(&mut self) {

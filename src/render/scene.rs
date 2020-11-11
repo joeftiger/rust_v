@@ -21,7 +21,7 @@ impl SceneIntersection {
 
 pub struct Scene {
     pub aabb: Aabb,
-    pub lights: Vec<Arc<Light>>,
+    pub lights: Vec<Arc<dyn Light>>,
     pub objects: Vec<Arc<SceneObject>>,
 }
 
@@ -35,8 +35,8 @@ impl Scene {
         self.objects.push(Arc::new(obj));
     }
 
-    pub fn push_light(&mut self, light: Light) {
-        self.lights.push(Arc::new(light));
+    pub fn push_light(&mut self, light: Box<dyn Light>) {
+        self.lights.push(Arc::from(light));
     }
 
     /// Checks if the given ray intersects any object before reaching it's own maximum t lifespan.
@@ -57,7 +57,7 @@ impl Scene {
             if let Some(new_info) = new_info_op {
                 obj = Some(so);
                 info = new_info_op;
-                ray.t = new_info.t;
+                ray.t_end = new_info.t;
             }
         });
 
