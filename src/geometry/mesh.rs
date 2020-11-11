@@ -52,7 +52,7 @@ impl Geometry for Triangle {
         }
 
         let t = ac.dot(q) / det;
-        if ray.t < t {
+        if t < ray.t_start || ray.t_end < t {
             return None;
         }
 

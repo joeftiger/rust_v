@@ -43,7 +43,7 @@ impl Geometry for Sphere {
         let (t0, t1) = solve_quadratic(a, b, c)?;
         let t_min = t0.min(t1);
 
-        if t_min < 0.0 || ray.t < t_min {
+        if t_min < 0.0 || t_min < ray.t_start || ray.t_end < t_min {
             return None;
         }
 

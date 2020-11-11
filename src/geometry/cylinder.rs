@@ -135,7 +135,7 @@ impl Geometry for Cylinder {
         let caps = self.check_caps(ray);
 
         // check against ray
-        if t_min > ray.t {
+        if t_min < ray.t_start || ray.t_end < t_min {
             return caps;
         }
 

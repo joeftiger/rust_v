@@ -47,7 +47,7 @@ impl Plane {
 
         let p = self.normal * self.d - ray.origin;
         let t = p.dot(self.normal) / denom;
-        if t < 0.0 || t < ray.t {
+        if t < 0.0 || t < ray.t_start || ray.t_end < t {
             return None;
         }
 

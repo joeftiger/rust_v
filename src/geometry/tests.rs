@@ -18,7 +18,7 @@ mod util {
     pub fn unit_rays(dist_from_zero: f32) -> Vec<Ray> {
         unit_vec3s()
             .iter()
-            .map(|v| Ray::new(*v * dist_from_zero, -*v, f32::INFINITY))
+            .map(|v| Ray::new(*v * dist_from_zero, -*v))
             .collect()
     }
 }
@@ -226,11 +226,7 @@ mod aabb {
         let max = Vec3::one();
         let aabb = Aabb::new(min, max);
 
-        let ray = Ray::new(
-            Vec3::one() / 2.0 + Vec3::unit_x() * 1.5,
-            -Vec3::unit_x(),
-            f32::INFINITY,
-        );
+        let ray = Ray::new(Vec3::one() / 2.0 + Vec3::unit_x() * 1.5, -Vec3::unit_x());
         let intersection = aabb.intersect(&ray);
 
         assert!(intersection.is_some());
@@ -244,7 +240,7 @@ mod aabb {
         let max = Vec3::one();
         let aabb = Aabb::new(min, max);
 
-        let ray = Ray::new(Vec3::one() * 2.0, -Vec3::one().normalized(), f32::INFINITY);
+        let ray = Ray::new(Vec3::one() * 2.0, -Vec3::one().normalized());
         let intersection = aabb.intersect(&ray);
 
         assert!(intersection.is_some());
@@ -262,11 +258,7 @@ mod aabb {
         let max = Vec3::one();
         let aabb = Aabb::new(min, max);
 
-        let ray = Ray::new(
-            Vec3::one() / 2.0 + Vec3::unit_x() * 1.5,
-            -Vec3::unit_y(),
-            f32::INFINITY,
-        );
+        let ray = Ray::new(Vec3::one() / 2.0 + Vec3::unit_x() * 1.5, -Vec3::unit_y());
         let intersection = aabb.intersect(&ray);
 
         assert!(intersection.is_none());
@@ -278,7 +270,7 @@ mod aabb {
         let max = Vec3::one();
         let aabb = Aabb::new(min, max);
 
-        let ray = Ray::new(Vec3::unit_x() * 1.5, -Vec3::unit_x(), f32::INFINITY);
+        let ray = Ray::new(Vec3::unit_x() * 1.5, -Vec3::unit_x());
         let intersection = aabb.intersect(&ray);
 
         assert!(intersection.is_none());
@@ -290,11 +282,7 @@ mod aabb {
         let max = Vec3::one();
         let aabb = Aabb::new(min, max);
 
-        let ray = Ray::new(
-            Vec3::unit_y() * 2.0,
-            -Vec3::one().normalized(),
-            f32::INFINITY,
-        );
+        let ray = Ray::new(Vec3::unit_y() * 2.0, -Vec3::one().normalized());
         let intersection = aabb.intersect(&ray);
 
         assert!(intersection.is_none());
@@ -306,7 +294,7 @@ mod aabb {
         let max = Vec3::one();
         let aabb = Aabb::new(min, max);
 
-        let ray = Ray::new(Vec3::zero(), -Vec3::unit_x(), f32::INFINITY);
+        let ray = Ray::new(Vec3::zero(), -Vec3::unit_x());
         let intersection = aabb.intersect(&ray);
 
         assert!(intersection.is_none());
@@ -318,7 +306,7 @@ mod aabb {
         let max = Vec3::one();
         let aabb = Aabb::new(min, max);
 
-        let ray = Ray::new(Vec3::zero(), -Vec3::unit_x(), 0.5);
+        let ray = Ray::with(Vec3::zero(), -Vec3::unit_x(), 0.0, 0.5);
         let intersection = aabb.intersect(&ray);
 
         assert!(intersection.is_none());
@@ -360,7 +348,7 @@ mod point {
     #[test]
     fn intersect() {
         let point = Point::default();
-        let ray = Ray::new(Vec3::zero(), Vec3::unit_x(), f32::INFINITY);
+        let ray = Ray::new(Vec3::zero(), Vec3::unit_x());
 
         let intersection = point.intersect(&ray);
 
@@ -438,7 +426,7 @@ mod sphere {
     #[test]
     fn intersect() {
         let sphere = Sphere::default();
-        let ray = Ray::new(Vec3::unit_x() * 2.0, -Vec3::unit_x(), f32::INFINITY);
+        let ray = Ray::new(Vec3::unit_x() * 2.0, -Vec3::unit_x());
 
         let intersection = sphere.intersect(&ray);
 
@@ -450,7 +438,7 @@ mod sphere {
     #[test]
     fn intersect_not() {
         let sphere = Sphere::default();
-        let ray = Ray::new(Vec3::unit_x() * 2.0, -Vec3::unit_y(), f32::INFINITY);
+        let ray = Ray::new(Vec3::unit_x() * 2.0, -Vec3::unit_y());
 
         let intersection = sphere.intersect(&ray);
 
@@ -460,11 +448,7 @@ mod sphere {
     #[test]
     fn intersect_edge() {
         let sphere = Sphere::default();
-        let ray = Ray::new(
-            Vec3::unit_x() + Vec3::unit_y(),
-            -Vec3::unit_x(),
-            f32::INFINITY,
-        );
+        let ray = Ray::new(Vec3::unit_x() + Vec3::unit_y(), -Vec3::unit_x());
 
         let intersection = sphere.intersect(&ray);
 
@@ -477,7 +461,7 @@ mod sphere {
     #[test]
     fn intersect_inner_not() {
         let sphere = Sphere::default();
-        let ray = Ray::new(Vec3::zero(), Vec3::unit_x(), f32::INFINITY);
+        let ray = Ray::new(Vec3::zero(), Vec3::unit_x());
 
         let intersection = sphere.intersect(&ray);
 
@@ -487,7 +471,7 @@ mod sphere {
     #[test]
     fn intersect_not_in_range() {
         let sphere = Sphere::default();
-        let ray = Ray::new(Vec3::zero(), Vec3::unit_x(), 0.5);
+        let ray = Ray::with(Vec3::zero(), Vec3::unit_x(), 0.0, 0.5);
 
         let intersection = sphere.intersect(&ray);
 
