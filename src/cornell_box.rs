@@ -6,7 +6,7 @@ use crate::geometry::tube::Tube;
 use crate::render::bxdf::bsdf::BSDF;
 use crate::render::bxdf::lambertian::LambertianReflection;
 use crate::render::camera::Camera;
-use crate::render::light::PointLight;
+use crate::render::light::{Light, PointLight};
 use crate::render::scene::Scene;
 use crate::render::scene_objects::SceneObject;
 use crate::Spectrum;
@@ -69,7 +69,7 @@ pub fn create_camera(width: u32, height: u32) -> Camera {
     Camera::new(position, center, up, FOVY, width, height)
 }
 
-fn light() -> PointLight {
+fn light() -> Box<dyn Light> {
     let point = Vec3::new(
         (LEFT_WALL + RIGHT_WALL) / 2.0,
         CEILING - (CEILING - FLOOR) / 20.0,
@@ -78,7 +78,7 @@ fn light() -> PointLight {
 
     let color = Spectrum::white();
 
-    PointLight::new(point, color)
+    Box::new(PointLight::new(point, color))
 }
 
 fn sphere() -> SceneObject {
