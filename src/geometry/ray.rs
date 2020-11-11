@@ -24,7 +24,7 @@ macro_rules! rays {
 
                 pub fn in_range(from: &$vec, to: &$vec) -> Self {
                     let origin = *from;
-                    let direction = *to - *from;
+                    let mut direction = *to - *from;
                     let t_start = 0.0.into();
                     let t_end = direction.mag();
                     direction.normalize();
