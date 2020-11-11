@@ -53,7 +53,7 @@ pub mod tube;
 // }
 
 macro_rules! geometry_info {
-    ($($name:ident => $ray:ident, $float:ident, $vec:ident, $offset_epsilon:expr, $infinity:expr), +) => {
+    ($($name:ident => $ray:ident, $float:ident, $vec:ident), +) => {
         $(
             /// Consists of:
             /// - ray: Ray
@@ -65,18 +65,20 @@ macro_rules! geometry_info {
                 pub t: $float,
                 pub point: $vec,
                 pub normal: $vec,
-                pub offset_epsilon: $float,
             }
 
             impl $name {
                 pub fn new(ray: $ray, t: $float, point: $vec, normal: $vec) -> Self {
-                    Self { ray, t, point, normal, offset_epsilon: $offset_epsilon }
+                    Self { ray, t, point, normal }
                 }
 
-                /// Creates a ray from `self.point` into the given direction, offset by `self.offset_epsilon`.
-                pub fn create_ray(&self, dir: $vec) -> $ray {
-                    let origin = self.point + self.normal * self.offset_epsilon;
-                    $ray::new(origin, dir, $infinity)
+                /// Creates a ray from `self.point` into the given direction, offset by `floats::EPSILON`.
+                /// TODO: Offset by `normal * epsilon` or just make ray start at `epsilon`?
+                pub fn create_ray(&self, direction: $vec) -> $ray {
+                    let t_start = floats::EPSILON.into();
+                    let t_end = f32::INFINITY.into();
+                    let origin = self.point + self.normal * t_start;
+                    $ray::with(origin, direction, t_start, t_end)
                 }
             }
         )+
@@ -84,8 +86,8 @@ macro_rules! geometry_info {
 }
 
 geometry_info!(
-    GeometryInfo => Ray, f32, Vec3, floats::EPSILON, f32::INFINITY,
-    GeometryInfox4 => Ray4, f32x4, Vec3x4, f32x4::splat(floats::EPSILON), f32x4::splat(f32::INFINITY)
+    GeometryInfo => Ray, f32, Vec3,
+    GeometryInfox4 => Ray4, f32x4, Vec3x4
 );
 
 impl MinMaxExt for GeometryInfo {
