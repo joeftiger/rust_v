@@ -1,10 +1,13 @@
+#![allow(dead_code)]
+#![allow(unused_variables)]
+// TODO: Implement
+
 use ultraviolet::{Mat4, Vec3};
 
 use crate::geometry::aabb::Aabb;
 use crate::geometry::ray::Ray;
 use crate::geometry::{Container, Geometry, GeometryInfo, InversibleExt};
 
-#[allow(dead_code)]
 pub struct Cube {
     world_to_local: Mat4,
     local_to_world: Mat4,

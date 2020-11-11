@@ -1,3 +1,6 @@
+#![allow(dead_code)]
+#![allow(unused_variables)]
+
 use ultraviolet::Vec3;
 
 use crate::geometry::ray::Ray;
