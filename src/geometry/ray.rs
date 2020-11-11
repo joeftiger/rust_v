@@ -7,12 +7,29 @@ macro_rules! rays {
             pub struct $name {
                 pub origin: $vec,
                 pub direction: $vec,
-                pub t: $float,
+                pub t_start: $float,
+                pub t_end: $float,
             }
 
             impl $name {
-                pub fn new(origin: $vec, direction: $vec, t: $float) -> Self {
-                    Self { origin, direction, t }
+                pub fn new(origin: $vec, direction: $vec) -> Self {
+                    let t_start = 0.0.into();
+                    let t_end = f32::INFINITY.into();
+                    Self { origin, direction, t_start, t_end }
+                }
+
+                pub fn with(origin: $vec, direction: $vec, t_start: $float, t_end: $float) -> Self {
+                    Self { origin, direction, t_start, t_end }
+                }
+
+                pub fn in_range(from: &$vec, to: &$vec) -> Self {
+                    let origin = *from;
+                    let direction = *to - *from;
+                    let t_start = 0.0.into();
+                    let t_end = direction.mag();
+                    direction.normalize();
+
+                    Self { origin, direction, t_start, t_end }
                 }
 
                 pub fn at(&self, t: $float) -> $vec {
@@ -30,7 +47,10 @@ rays!(
 
 impl PartialEq for Ray {
     fn eq(&self, other: &Self) -> bool {
-        self.origin == other.origin && self.direction == other.direction && self.t == other.t
+        self.origin == other.origin
+            && self.direction == other.direction
+            && self.t_start == other.t_start
+            && self.t_end == other.t_end
     }
 }
 
@@ -42,6 +62,7 @@ impl PartialEq for Ray4 {
             && self.direction.x == other.direction.x
             && self.direction.y == other.direction.y
             && self.direction.z == other.direction.z
-            && self.t == other.t
+            && self.t_start == other.t_start
+            && self.t_end == other.t_end
     }
 }
