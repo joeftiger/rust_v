@@ -4,19 +4,20 @@ use crate::render::bxdf::fresnel::{Dielectric, Fresnel};
 use crate::render::bxdf::{BxDF, BxDFSample, BxDFType};
 use crate::Spectrum;
 use ultraviolet::{Vec2, Vec3};
+use std::sync::Arc;
 
-pub struct SpecularReflection<'a> {
+pub struct SpecularReflection {
     r: Spectrum,
-    fresnel: &'a dyn Fresnel,
+    fresnel: Arc<dyn Fresnel>,
 }
 
-impl<'a> SpecularReflection<'a> {
-    pub fn new(r: &Spectrum, fresnel: &'a dyn Fresnel) -> Self {
+impl SpecularReflection {
+    pub fn new(r: &Spectrum, fresnel: Arc<dyn Fresnel>) -> Self {
         Self { r: *r, fresnel }
     }
 }
 
-impl<'a> BxDF for SpecularReflection<'a> {
+impl BxDF for SpecularReflection {
     fn get_type(&self) -> BxDFType {
         BxDFType::REFLECTION | BxDFType::SPECULAR
     }
@@ -36,18 +37,18 @@ impl<'a> BxDF for SpecularReflection<'a> {
     }
 }
 
-pub struct SpecularTransmission<'a> {
+pub struct SpecularTransmission {
     t: Spectrum,
-    fresnel: &'a Dielectric,
+    fresnel: Arc<Dielectric>,
 }
 
-impl<'a> SpecularTransmission<'a> {
-    pub fn new(t: &Spectrum, fresnel: &'a Dielectric) -> Self {
+impl SpecularTransmission {
+    pub fn new(t: &Spectrum, fresnel: Arc<Dielectric>) -> Self {
         Self { t: *t, fresnel }
     }
 }
 
-impl<'a> BxDF for SpecularTransmission<'a> {
+impl BxDF for SpecularTransmission {
     fn get_type(&self) -> BxDFType {
         BxDFType::SPECULAR | BxDFType::TRANSMISSION
     }
@@ -60,9 +61,9 @@ impl<'a> BxDF for SpecularTransmission<'a> {
         let entering = bxdf::cos_theta(outgoing) > 0.0;
 
         let (ei, et, n) = if entering {
-            (self.fresnel.eta_i, self.fresnel.eta_t, Vec3::unit_z())
+            (self.fresnel.eta_i, self.fresnel.eta_t, Vec3::unit_y())
         } else {
-            (self.fresnel.eta_t, self.fresnel.eta_i, -Vec3::unit_z())
+            (self.fresnel.eta_t, self.fresnel.eta_i, -Vec3::unit_y())
         };
 
         let incident = outgoing.refracted(n, ei / et);
