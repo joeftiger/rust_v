@@ -46,7 +46,7 @@ fn main() {
 }
 
 #[cfg(not(feature = "live-window"))]
-fn render(matches: &ArgMatches, mut renderer: Box<dyn Renderer>) {
+fn render(matches: &ArgMatches, mut renderer: dyn Renderer) {
     render_and_save(matches, renderer);
 }
 
