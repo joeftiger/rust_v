@@ -125,7 +125,7 @@ impl Fresnel for Conductor {
     }
 }
 
-pub struct FresnelNoOp();
+pub struct FresnelNoOp;
 
 impl Fresnel for FresnelNoOp {
     fn evaluate(&self, _: f32) -> Spectrum {
