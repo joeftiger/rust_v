@@ -19,9 +19,7 @@ pub const FLOOR: f32 = 0.0;
 pub const CEILING: f32 = 7.0;
 pub const FRONT: f32 = 0.0;
 pub const THICKNESS: f32 = 0.001;
-
 pub const RADIUS: f32 = 1.0;
-
 pub const FOVY: f32 = 70.0;
 
 pub fn create(width: u32, height: u32) -> (Scene, Camera) {
@@ -76,7 +74,7 @@ fn light() -> Box<dyn Light> {
         (FRONT + BACK_WALL) / 2.0,
     );
 
-    let color = Spectrum::white();
+    let color = Spectrum::white() * 50.0;
 
     Box::new(PointLight::new(point, color))
 }
