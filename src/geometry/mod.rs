@@ -17,41 +17,6 @@ pub mod sphere;
 mod tests;
 pub mod tube;
 
-// macro_rules! hits {
-//     ($($name:ident => $ray:ident, $float:ident), +) => {
-//         $(
-//             #[derive(Copy, Clone, PartialEq)]
-//             pub struct $name {
-//                 pub ray: $ray,
-//                 pub t: $float,
-//             }
-//
-//             impl $name {
-//                 pub fn new(ray: $ray, t: $float) -> Self {
-//                     Self { ray, t }
-//                 }
-//             }
-//         )+
-//     };
-// }
-//
-// hits!(
-//     Hit => Ray, f32,
-//     Hit4 => Ray4, f32x4
-// );
-//
-// impl From<Ray> for Hit {
-//     fn from(ray: Ray) -> Self {
-//         Self::new(ray, ray.t)
-//     }
-// }
-//
-// impl From<Ray4> for Hit4 {
-//     fn from(ray: Ray4) -> Self {
-//         Self::new(ray, ray.t)
-//     }
-// }
-
 macro_rules! geometry_info {
     ($($name:ident => $ray:ident, $float:ident, $vec:ident), +) => {
         $(

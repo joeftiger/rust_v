@@ -7,7 +7,7 @@ use ultraviolet::Vec3;
 pub struct DebugNormals;
 
 impl Integrator for DebugNormals {
-    fn illumination(
+    fn integrate(
         &self,
         _scene: &Scene,
         intersection: &SceneIntersection,
@@ -18,21 +18,15 @@ impl Integrator for DebugNormals {
         color.into()
     }
 
-    fn specular_reflection(
+    fn illumination(
         &self,
         _scene: &Scene,
-        _intersection: &SceneIntersection,
+        intersection: &SceneIntersection,
         _sampler: &mut dyn Sampler,
+        _depth: usize,
     ) -> Spectrum {
-        0.0.into()
-    }
+        let color = (intersection.info.normal + Vec3::one()) / 2.0;
 
-    fn specular_transmission(
-        &self,
-        _scene: &Scene,
-        _intersection: &SceneIntersection,
-        _sampler: &mut dyn Sampler,
-    ) -> Spectrum {
-        0.0.into()
+        color.into()
     }
 }

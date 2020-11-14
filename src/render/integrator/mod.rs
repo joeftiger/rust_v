@@ -8,11 +8,19 @@ pub mod debug_normals;
 pub mod whitted;
 
 pub trait Integrator {
+    fn integrate(
+        &self,
+        scene: &Scene,
+        intersection: &SceneIntersection,
+        sampler: &mut dyn Sampler,
+    ) -> Spectrum;
+
     fn illumination(
         &self,
         scene: &Scene,
         intersection: &SceneIntersection,
         sampler: &mut dyn Sampler,
+        depth: usize,
     ) -> Spectrum;
 
     fn specular_reflection(
@@ -20,6 +28,7 @@ pub trait Integrator {
         scene: &Scene,
         intersection: &SceneIntersection,
         sampler: &mut dyn Sampler,
+        depth: usize,
     ) -> Spectrum {
         let outgoing = -intersection.info.ray.direction;
 
@@ -42,7 +51,7 @@ pub trait Integrator {
                     let reflected_ray = intersection.info.create_ray(bxdf_sample.incident);
 
                     if let Some(i) = scene.intersect(&reflected_ray) {
-                        let illumination = self.illumination(scene, &i, sampler);
+                        let illumination = self.illumination(scene, &i, sampler, depth - 1);
 
                         return bxdf_sample.spectrum * illumination * cos / bxdf_sample.pdf;
                     }
@@ -58,6 +67,7 @@ pub trait Integrator {
         scene: &Scene,
         intersection: &SceneIntersection,
         sampler: &mut dyn Sampler,
+        depth: usize,
     ) -> Spectrum {
         let outgoing = -intersection.info.ray.direction;
 
@@ -80,7 +90,7 @@ pub trait Integrator {
                     let transmitted_ray = intersection.info.create_ray(bxdf_sample.incident);
 
                     if let Some(i) = scene.intersect(&transmitted_ray) {
-                        let illumination = self.illumination(scene, &i, sampler);
+                        let illumination = self.illumination(scene, &i, sampler, depth - 1);
 
                         return bxdf_sample.spectrum * illumination * cos / bxdf_sample.pdf;
                     }

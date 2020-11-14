@@ -30,9 +30,8 @@ pub struct RandomSampler;
 
 impl Sampler for RandomSampler {
     fn get_1d(&mut self) -> f32 {
-        0.5
-        // let rand = fastrand::f32();
-        // debug_assert_ne!(rand, 1.0);
-        // rand
+        let rand = fastrand::f32();
+        debug_assert_ne!(rand, 1.0);
+        rand
     }
 }

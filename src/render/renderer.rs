@@ -73,7 +73,7 @@ impl Renderer {
         if let Some(si) = si {
             let sampler = self.sampler.deref_mut();
 
-            self.integrator.illumination(&self.scene, &si, sampler)
+            self.integrator.integrate(&self.scene, &si, sampler)
         } else {
             Spectrum::black()
         }

@@ -38,7 +38,7 @@ fn main() {
             if demo.is_present(DEBUG_RENDERER) {
                 Box::new(DebugNormals)
             } else {
-                Box::new(Whitted)
+                Box::new(Whitted::new(5))
             }
         };
 

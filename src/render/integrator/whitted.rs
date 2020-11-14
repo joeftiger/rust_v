@@ -5,15 +5,33 @@ use crate::render::sampler::Sampler;
 use crate::render::scene::{Scene, SceneIntersection};
 use crate::Spectrum;
 
-pub struct Whitted;
+pub struct Whitted {
+    pub max_depth: usize,
+}
+
+impl Whitted {
+    pub fn new(max_depth: usize) -> Self {
+        Self { max_depth }
+    }
+}
 
 #[allow(unused_variables)]
 impl Integrator for Whitted {
+    fn integrate(
+        &self,
+        scene: &Scene,
+        intersection: &SceneIntersection,
+        sampler: &mut dyn Sampler,
+    ) -> Spectrum {
+        self.illumination(scene, intersection, sampler, self.max_depth)
+    }
+
     fn illumination(
         &self,
         scene: &Scene,
         intersection: &SceneIntersection,
         sampler: &mut dyn Sampler,
+        depth: usize,
     ) -> Spectrum {
         let outgoing = &-intersection.info.ray.direction;
 
@@ -40,22 +58,13 @@ impl Integrator for Whitted {
             }
         }
 
-        if bsdf.is_type(BxDFType::SPECULAR | BxDFType::REFLECTION) {
-            color += self.specular_reflection(scene, intersection, sampler);
-        }
-        if bsdf.is_type(BxDFType::SPECULAR | BxDFType::TRANSMISSION) {
-            color += self.specular_transmission(scene, intersection, sampler);
+        let new_depth = depth - 1;
+
+        if new_depth > 0 {
+            color += self.specular_reflection(scene, intersection, sampler, new_depth);
+            color += self.specular_transmission(scene, intersection, sampler, new_depth);
         }
 
         color
-    }
-
-    fn specular_transmission(
-        &self,
-        scene: &Scene,
-        intersection: &SceneIntersection,
-        sampler: &mut dyn Sampler,
-    ) -> Spectrum {
-        0.0.into()
     }
 }

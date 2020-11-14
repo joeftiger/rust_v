@@ -8,7 +8,7 @@ macro_rules! rays {
                 pub origin: $vec,
                 pub direction: $vec,
                 pub t_start: $float,
-                pub t_end: $float,
+                pub t_end: $float
             }
 
             impl $name {
