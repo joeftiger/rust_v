@@ -27,7 +27,7 @@ impl OcclusionTester {
         Self { ray }
     }
 
-    fn unoccluded(&self, scene: &Scene) -> bool {
+    pub fn unoccluded(&self, scene: &Scene) -> bool {
         !scene.is_occluded(&self.ray)
     }
 
