@@ -1,5 +1,4 @@
 use crate::color::Color;
-use crate::render::bxdf::BxDFType;
 use crate::render::camera::Camera;
 use crate::render::integrator::Integrator;
 use crate::render::sampler::Sampler;
@@ -51,7 +50,9 @@ impl Renderer {
         let image = ImageBuffer::new(camera.width, camera.height);
 
         let capacity = (image.width() * image.height()) as usize;
-        let spectrum_statistics = (0..capacity).map(|_| SpectrumStatistic::default()).collect();
+        let spectrum_statistics = (0..capacity)
+            .map(|_| SpectrumStatistic::default())
+            .collect();
 
         Self {
             scene,
@@ -72,9 +73,7 @@ impl Renderer {
         if let Some(si) = si {
             let sampler = self.sampler.deref_mut();
 
-            let mut color = self.integrator.illumination(&self.scene, &si, sampler);
-
-            color
+            self.integrator.illumination(&self.scene, &si, sampler)
         } else {
             Spectrum::black()
         }
@@ -110,12 +109,12 @@ impl Renderer {
 
             let pixel = self.render(x, y);
 
-            // let index = (x * self.image.width() + y) as usize;
-            // let mut stats = &mut self.spectrum_statistics[index];
-            // stats.spectrum += pixel;
-            // stats.num += 1;
+            let index = (x * self.image.width() + y) as usize;
+            let mut stats = &mut self.spectrum_statistics[index];
+            stats.spectrum += pixel;
+            stats.num += 1;
 
-            self.image.put_pixel(x, y, pixel.into());
+            self.image.put_pixel(x, y, stats.average().into());
 
             self.progress += 1;
         }

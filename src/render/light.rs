@@ -42,7 +42,12 @@ pub struct LightSample {
 }
 
 impl LightSample {
-    pub fn new(spectrum: Spectrum, incident: Vec3, pdf: f32, visibility_tester: OcclusionTester) -> Self {
+    pub fn new(
+        spectrum: Spectrum,
+        incident: Vec3,
+        pdf: f32,
+        visibility_tester: OcclusionTester,
+    ) -> Self {
         Self {
             spectrum,
             incident,

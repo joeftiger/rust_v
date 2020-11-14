@@ -1,9 +1,8 @@
 use ultraviolet::Vec3;
 
 use crate::render::bxdf::{same_hemisphere, world_to_bxdf, BxDF, BxDFSample, BxDFType};
-use crate::Spectrum;
-use std::ops::Deref;
 use crate::render::sampler::Sample;
+use crate::Spectrum;
 
 pub struct BSDF {
     bxdfs: Vec<Box<dyn BxDF>>,

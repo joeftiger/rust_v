@@ -17,12 +17,9 @@ pub trait Sampler {
     fn get_1d(&mut self) -> f32;
 
     fn get_2d(&mut self) -> Vec2 {
-        Vec2::new(
-            self.get_1d(),
-            self.get_1d(),
-        )
+        Vec2::new(self.get_1d(), self.get_1d())
     }
-    
+
     fn get_sample(&mut self) -> Sample {
         Sample::new(self.get_1d(), self.get_2d())
     }
@@ -33,8 +30,9 @@ pub struct RandomSampler;
 
 impl Sampler for RandomSampler {
     fn get_1d(&mut self) -> f32 {
-        let rand = fastrand::f32();
-        debug_assert_ne!(rand, 1.0);
-        rand
+        0.5
+        // let rand = fastrand::f32();
+        // debug_assert_ne!(rand, 1.0);
+        // rand
     }
 }

@@ -27,7 +27,11 @@ impl Integrator for Whitted {
             let light_sample = light.sample(intersection);
             let c = bsdf.evaluate(normal, &light_sample.incident, outgoing, BxDFType::ALL);
 
-            if light_sample.pdf > 0.0 && !light_sample.spectrum.is_black() && !c.is_black() && light_sample.occlusion_tester.unoccluded(scene) {
+            if light_sample.pdf > 0.0
+                && !light_sample.spectrum.is_black()
+                && !c.is_black()
+                && light_sample.occlusion_tester.unoccluded(scene)
+            {
                 let cos = light_sample.incident.dot(*normal).abs();
 
                 if cos != 0.0 {
