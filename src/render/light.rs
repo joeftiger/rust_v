@@ -36,14 +36,16 @@ impl OcclusionTester {
 
 pub struct LightSample {
     pub spectrum: Spectrum,
+    pub incident: Vec3,
     pub pdf: f32,
     pub occlusion_tester: OcclusionTester,
 }
 
 impl LightSample {
-    pub fn new(spectrum: Spectrum, pdf: f32, visibility_tester: OcclusionTester) -> Self {
+    pub fn new(spectrum: Spectrum, incident: Vec3, pdf: f32, visibility_tester: OcclusionTester) -> Self {
         Self {
             spectrum,
+            incident,
             pdf,
             occlusion_tester: visibility_tester,
         }
@@ -124,6 +126,6 @@ impl Light for PointLight {
 
         let intensity = self.intensity / dir.mag_sq();
 
-        LightSample::new(intensity, pdf, occlusion_tester)
+        LightSample::new(intensity, incident, pdf, occlusion_tester)
     }
 }
