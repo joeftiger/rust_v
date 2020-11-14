@@ -37,7 +37,7 @@ impl OcclusionTester {
 pub struct LightSample {
     pub spectrum: Spectrum,
     pub pdf: f32,
-    pub visibility_tester: OcclusionTester,
+    pub occlusion_tester: OcclusionTester,
 }
 
 impl LightSample {
@@ -45,7 +45,7 @@ impl LightSample {
         Self {
             spectrum,
             pdf,
-            visibility_tester,
+            occlusion_tester: visibility_tester,
         }
     }
 }
