@@ -9,8 +9,11 @@ use rust_v::render::integrator::whitted::Whitted;
 use rust_v::render::integrator::Integrator;
 use rust_v::render::renderer::Renderer;
 use rust_v::render::sampler::RandomSampler;
+
+#[cfg(feature = "live-window")]
 use rust_v::render::window::RenderWindow;
 
+#[cfg(feature = "live-window")]
 const LIVE_WINDOW: &str = "live_window";
 const DEMO: &str = "demo";
 const DEBUG_RENDERER: &str = "DEBUG";
@@ -46,7 +49,7 @@ fn main() {
 }
 
 #[cfg(not(feature = "live-window"))]
-fn render(matches: &ArgMatches, mut renderer: dyn Renderer) {
+fn render(matches: &ArgMatches, renderer: Renderer) {
     render_and_save(matches, renderer);
 }
 
