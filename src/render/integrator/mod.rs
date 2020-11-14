@@ -34,16 +34,18 @@ pub trait Integrator {
             &sample,
         );
 
-        if bxdf_sample.pdf > 0.0 && !bxdf_sample.spectrum.is_black() {
-            let cos = bxdf_sample.incident.dot(normal).abs();
+        if let Some(bxdf_sample) = bxdf_sample {
+            if bxdf_sample.pdf > 0.0 && !bxdf_sample.spectrum.is_black() {
+                let cos = bxdf_sample.incident.dot(normal).abs();
 
-            if cos != 0.0 {
-                let reflected_ray = intersection.info.create_ray(bxdf_sample.incident);
+                if cos != 0.0 {
+                    let reflected_ray = intersection.info.create_ray(bxdf_sample.incident);
 
-                if let Some(i) = scene.intersect(&reflected_ray) {
-                    let illumination = self.illumination(scene, &i, sampler);
+                    if let Some(i) = scene.intersect(&reflected_ray) {
+                        let illumination = self.illumination(scene, &i, sampler);
 
-                    return bxdf_sample.spectrum * illumination * cos / bxdf_sample.pdf;
+                        return bxdf_sample.spectrum * illumination * cos / bxdf_sample.pdf;
+                    }
                 }
             }
         }
@@ -70,16 +72,18 @@ pub trait Integrator {
             &sample,
         );
 
-        if bxdf_sample.pdf > 0.0 && !bxdf_sample.spectrum.is_black() {
-            let cos = bxdf_sample.incident.dot(normal).abs();
+        if let Some(bxdf_sample) = bxdf_sample {
+            if bxdf_sample.pdf > 0.0 && !bxdf_sample.spectrum.is_black() {
+                let cos = bxdf_sample.incident.dot(normal).abs();
 
-            if cos != 0.0 {
-                let transmitted_ray = intersection.info.create_ray(bxdf_sample.incident);
+                if cos != 0.0 {
+                    let transmitted_ray = intersection.info.create_ray(bxdf_sample.incident);
 
-                if let Some(i) = scene.intersect(&transmitted_ray) {
-                    let illumination = self.illumination(scene, &i, sampler);
+                    if let Some(i) = scene.intersect(&transmitted_ray) {
+                        let illumination = self.illumination(scene, &i, sampler);
 
-                    return bxdf_sample.spectrum * illumination * cos / bxdf_sample.pdf;
+                        return bxdf_sample.spectrum * illumination * cos / bxdf_sample.pdf;
+                    }
                 }
             }
         }

@@ -12,24 +12,28 @@ fn convert_u16_to_u8(vec: Vec<u16>) -> Vec<u8> {
     vec.iter().map(|b16| (b16 / 2u16.pow(8)) as u8).collect()
 }
 
-// #[derive(Default)]
-// struct SpectrumStatistic {
-//     spectrum: Spectrum,
-//     num: usize,
-// }
-//
-// impl SpectrumStatistic {
-//     pub fn average(&self) -> Spectrum {
-//         self.spectrum / self.num as f32
-//     }
-// }
+#[derive(Default)]
+struct SpectrumStatistic {
+    spectrum: Spectrum,
+    num: usize,
+}
+
+impl SpectrumStatistic {
+    pub fn average(&self) -> Spectrum {
+        if self.num == 0 {
+            Spectrum::black()
+        } else {
+            self.spectrum / self.num as f32
+        }
+    }
+}
 
 pub struct Renderer {
     scene: Scene,
     camera: Camera,
     sampler: Box<dyn Sampler>,
     integrator: Box<dyn Integrator>,
-    // spectrum_statistics: Vec<SpectrumStatistic>,
+    spectrum_statistics: Vec<SpectrumStatistic>,
     image: ImageBuffer<Rgb<u16>, Vec<u16>>,
     progress: u32,
 }
@@ -46,15 +50,15 @@ impl Renderer {
     ) -> Self {
         let image = ImageBuffer::new(camera.width, camera.height);
 
-        // let capacity = (image.width() * image.height()) as usize;
-        // let spectrum_statistics = (0..capacity).map(|_| SpectrumStatistic::default()).collect();
+        let capacity = (image.width() * image.height()) as usize;
+        let spectrum_statistics = (0..capacity).map(|_| SpectrumStatistic::default()).collect();
 
         Self {
             scene,
             camera,
             sampler,
             integrator,
-            // spectrum_statistics,
+            spectrum_statistics,
             image,
             progress: 0,
         }
@@ -69,18 +73,6 @@ impl Renderer {
             let sampler = self.sampler.deref_mut();
 
             let mut color = self.integrator.illumination(&self.scene, &si, sampler);
-
-            let bsdf = &si.obj.bsdf;
-            if bsdf.is_type(BxDFType::SPECULAR | BxDFType::REFLECTION) {
-                color += self
-                    .integrator
-                    .specular_reflection(&self.scene, &si, sampler);
-            }
-            if bsdf.is_type(BxDFType::SPECULAR | BxDFType::TRANSMISSION) {
-                color += self
-                    .integrator
-                    .specular_transmission(&self.scene, &si, sampler);
-            }
 
             color
         } else {

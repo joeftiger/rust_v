@@ -36,6 +36,13 @@ impl Integrator for Whitted {
             }
         }
 
+        if bsdf.is_type(BxDFType::SPECULAR | BxDFType::REFLECTION) {
+            color += self.specular_reflection(scene, intersection, sampler);
+        }
+        if bsdf.is_type(BxDFType::SPECULAR | BxDFType::TRANSMISSION) {
+            color += self.specular_transmission(scene, intersection, sampler);
+        }
+
         color
     }
 

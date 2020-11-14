@@ -26,14 +26,11 @@ impl BSDF {
         self.bxdfs.iter().filter(|bxdf| bxdf.is_type(t)).count()
     }
 
-    fn random_matching_bxdf(&self, t: BxDFType, rand: f32) -> &dyn BxDF {
+    fn random_matching_bxdf(&self, t: BxDFType, rand: f32) -> Option<&Box<dyn BxDF>> {
         let count = self.num_types(t);
         let index = (rand * count as f32) as usize;
 
-        let bxdf = self.bxdfs.iter().filter(|bxdf| bxdf.is_type(t)).nth(index);
-        debug_assert!(bxdf.is_some());
-
-        bxdf.unwrap().deref()
+        self.bxdfs.iter().filter(|bxdf| bxdf.is_type(t)).nth(index)
     }
 
     pub fn evaluate(
@@ -72,16 +69,16 @@ impl BSDF {
         outgoing_world: &Vec3,
         types: BxDFType,
         sample: &Sample,
-    ) -> BxDFSample {
+    ) -> Option<BxDFSample> {
         let rotation = world_to_bxdf(normal);
         let outgoing = rotation * *outgoing_world;
 
-        let bxdf = self.random_matching_bxdf(types, sample.one_d);
+        let bxdf = self.random_matching_bxdf(types, sample.one_d)?;
 
         let mut sample = bxdf.sample(&outgoing, &sample.two_d);
         sample.incident = rotation.reversed() * sample.incident;
 
-        sample
+        Some(sample)
     }
 
     pub fn pdf(
