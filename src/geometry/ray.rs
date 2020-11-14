@@ -68,7 +68,7 @@ impl PartialEq for Ray4 {
 }
 
 impl Ray {
-    pub fn in_range(&self, t: f32) -> Option<f32> {
+    pub fn check_range(&self, t: f32) -> Option<f32> {
         if t < self.t_start || t > self.t_end {
             None
         } else {
