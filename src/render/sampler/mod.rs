@@ -9,7 +9,12 @@ pub trait Sampler {
             .for_each(|sample| *sample = self.get_1d());
     }
 
-    fn get_2d(&mut self) -> Vec2;
+    fn get_2d(&mut self) -> Vec2 {
+        Vec2::new(
+            self.get_1d(),
+            self.get_1d(),
+        )
+    }
 
     fn get_2ds(&mut self, samples: &mut [Vec2]) {
         samples
@@ -26,9 +31,5 @@ impl Sampler for RandomSampler {
         let rand = fastrand::f32();
         debug_assert_ne!(rand, 1.0);
         rand
-    }
-
-    fn get_2d(&mut self) -> Vec2 {
-        Vec2::new(self.get_1d(), self.get_1d())
     }
 }
