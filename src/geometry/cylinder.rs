@@ -43,10 +43,9 @@ impl Cylinder {
         }
     }
 
-    fn check(&self, ray: &Ray, t: f32) -> Option<f32> {
-        if t <= 0.0 {
-            return None;
-        }
+    fn check_cylinder_height(&self, ray: &Ray, t: f32) -> Option<f32> {
+        ray.check_range(t)?;
+
         let z = self.axis().dot(ray.at(t) - self.center);
 
         if 2.0 * z.abs() <= self.height() {
@@ -57,8 +56,8 @@ impl Cylinder {
     }
 
     fn check_cylinder(&self, ray: &Ray, t0: f32, t1: f32) -> Option<f32> {
-        let a = self.check(ray, t0);
-        let b = self.check(ray, t1);
+        let a = self.check_cylinder_height(ray, t0);
+        let b = self.check_cylinder_height(ray, t1);
         f32::mmin_op2(a, b)
     }
 
@@ -67,10 +66,10 @@ impl Cylinder {
         let (c0, c1) = self.v_caps;
 
         if caps.point.distance(&c0) <= self.radius || caps.point.distance(&c1) <= self.radius {
-            return Some(caps);
+            Some(caps)
+        } else {
+            None
         }
-
-        None
     }
 
     #[inline]

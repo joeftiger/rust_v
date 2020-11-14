@@ -4,6 +4,7 @@ use crate::geometry::aabb::Aabb;
 use crate::geometry::ray::Ray;
 use crate::geometry::{Container, Geometry, GeometryInfo};
 use crate::math::solve_quadratic;
+use crate::util::MinMaxExt;
 
 #[derive(Debug, PartialEq)]
 pub struct Sphere {
@@ -41,11 +42,8 @@ impl Geometry for Sphere {
         let c = oc.dot(oc) - self.radius * self.radius;
 
         let (t0, t1) = solve_quadratic(a, b, c)?;
-        let t_min = t0.min(t1);
 
-        if t_min < 0.0 || t_min < ray.t_start || ray.t_end < t_min {
-            return None;
-        }
+        let t_min = f32::mmin_op2(ray.check_range(t0), ray.check_range(t1))?;
 
         let point = ray.at(t_min);
         let mut normal = (point - self.center).normalized();
