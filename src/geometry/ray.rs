@@ -66,3 +66,13 @@ impl PartialEq for Ray4 {
             && self.t_end == other.t_end
     }
 }
+
+impl Ray {
+    pub fn in_range(&self, t: f32) -> Option<f32> {
+        if t < self.t_start || t > self.t_end {
+            None
+        } else {
+            Some(t)
+        }
+    }
+}
