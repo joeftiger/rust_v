@@ -1,10 +1,9 @@
 use crate::color::Color;
-use crate::geometry::ray::Ray;
 use crate::render::bxdf::BxDFType;
 use crate::render::integrator::Integrator;
 use crate::render::sampler::Sampler;
 use crate::render::scene::{Scene, SceneIntersection};
-use crate::{floats, Spectrum};
+use crate::Spectrum;
 
 pub struct Whitted;
 
@@ -16,28 +15,23 @@ impl Integrator for Whitted {
         intersection: &SceneIntersection,
         sampler: &mut dyn Sampler,
     ) -> Spectrum {
-        let bsdf = &intersection.obj.bsdf;
-
         let outgoing = &-intersection.info.ray.direction;
+
+        let bsdf = &intersection.obj.bsdf;
         let point = &intersection.info.point;
         let normal = &intersection.info.normal;
 
         let mut color = Spectrum::black();
 
         for light in &scene.lights {
-            let mut ray = Ray::in_range(point, &light.position());
-            ray.t_start += floats::EPSILON;
+            let light_sample = light.sample(intersection);
+            let c = bsdf.evaluate(normal, &light_sample.incident, outgoing, BxDFType::ALL);
 
-            let c = bsdf.evaluate(normal, &ray.direction, outgoing, BxDFType::ALL);
+            if light_sample.pdf > 0.0 && !light_sample.spectrum.is_black() && !c.is_black() && light_sample.occlusion_tester.unoccluded(scene) {
+                let cos = light_sample.incident.dot(*normal).abs();
 
-            if !c.is_black() {
-                color += c;
-
-                if !scene.is_occluded(&ray) {
-                    let cos = ray.direction.dot(*normal).abs();
-                    // let pdf = bsdf.pdf(normal, &ray.direction, outgoing, BxDFType::ALL);
-
-                    color += c * cos;
+                if cos != 0.0 {
+                    color += light_sample.spectrum * c * (cos / light_sample.pdf);
                 }
             }
         }
