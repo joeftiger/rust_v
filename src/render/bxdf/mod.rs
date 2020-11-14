@@ -88,7 +88,11 @@ pub fn same_hemisphere(a: &Vec3, b: &Vec3) -> bool {
 
 #[inline(always)]
 pub fn world_to_bxdf(v: &Vec3) -> Rotor3 {
-    Rotor3::from_rotation_between(*v, Vec3::unit_y())
+    if *v != Vec3::unit_y() && *v != -Vec3::unit_y() {
+        Rotor3::from_rotation_between(*v, Vec3::unit_y())
+    } else {
+        Rotor3::default()
+    }
 }
 
 bitflags! {

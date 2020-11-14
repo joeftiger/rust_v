@@ -1,3 +1,4 @@
+use crate::color::Color;
 use crate::render::bxdf;
 use crate::render::bxdf::fresnel::{Dielectric, Fresnel};
 use crate::render::bxdf::{BxDF, BxDFSample, BxDFType};
@@ -21,15 +22,14 @@ impl<'a> BxDF for SpecularReflection<'a> {
     }
 
     fn evaluate(&self, _incident: &Vec3, _outgoing: &Vec3) -> Spectrum {
-        0.0.into()
+        Spectrum::black()
     }
 
     fn sample(&self, outgoing: &Vec3, _sample: &Vec2) -> BxDFSample {
         let incident = Vec3::new(-outgoing.x, -outgoing.y, outgoing.z);
-        let cos_i = bxdf::cos_theta(&incident);
-        let cos_o = bxdf::cos_theta(outgoing);
 
-        let spectrum = self.fresnel.evaluate(cos_i) * self.r / cos_o.abs();
+        let cos_i = bxdf::cos_theta(&incident);
+        let spectrum = self.fresnel.evaluate(cos_i) * self.r / cos_i.abs();
         let pdf = 1.0;
 
         BxDFSample::new(spectrum, incident, pdf)
