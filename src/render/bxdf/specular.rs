@@ -54,7 +54,7 @@ impl BxDF for SpecularTransmission {
     }
 
     fn evaluate(&self, _incident: &Vec3, _outgoing: &Vec3) -> Spectrum {
-        0.0.into()
+        Spectrum::black()
     }
 
     fn sample(&self, outgoing: &Vec3, _sample: &Vec2) -> BxDFSample {
