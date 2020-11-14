@@ -1,8 +1,9 @@
-use ultraviolet::{Vec2, Vec3};
+use ultraviolet::Vec3;
 
 use crate::render::bxdf::{same_hemisphere, world_to_bxdf, BxDF, BxDFSample, BxDFType};
 use crate::Spectrum;
 use std::ops::Deref;
+use crate::render::sampler::Sample;
 
 pub struct BSDF {
     bxdfs: Vec<Box<dyn BxDF>>,
@@ -25,11 +26,9 @@ impl BSDF {
         self.bxdfs.iter().filter(|bxdf| bxdf.is_type(t)).count()
     }
 
-    fn random_matching_bxdf(&self, t: BxDFType) -> &dyn BxDF {
+    fn random_matching_bxdf(&self, t: BxDFType, rand: f32) -> &dyn BxDF {
         let count = self.num_types(t);
-        let index = (fastrand::f32() * count as f32) as usize;
-
-        println!("{:?}", t);
+        let index = (rand * count as f32) as usize;
 
         let bxdf = self.bxdfs.iter().filter(|bxdf| bxdf.is_type(t)).nth(index);
         debug_assert!(bxdf.is_some());
@@ -72,14 +71,14 @@ impl BSDF {
         normal: &Vec3,
         outgoing_world: &Vec3,
         types: BxDFType,
-        sample: &Vec2,
+        sample: &Sample,
     ) -> BxDFSample {
         let rotation = world_to_bxdf(normal);
         let outgoing = rotation * *outgoing_world;
 
-        let bxdf = self.random_matching_bxdf(types);
+        let bxdf = self.random_matching_bxdf(types, sample.one_d);
 
-        let mut sample = bxdf.sample(&outgoing, sample);
+        let mut sample = bxdf.sample(&outgoing, &sample.two_d);
         sample.incident = rotation.reversed() * sample.incident;
 
         sample
