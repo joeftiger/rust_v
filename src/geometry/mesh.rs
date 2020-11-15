@@ -3,19 +3,18 @@ use crate::formats::obj::ObjFile;
 use crate::geometry::aabb::Aabb;
 use crate::geometry::ray::Ray;
 use crate::geometry::{Geometry, GeometryInfo};
-use rayon::prelude::*;
 use std::ops::Deref;
-use std::sync::{Arc, Mutex};
+use std::rc::Rc;
 use ultraviolet::Vec3;
 
 pub struct Triangle {
-    a: Arc<Vec3>,
-    b: Arc<Vec3>,
-    c: Arc<Vec3>,
+    a: Rc<Vec3>,
+    b: Rc<Vec3>,
+    c: Rc<Vec3>,
 }
 
 impl Triangle {
-    pub fn new(a: Arc<Vec3>, b: Arc<Vec3>, c: Arc<Vec3>) -> Self {
+    pub fn new(a: Rc<Vec3>, b: Rc<Vec3>, c: Rc<Vec3>) -> Self {
         Self { a, b, c }
     }
 }
@@ -74,13 +73,13 @@ impl Geometry for Triangle {
 
 #[derive(Default)]
 pub struct Mesh {
-    vertices: Vec<Arc<Vec3>>,
+    vertices: Vec<Rc<Vec3>>,
     triangles: Vec<Triangle>,
     aabb: Aabb,
 }
 
 impl Mesh {
-    pub fn new(vertices: Vec<Arc<Vec3>>, triangles: Vec<Triangle>) -> Self {
+    pub fn new(vertices: Vec<Rc<Vec3>>, triangles: Vec<Triangle>) -> Self {
         let mut aabb = Aabb::inverted_infinite();
         vertices.iter().for_each(|v| {
             aabb.min = aabb.min.min_by_component(*v.deref());
@@ -103,26 +102,20 @@ impl Geometry for Mesh {
     }
 
     fn intersect(&self, ray: &Ray) -> Option<GeometryInfo> {
-        let mutex: Mutex<Option<GeometryInfo>> = Mutex::new(None);
-        // let mut info: Option<GeometryInfo> = None;
-        self.triangles.par_iter().for_each(|t: &Triangle| {
-            let intersection = t.intersect(ray);
-
-            {
-                let mut current_info = mutex.lock().unwrap();
-                if let Some(i) = intersection {
-                    if current_info.is_none() {
-                        *current_info = Some(i);
-                        return;
-                    }
-                    if i.t < current_info.unwrap().t {
-                        *current_info = Some(i);
-                    }
+        let mut current_info: Option<GeometryInfo> = None;
+        self.triangles.iter().for_each(|t: &Triangle| {
+            if let Some(i) = t.intersect(ray) {
+                if current_info.is_none() {
+                    current_info = Some(i);
+                    return;
+                }
+                if i.t < current_info.unwrap().t {
+                    current_info = Some(i);
                 }
             }
         });
 
-        mutex.into_inner().unwrap()
+        current_info
     }
 }
 
@@ -136,7 +129,7 @@ impl From<ObjFile> for Mesh {
         let mut mesh = Mesh::default();
         file.v.iter().for_each(|v| {
             let vertex = Vec3::new(v.0, v.1, v.2);
-            mesh.vertices.push(Arc::new(vertex));
+            mesh.vertices.push(Rc::new(vertex));
         });
         file.f.iter().for_each(|f| {
             let v = f.v;

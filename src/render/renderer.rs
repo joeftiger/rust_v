@@ -37,9 +37,6 @@ pub struct Renderer {
     progress: u32,
 }
 
-unsafe impl Send for Renderer {}
-unsafe impl Sync for Renderer {}
-
 impl Renderer {
     pub fn new(
         scene: Scene,

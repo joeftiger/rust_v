@@ -3,26 +3,26 @@ use crate::geometry::ray::Ray;
 use crate::geometry::{Container, Geometry, GeometryInfo};
 use crate::render::light::Light;
 use crate::render::scene_objects::SceneObject;
-use std::sync::Arc;
+use std::rc::Rc;
 use ultraviolet::Vec3;
 
 /// Consists of
 /// - info: [GeometryInfo](../geometry/struct.GeometryInfo.html)
 pub struct SceneIntersection {
     pub info: GeometryInfo,
-    pub obj: Arc<SceneObject>,
+    pub obj: Rc<SceneObject>,
 }
 
 impl SceneIntersection {
-    pub fn new(info: GeometryInfo, obj: Arc<SceneObject>) -> Self {
+    pub fn new(info: GeometryInfo, obj: Rc<SceneObject>) -> Self {
         Self { info, obj }
     }
 }
 
 pub struct Scene {
     pub aabb: Aabb,
-    pub lights: Vec<Arc<dyn Light>>,
-    pub objects: Vec<Arc<SceneObject>>,
+    pub lights: Vec<Rc<dyn Light>>,
+    pub objects: Vec<Rc<SceneObject>>,
 }
 
 impl Scene {
@@ -32,11 +32,11 @@ impl Scene {
         aabb.min = aabb.min.min_by_component(bo.min);
         aabb.max = aabb.max.min_by_component(bo.min);
 
-        self.objects.push(Arc::new(obj));
+        self.objects.push(Rc::new(obj));
     }
 
     pub fn push_light(&mut self, light: Box<dyn Light>) {
-        self.lights.push(Arc::from(light));
+        self.lights.push(Rc::from(light));
     }
 
     /// Checks if the given ray intersects any object before reaching it's own maximum t lifespan.

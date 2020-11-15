@@ -24,9 +24,6 @@ pub struct RenderWindow {
     should_reset_image: bool,
 }
 
-unsafe impl Send for RenderWindow {}
-unsafe impl Sync for RenderWindow {}
-
 impl RenderWindow {
     pub fn new(name: String, mut renderer: Renderer) -> Result<Self, String> {
         let camera = renderer.get_camera();

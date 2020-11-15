@@ -78,7 +78,7 @@ pub fn fresnel_conductor(
     (r_p + r_s) / 2.0
 }
 
-pub trait Fresnel: Send + Sync {
+pub trait Fresnel {
     fn evaluate(&self, cos_i: f32) -> Spectrum;
 }
 
