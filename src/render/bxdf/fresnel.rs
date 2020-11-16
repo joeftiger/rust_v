@@ -2,9 +2,9 @@ use crate::color::Color;
 use crate::Spectrum;
 
 use crate::floats;
-use bitflags::_core::mem::swap;
-use crate::render::bxdf::{BxDF, BxDFSample, BxDFType};
 use crate::render::bxdf;
+use crate::render::bxdf::{BxDF, BxDFSample, BxDFType};
+use bitflags::_core::mem::swap;
 use ultraviolet::{Vec2, Vec3};
 
 #[inline(always)]
@@ -158,7 +158,11 @@ impl BxDF for FresnelSpecular {
     }
 
     fn sample(&self, outgoing: &Vec3, sample: &Vec2) -> BxDFSample {
-        let f = fresnel_dielectric(bxdf::cos_theta(outgoing), self.fresnel.eta_i, self.fresnel.eta_t);
+        let f = fresnel_dielectric(
+            bxdf::cos_theta(outgoing),
+            self.fresnel.eta_i,
+            self.fresnel.eta_t,
+        );
 
         if sample.x < f {
             let incident = Vec3::new(-outgoing.x, -outgoing.y, outgoing.z);
