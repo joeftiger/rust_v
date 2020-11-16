@@ -78,7 +78,7 @@ pub trait Integrator {
         let bxdf_sample = bsdf.sample(
             &normal,
             &outgoing,
-            BxDFType::SPECULAR | BxDFType::REFLECTION,
+            BxDFType::SPECULAR | BxDFType::TRANSMISSION,
             &sample,
         );
 
