@@ -92,9 +92,9 @@ impl RenderWindow {
             }
 
             let image = self.renderer.get_image_u8();
-            self.window
-                .set_image(image, "Rendering")
-                .expect("Unable to update image in window");
+            if let Some(e) = self.window.set_image(image, "Rendering").err() {
+                eprintln!("{}\nSkipping this image!", e);
+            }
 
             if self.renderer.is_done() {
                 self.renderer.reset_progress();
