@@ -3,6 +3,9 @@ use crate::Spectrum;
 
 use crate::floats;
 use bitflags::_core::mem::swap;
+use crate::render::bxdf::{BxDF, BxDFSample, BxDFType};
+use crate::render::bxdf;
+use ultraviolet::{Vec2, Vec3};
 
 #[inline(always)]
 #[must_use]
@@ -130,5 +133,54 @@ pub struct FresnelNoOp;
 impl Fresnel for FresnelNoOp {
     fn evaluate(&self, _: f32) -> Spectrum {
         Spectrum::white()
+    }
+}
+
+pub struct FresnelSpecular {
+    r: Spectrum,
+    t: Spectrum,
+    fresnel: Dielectric,
+}
+
+impl FresnelSpecular {
+    pub fn new(r: Spectrum, t: Spectrum, fresnel: Dielectric) -> Self {
+        Self { r, t, fresnel }
+    }
+}
+
+impl BxDF for FresnelSpecular {
+    fn get_type(&self) -> BxDFType {
+        BxDFType::REFLECTION | BxDFType::SPECULAR | BxDFType::TRANSMISSION
+    }
+
+    fn evaluate(&self, _: &Vec3, _: &Vec3) -> Spectrum {
+        Spectrum::black()
+    }
+
+    fn sample(&self, outgoing: &Vec3, sample: &Vec2) -> BxDFSample {
+        let f = fresnel_dielectric(bxdf::cos_theta(outgoing), self.fresnel.eta_i, self.fresnel.eta_t);
+
+        if sample.x < f {
+            let incident = Vec3::new(-outgoing.x, -outgoing.y, outgoing.z);
+            let pdf = f;
+            let spectrum = self.r * (f / bxdf::cos_theta(&incident).abs());
+
+            BxDFSample::new(spectrum, incident, pdf)
+        } else {
+            let entering = bxdf::cos_theta(outgoing) > 0.0;
+
+            let (eta_i, eta_t, n) = if entering {
+                (self.fresnel.eta_i, self.fresnel.eta_t, Vec3::unit_y())
+            } else {
+                (self.fresnel.eta_t, self.fresnel.eta_i, -Vec3::unit_y())
+            };
+
+            let incident = outgoing.refracted(n, eta_i / eta_t);
+            let cos_i = bxdf::cos_theta(&incident);
+            let pdf = 1.0 - f;
+            let spectrum = self.t * (pdf / cos_i.abs());
+
+            BxDFSample::new(spectrum, incident, pdf)
+        }
     }
 }

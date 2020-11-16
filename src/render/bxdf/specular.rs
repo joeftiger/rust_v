@@ -60,13 +60,13 @@ impl BxDF for SpecularTransmission {
     fn sample(&self, outgoing: &Vec3, _sample: &Vec2) -> BxDFSample {
         let entering = bxdf::cos_theta(outgoing) > 0.0;
 
-        let (ei, et, n) = if entering {
+        let (eta_i, eta_t, n) = if entering {
             (self.fresnel.eta_i, self.fresnel.eta_t, Vec3::unit_y())
         } else {
             (self.fresnel.eta_t, self.fresnel.eta_i, -Vec3::unit_y())
         };
 
-        let incident = outgoing.refracted(n, ei / et);
+        let incident = outgoing.refracted(n, eta_i / eta_t);
         let cos_i = bxdf::cos_theta(&incident);
 
         let f = Spectrum::new_const(1.0) - self.fresnel.evaluate(cos_i);
