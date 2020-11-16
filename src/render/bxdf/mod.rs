@@ -1,6 +1,7 @@
 pub mod bsdf;
 pub mod fresnel;
 pub mod lambertian;
+pub mod oren_nayar;
 pub mod sampling;
 pub mod specular;
 
