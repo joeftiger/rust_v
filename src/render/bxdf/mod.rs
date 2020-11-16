@@ -168,7 +168,8 @@ pub trait BxDF {
     /// # Results
     /// * `bool` - Whether the type matches
     fn is_type(&self, t: BxDFType) -> bool {
-        (self.get_type() & t) == t
+        let st = self.get_type();
+        (st & t) == st
     }
 
     /// # Summary
