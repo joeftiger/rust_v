@@ -24,14 +24,14 @@ pub fn concentric_sample_disk(sample: &Vec2) -> Vec2 {
     }
 
     // Apply concentric mapping to point
-    let theta;
     let r;
+    let theta;
     if offset.x.abs() > offset.y.abs() {
-        theta = FRAC_PI_4 * offset.y / offset.x;
         r = offset.x;
+        theta = FRAC_PI_4 * offset.y / offset.x;
     } else {
-        theta = FRAC_PI_2 - FRAC_PI_4 * offset.x / offset.y;
         r = offset.y;
+        theta = FRAC_PI_2 - FRAC_PI_4 * offset.x / offset.y;
     }
 
     r * Vec2::new(theta.cos(), theta.sin())
@@ -46,13 +46,8 @@ pub fn concentric_sample_disk(sample: &Vec2) -> Vec2 {
 /// # Results
 /// * `Vec3` - A point on the hemisphere around `(0, 0, 1)`
 pub fn cos_sample_hemisphere(sample: &Vec2) -> Vec3 {
-    debug_assert!(sample.x >= 0.0);
-    debug_assert!(sample.x < 1.0);
-    debug_assert!(sample.y >= 0.0);
-    debug_assert!(sample.y < 1.0);
-
     let d = concentric_sample_disk(sample);
-    let z = f32::sqrt(f32::max(0.0, 1.0 - d.x * d.x - d.y * d.y));
+    let z = 0.0f32.max(1.0 - d.x * d.x - d.y * d.y).sqrt();
 
     Vec3::new(d.x, d.y, z)
 }

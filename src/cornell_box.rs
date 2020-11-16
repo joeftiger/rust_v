@@ -4,7 +4,7 @@ use crate::geometry::capsule::Capsule;
 use crate::geometry::sphere::Sphere;
 use crate::geometry::tube::Tube;
 use crate::render::bxdf::bsdf::BSDF;
-use crate::render::bxdf::lambertian::LambertianReflection;
+use crate::render::bxdf::oren_nayar::OrenNayar;
 use crate::render::camera::Camera;
 use crate::render::light::{Light, PointLight};
 use crate::render::scene::Scene;
@@ -21,6 +21,8 @@ pub const FRONT: f32 = 0.0;
 pub const THICKNESS: f32 = 0.001;
 pub const RADIUS: f32 = 1.0;
 pub const FOVY: f32 = 70.0;
+
+pub const SIGMA: f32 = 20.0;
 
 pub fn create(width: u32, height: u32) -> (Scene, Camera) {
     (create_box(), create_camera(width, height))
@@ -90,7 +92,7 @@ fn sphere() -> SceneObject {
     let sphere = Sphere::new(center, RADIUS);
 
     let color = Spectrum::blue();
-    let bxdf = LambertianReflection::new(color);
+    let bxdf = OrenNayar::new(color, SIGMA);
     let bsdf = BSDF::new(vec![Box::new(bxdf)]);
 
     SceneObject::new(Box::new(sphere), bsdf)
@@ -111,7 +113,7 @@ fn capsule() -> SceneObject {
     let capsule = Capsule::new(from, to, RADIUS);
 
     let color = Spectrum::white() * 0.75;
-    let bxdf = LambertianReflection::new(color);
+    let bxdf = OrenNayar::new(color, SIGMA);
     let bsdf = BSDF::new(vec![Box::new(bxdf)]);
 
     SceneObject::new(Box::new(capsule), bsdf)
@@ -128,7 +130,7 @@ fn tube() -> SceneObject {
 
     let tube = Tube::new(&points, radius);
     let color = (Spectrum::red() + Spectrum::blue()) / 2.0;
-    let bxdf = LambertianReflection::new(color);
+    let bxdf = OrenNayar::new(color, SIGMA);
     let bsdf = BSDF::new(vec![Box::new(bxdf)]);
 
     SceneObject::new(Box::new(tube), bsdf)
@@ -145,7 +147,7 @@ fn left_wall() -> SceneObject {
     );
 
     let color = Spectrum::red();
-    let bxdf = LambertianReflection::new(color);
+    let bxdf = OrenNayar::new(color, SIGMA);
     let bsdf = BSDF::new(vec![Box::new(bxdf)]);
 
     SceneObject::new(Box::new(aabb), bsdf)
@@ -158,7 +160,7 @@ fn right_wall() -> SceneObject {
     );
 
     let color = Spectrum::green();
-    let bxdf = LambertianReflection::new(color);
+    let bxdf = OrenNayar::new(color, SIGMA);
     let bsdf = BSDF::new(vec![Box::new(bxdf)]);
 
     SceneObject::new(Box::new(aabb), bsdf)
@@ -175,7 +177,7 @@ fn back_wall() -> SceneObject {
     );
 
     let color = Spectrum::white();
-    let bxdf = LambertianReflection::new(color);
+    let bxdf = OrenNayar::new(color, SIGMA);
     let bsdf = BSDF::new(vec![Box::new(bxdf)]);
 
     SceneObject::new(Box::new(aabb), bsdf)
@@ -192,7 +194,7 @@ fn floor() -> SceneObject {
     );
 
     let color = Spectrum::white();
-    let bxdf = LambertianReflection::new(color);
+    let bxdf = OrenNayar::new(color, SIGMA);
     let bsdf = BSDF::new(vec![Box::new(bxdf)]);
 
     SceneObject::new(Box::new(aabb), bsdf)
@@ -205,7 +207,7 @@ fn ceiling() -> SceneObject {
     );
 
     let color = Spectrum::white();
-    let bxdf = LambertianReflection::new(color);
+    let bxdf = OrenNayar::new(color, SIGMA);
     let bsdf = BSDF::new(vec![Box::new(bxdf)]);
 
     SceneObject::new(Box::new(aabb), bsdf)
