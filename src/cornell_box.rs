@@ -1,6 +1,5 @@
 use crate::render::bxdf::bsdf::BSDF;
 use crate::render::bxdf::fresnel::FresnelNoOp;
-use crate::render::bxdf::lambertian::LambertianReflection;
 use crate::render::bxdf::oren_nayar::OrenNayar;
 use crate::render::bxdf::specular::SpecularReflection;
 use crate::render::camera::Camera;
@@ -80,7 +79,7 @@ fn light() -> Box<dyn Light> {
         (FRONT + BACK_WALL) / 2.0,
     );
 
-    let color = Spectrum::white() * 50.0;
+    let color = Spectrum::white() * 30.0;
 
     Box::new(PointLight::new(point, color))
 }
@@ -97,13 +96,8 @@ fn sphere() -> SceneObject {
 
     let color = Spectrum::blue();
     let oren_nayar = OrenNayar::new(color, SIGMA);
-    let lamb_refl = LambertianReflection::new(color);
     let spec_refl = SpecularReflection::new(color, Rc::new(FresnelNoOp));
-    let bsdf = BSDF::new(vec![
-        Box::new(oren_nayar),
-        Box::new(lamb_refl),
-        Box::new(spec_refl),
-    ]);
+    let bsdf = BSDF::new(vec![Box::new(oren_nayar), Box::new(spec_refl)]);
 
     SceneObject::new(Box::new(sphere), bsdf)
 }
@@ -124,13 +118,8 @@ fn capsule() -> SceneObject {
 
     let color = Spectrum::white() * 0.75;
     let oren_nayar = OrenNayar::new(color, SIGMA);
-    let lamb_refl = LambertianReflection::new(color);
     let spec_refl = SpecularReflection::new(color, Rc::new(FresnelNoOp));
-    let bsdf = BSDF::new(vec![
-        Box::new(oren_nayar),
-        Box::new(lamb_refl),
-        Box::new(spec_refl),
-    ]);
+    let bsdf = BSDF::new(vec![Box::new(oren_nayar), Box::new(spec_refl)]);
 
     SceneObject::new(Box::new(capsule), bsdf)
 }
@@ -148,13 +137,8 @@ fn tube() -> SceneObject {
 
     let color = (Spectrum::red() + Spectrum::blue()) / 2.0;
     let oren_nayar = OrenNayar::new(color, SIGMA);
-    let lamb_refl = LambertianReflection::new(color);
     let spec_refl = SpecularReflection::new(color, Rc::new(FresnelNoOp));
-    let bsdf = BSDF::new(vec![
-        Box::new(oren_nayar),
-        Box::new(lamb_refl),
-        Box::new(spec_refl),
-    ]);
+    let bsdf = BSDF::new(vec![Box::new(oren_nayar), Box::new(spec_refl)]);
 
     SceneObject::new(Box::new(tube), bsdf)
 }
@@ -170,8 +154,9 @@ fn left_wall() -> SceneObject {
     );
 
     let color = Spectrum::red();
-    let bxdf = OrenNayar::new(color, SIGMA);
-    let bsdf = BSDF::new(vec![Box::new(bxdf)]);
+    let oren_nayar = OrenNayar::new(color, SIGMA);
+    let spec_refl = SpecularReflection::new(color, Rc::new(FresnelNoOp));
+    let bsdf = BSDF::new(vec![Box::new(oren_nayar), Box::new(spec_refl)]);
 
     SceneObject::new(Box::new(aabb), bsdf)
 }
@@ -183,8 +168,9 @@ fn right_wall() -> SceneObject {
     );
 
     let color = Spectrum::green();
-    let bxdf = OrenNayar::new(color, SIGMA);
-    let bsdf = BSDF::new(vec![Box::new(bxdf)]);
+    let oren_nayar = OrenNayar::new(color, SIGMA);
+    let spec_refl = SpecularReflection::new(color, Rc::new(FresnelNoOp));
+    let bsdf = BSDF::new(vec![Box::new(oren_nayar), Box::new(spec_refl)]);
 
     SceneObject::new(Box::new(aabb), bsdf)
 }
@@ -200,8 +186,9 @@ fn back_wall() -> SceneObject {
     );
 
     let color = Spectrum::white();
-    let bxdf = OrenNayar::new(color, SIGMA);
-    let bsdf = BSDF::new(vec![Box::new(bxdf)]);
+    let oren_nayar = OrenNayar::new(color, SIGMA);
+    let spec_refl = SpecularReflection::new(color, Rc::new(FresnelNoOp));
+    let bsdf = BSDF::new(vec![Box::new(oren_nayar), Box::new(spec_refl)]);
 
     SceneObject::new(Box::new(aabb), bsdf)
 }
@@ -217,8 +204,9 @@ fn floor() -> SceneObject {
     );
 
     let color = Spectrum::white();
-    let bxdf = OrenNayar::new(color, SIGMA);
-    let bsdf = BSDF::new(vec![Box::new(bxdf)]);
+    let oren_nayar = OrenNayar::new(color, SIGMA);
+    let spec_refl = SpecularReflection::new(color, Rc::new(FresnelNoOp));
+    let bsdf = BSDF::new(vec![Box::new(oren_nayar), Box::new(spec_refl)]);
 
     SceneObject::new(Box::new(aabb), bsdf)
 }
@@ -230,8 +218,9 @@ fn ceiling() -> SceneObject {
     );
 
     let color = Spectrum::white();
-    let bxdf = OrenNayar::new(color, SIGMA);
-    let bsdf = BSDF::new(vec![Box::new(bxdf)]);
+    let oren_nayar = OrenNayar::new(color, SIGMA);
+    let spec_refl = SpecularReflection::new(color, Rc::new(FresnelNoOp));
+    let bsdf = BSDF::new(vec![Box::new(oren_nayar), Box::new(spec_refl)]);
 
     SceneObject::new(Box::new(aabb), bsdf)
 }

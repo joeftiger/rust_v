@@ -69,6 +69,7 @@ impl RenderWindow {
     }
 
     fn render_loop(&mut self, wait_key: Duration, render_time: Duration) {
+        let mut iteration = 1;
         while let Ok(event) = self.window.wait_key(wait_key) {
             if let Some(event) = event {
                 self.handle_input(event.key);
@@ -97,7 +98,9 @@ impl RenderWindow {
             }
 
             if self.renderer.is_done() {
+                println!("Iteration done: {}", iteration);
                 self.renderer.reset_progress();
+                iteration += 1;
             }
         }
     }
