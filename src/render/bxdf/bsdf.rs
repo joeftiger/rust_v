@@ -46,9 +46,9 @@ impl BSDF {
 
         // transmission or reflection
         if same_hemisphere(&incident, &outgoing) {
-            types = !types & BxDFType::TRANSMISSION;
+            types &= !BxDFType::TRANSMISSION;
         } else {
-            types = !types & BxDFType::REFLECTION;
+            types &= !BxDFType::REFLECTION;
         }
 
         self.bxdfs
