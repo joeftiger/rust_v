@@ -459,13 +459,13 @@ mod sphere {
     }
 
     #[test]
-    fn intersect_inner_not() {
+    fn intersect_inner() {
         let sphere = Sphere::default();
         let ray = Ray::new(Vec3::zero(), Vec3::unit_x());
 
         let intersection = sphere.intersect(&ray);
 
-        assert!(intersection.is_none());
+        assert!(intersection.is_some());
     }
 
     #[test]
