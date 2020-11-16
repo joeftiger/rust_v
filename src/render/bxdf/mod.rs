@@ -9,6 +9,7 @@ use crate::floats;
 
 use crate::render::bxdf::sampling::cos_sample_hemisphere;
 use crate::Spectrum;
+use bitflags::_core::fmt::Debug;
 use std::f32::consts::FRAC_1_PI;
 use ultraviolet::{Rotor3, Vec2, Vec3};
 
@@ -154,7 +155,7 @@ impl BxDFSample {
 /// The common base shared between BRDFs and BTDFs.
 /// Provides methods for evaluating and sampling the distribution function for pairs of directions
 /// at an intersection
-pub trait BxDF {
+pub trait BxDF: Debug {
     /// # Summary
     /// Some light transport algorithms need to distinguish different BxDFTypes.
     ///
@@ -227,12 +228,14 @@ pub trait BxDF {
     }
 }
 
+#[derive(Debug)]
 pub struct ScaledBxDF {
     bxdf: Box<dyn BxDF>,
     scale: Spectrum,
 }
 
 /// A scaled BxDF
+///
 impl ScaledBxDF {
     pub fn new(bxdf: Box<dyn BxDF>, scale: Spectrum) -> Self {
         Self { bxdf, scale }

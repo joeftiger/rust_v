@@ -4,6 +4,7 @@ use crate::{floats, Spectrum};
 use std::f32::consts::FRAC_1_PI;
 use ultraviolet::Vec3;
 
+#[derive(Debug)]
 pub struct OrenNayar {
     r: Spectrum,
     a: f32,

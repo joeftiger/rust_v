@@ -27,7 +27,7 @@ impl BSDF {
 
     #[allow(clippy::borrowed_box)]
     fn random_matching_bxdf(&self, t: BxDFType, rand: f32) -> Option<&Box<dyn BxDF>> {
-        let count = self.num_types(t);
+        let count = self.num_types(t) + 1;
         let index = (rand * count as f32) as usize;
 
         self.bxdfs.iter().filter(|bxdf| bxdf.is_type(t)).nth(index)

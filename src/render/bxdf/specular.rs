@@ -6,6 +6,7 @@ use crate::Spectrum;
 use std::rc::Rc;
 use ultraviolet::{Vec2, Vec3};
 
+#[derive(Debug)]
 pub struct SpecularReflection {
     r: Spectrum,
     fresnel: Rc<dyn Fresnel>,
@@ -37,6 +38,7 @@ impl BxDF for SpecularReflection {
     }
 }
 
+#[derive(Debug)]
 pub struct SpecularTransmission {
     t: Spectrum,
     fresnel: Rc<Dielectric>,

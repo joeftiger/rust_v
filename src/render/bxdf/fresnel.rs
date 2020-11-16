@@ -4,6 +4,7 @@ use crate::Spectrum;
 use crate::floats;
 use crate::render::bxdf;
 use crate::render::bxdf::{BxDF, BxDFSample, BxDFType};
+use bitflags::_core::fmt::Debug;
 use bitflags::_core::mem::swap;
 use ultraviolet::{Vec2, Vec3};
 
@@ -81,10 +82,11 @@ pub fn fresnel_conductor(
     (r_p + r_s) / 2.0
 }
 
-pub trait Fresnel {
+pub trait Fresnel: Debug {
     fn evaluate(&self, cos_i: f32) -> Spectrum;
 }
 
+#[derive(Debug)]
 pub struct Dielectric {
     pub eta_i: f32,
     pub eta_t: f32,
@@ -104,6 +106,7 @@ impl Fresnel for Dielectric {
     }
 }
 
+#[derive(Debug)]
 pub struct Conductor {
     pub eta_t: Spectrum,
     pub eta_i: Spectrum,
@@ -128,6 +131,7 @@ impl Fresnel for Conductor {
     }
 }
 
+#[derive(Debug)]
 pub struct FresnelNoOp;
 
 impl Fresnel for FresnelNoOp {
@@ -136,6 +140,7 @@ impl Fresnel for FresnelNoOp {
     }
 }
 
+#[derive(Debug)]
 pub struct FresnelSpecular {
     r: Spectrum,
     t: Spectrum,

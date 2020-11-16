@@ -3,6 +3,7 @@ use crate::Spectrum;
 use std::f32::consts::FRAC_1_PI;
 use ultraviolet::Vec3;
 
+#[derive(Debug)]
 pub struct LambertianReflection {
     r: Spectrum,
 }
@@ -23,6 +24,7 @@ impl BxDF for LambertianReflection {
     }
 }
 
+#[derive(Debug)]
 pub struct LambertianTransmission {
     t: Spectrum,
 }
