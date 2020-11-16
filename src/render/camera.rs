@@ -1,4 +1,4 @@
-use crate::geometry::ray::Ray;
+use geometry::ray::Ray;
 use ultraviolet::Vec3;
 
 /// A camera consists of

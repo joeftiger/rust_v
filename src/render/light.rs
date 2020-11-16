@@ -3,9 +3,10 @@
 
 use ultraviolet::Vec3;
 
-use crate::geometry::ray::Ray;
+use geometry::ray::Ray;
 use crate::render::scene::{Scene, SceneIntersection};
-use crate::{floats, Spectrum};
+use crate::{Spectrum};
+use util::floats;
 
 bitflags! {
     pub struct LightType: u8 {

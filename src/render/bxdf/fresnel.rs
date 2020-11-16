@@ -1,7 +1,7 @@
-use crate::color::Color;
+use color::Color;
 use crate::Spectrum;
 
-use crate::floats;
+use util::floats;
 use crate::render::bxdf;
 use crate::render::bxdf::{BxDF, BxDFSample, BxDFType};
 use bitflags::_core::fmt::Debug;

@@ -1,13 +1,13 @@
-use crate::geometry::aabb::Aabb;
-use crate::geometry::ray::Ray;
-use crate::geometry::{Container, Geometry, GeometryInfo};
+use geometry::aabb::Aabb;
+use geometry::ray::Ray;
+use geometry::{Container, Geometry, GeometryInfo};
 use crate::render::light::Light;
 use crate::render::scene_objects::SceneObject;
 use std::rc::Rc;
 use ultraviolet::Vec3;
 
 /// Consists of
-/// - info: [GeometryInfo](../geometry/struct.GeometryInfo.html)
+/// - info: [GeometryInfo](../geometry_leg/struct.GeometryInfo.html)
 pub struct SceneIntersection {
     pub info: GeometryInfo,
     pub obj: Rc<SceneObject>,

@@ -49,9 +49,5 @@ pub fn cos_sample_hemisphere(sample: &Vec2) -> Vec3 {
     let d = concentric_sample_disk(sample);
     let z = 0.0f32.max(1.0 - d.x * d.x - d.y * d.y).sqrt();
 
-    // FIXME: Never gets, called, wth?
-    println!("Sample:\t{:?}", sample);
-    println!("Disk:\t{:?}", d);
-
     Vec3::new(d.x, d.y, z)
 }

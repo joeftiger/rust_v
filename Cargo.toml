@@ -24,6 +24,10 @@ show-image = { version = "", features = ["image", "save"] }
 # linear algebra
 ultraviolet = { version = "", features = ["int" ] }
 
+geometry = { path = "./src/geometry" }
+color = { path = "./src/color" }
+util = { path = "./src/util" }
+
 [dev-dependencies]
 criterion= ""
 
@@ -36,15 +40,14 @@ name = "bxdf_inlines"
 harness = false
 
 [profile.release]
-codegen-units = 1
+#codegen-units = 1
 opt-level = 3
-lto = true
+#lto = true
 incremental = true
 
 [profile.release.package."*"]
 codegen-units = 1
 opt-level = 3
-
 
 [profile.dev]
 opt-level = 1

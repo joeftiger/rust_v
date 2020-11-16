@@ -1,6 +1,6 @@
-use crate::geometry::aabb::Aabb;
-use crate::geometry::ray::Ray;
-use crate::geometry::{Geometry, GeometryInfo};
+use crate::aabb::Aabb;
+use crate::ray::Ray;
+use crate::{Geometry, GeometryInfo};
 use ultraviolet::Vec3;
 
 #[derive(Debug, PartialEq, Default)]

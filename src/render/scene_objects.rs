@@ -1,6 +1,6 @@
-use crate::geometry::aabb::Aabb;
-use crate::geometry::ray::Ray;
-use crate::geometry::{Geometry, GeometryInfo};
+use geometry::aabb::Aabb;
+use geometry::ray::Ray;
+use geometry::{Geometry, GeometryInfo};
 use crate::render::bxdf::bsdf::BSDF;
 
 pub struct SceneObject {

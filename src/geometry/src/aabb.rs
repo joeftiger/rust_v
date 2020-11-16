@@ -1,6 +1,6 @@
-use crate::floats;
-use crate::geometry::ray::Ray;
-use crate::geometry::{ComparableExt, Container, Geometry, GeometryInfo};
+use util::floats;
+use crate::ray::Ray;
+use crate::{ComparableExt, Container, Geometry, GeometryInfo};
 use ultraviolet::Vec3;
 
 #[derive(Clone, Debug, PartialEq)]
@@ -130,7 +130,7 @@ impl Geometry for Aabb {
         // forward
         closest = compare_closest(max.z, Vec3::unit_z(), closest);
 
-        let closest = closest.expect("Hit point not in range of any side");
+        let closest = closest?;
         let mut normal = closest.1;
 
         // Choose the normal's orientation to be opposite the ray's

@@ -1,13 +1,8 @@
-use crate::floats;
-use crate::geometry::aabb::Aabb;
-use crate::geometry::ray::{Ray, Ray4};
-use crate::util::MinMaxExt;
-use ultraviolet::{f32x4, Vec3, Vec3x4};
-
 pub mod aabb;
 pub mod capsule;
 pub mod cube;
 pub mod cylinder;
+pub mod formats;
 pub mod lens;
 pub mod mesh;
 pub mod plane;
@@ -16,6 +11,11 @@ pub mod ray;
 pub mod sphere;
 mod tests;
 pub mod tube;
+
+use crate::aabb::Aabb;
+use crate::ray::{Ray, Ray4};
+use ultraviolet::{f32x4, Vec3, Vec3x4};
+use util::{floats, MinMaxExt};
 
 macro_rules! geometry_info {
     ($($name:ident => $ray:ident, $float:ident, $vec:ident), +) => {
@@ -38,11 +38,10 @@ macro_rules! geometry_info {
                 }
 
                 /// Creates a ray from `self.point` into the given direction, offset by `floats::EPSILON`.
-                /// TODO: Offset by `normal * epsilon` or just make ray start at `epsilon`?
                 pub fn create_ray(&self, direction: $vec) -> $ray {
                     let t_start = floats::EPSILON.into();
                     let t_end = f32::INFINITY.into();
-                    let origin = self.point + self.normal * t_start;
+                    let origin = self.point + self.normal * $float::from(floats::BIG_EPSILON);
                     $ray::with(origin, direction, t_start, t_end)
                 }
             }
@@ -105,8 +104,8 @@ pub trait Geometry {
 /// For example:
 /// ```rust
 /// use ultraviolet::Vec3;
-/// use rust_v::geometry::AngularExt;
-/// use rust_v::floats;
+/// use geometry::AngularExt;
+/// use util::floats;
 ///
 /// let v1 = Vec3::unit_x();
 /// let v2 = Vec3::unit_y();
@@ -131,7 +130,7 @@ impl AngularExt for Vec3 {
 /// A trait that allows ceiling / flooring itself, such that e.g.:
 /// ```rust
 /// use ultraviolet::Vec3;
-/// use rust_v::geometry::CeilFloorExt;
+/// use geometry::CeilFloorExt;
 ///
 /// let v = Vec3::new(0.7, 0.7, 0.7);
 ///
@@ -167,7 +166,7 @@ impl CeilFloorExt for Vec3 {
 /// For example:
 /// ```rust
 /// use ultraviolet::Vec3;
-/// use rust_v::geometry::InversibleExt;
+/// use geometry::InversibleExt;
 ///
 /// let v = Vec3::one() * 2.0;
 /// let inverse = v.inversed();
@@ -195,7 +194,7 @@ impl InversibleExt for Vec3 {
 /// For example:
 /// ```rust
 /// use ultraviolet::Vec3;
-/// use rust_v::geometry::ComparableExt;
+/// use geometry::ComparableExt;
 ///
 /// let v = Vec3::zero();
 /// let other = Vec3::one();
@@ -246,7 +245,7 @@ impl ComparableExt for Vec3 {
 /// For example:
 /// ```rust
 /// use ultraviolet::Vec3;
-/// use rust_v::geometry::DistanceExt;
+/// use geometry::DistanceExt;
 ///
 /// let v = Vec3::zero();
 /// let other = Vec3::unit_x();

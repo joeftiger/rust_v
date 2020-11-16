@@ -1,8 +1,8 @@
 use crate::floats;
-use crate::geometry::aabb::Aabb;
-use crate::geometry::ray::Ray;
-use crate::geometry::{AngularExt, Container, Geometry, GeometryInfo};
-use crate::util::MinMaxExt;
+use crate::aabb::Aabb;
+use crate::ray::Ray;
+use crate::{AngularExt, Container, Geometry, GeometryInfo};
+use util::MinMaxExt;
 use ultraviolet::Vec3;
 
 #[derive(Debug, PartialEq)]

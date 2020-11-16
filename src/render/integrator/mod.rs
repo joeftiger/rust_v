@@ -1,4 +1,4 @@
-use crate::color::Color;
+use color::Color;
 use crate::render::bxdf::BxDFType;
 use crate::render::sampler::Sampler;
 use crate::render::scene::{Scene, SceneIntersection};

@@ -1,10 +1,11 @@
-use crate::color::Color;
+use color::Color;
 use crate::render::bxdf;
 use crate::render::bxdf::fresnel::{Dielectric, Fresnel};
 use crate::render::bxdf::{BxDF, BxDFSample, BxDFType};
 use crate::Spectrum;
 use std::rc::Rc;
 use ultraviolet::{Vec2, Vec3};
+use crate::render::bxdf::sampling::cos_sample_hemisphere;
 
 #[derive(Debug)]
 pub struct SpecularReflection {
@@ -28,7 +29,10 @@ impl BxDF for SpecularReflection {
     }
 
     fn sample(&self, outgoing: &Vec3, _sample: &Vec2) -> BxDFSample {
-        let incident = Vec3::new(-outgoing.x, -outgoing.y, outgoing.z);
+        let mut incident = Vec3::new(-outgoing.x, -outgoing.y, outgoing.z);
+        // TODO: REMOVE THESE TWO LINES (originally not in there)
+        incident += cos_sample_hemisphere(_sample) * _sample.component_min() / _sample.component_max();
+        incident.normalize();
 
         let cos_i = bxdf::cos_theta(&incident);
         let spectrum = self.fresnel.evaluate(cos_i) * self.r / cos_i.abs();

@@ -1,9 +1,9 @@
-use crate::geometry::aabb::Aabb;
-use crate::geometry::cylinder::Cylinder;
-use crate::geometry::ray::Ray;
-use crate::geometry::sphere::Sphere;
-use crate::geometry::{Container, Geometry, GeometryInfo};
-use crate::util::MinMaxExt;
+use crate::aabb::Aabb;
+use crate::cylinder::Cylinder;
+use crate::ray::Ray;
+use crate::sphere::Sphere;
+use crate::{Container, Geometry, GeometryInfo};
+use util::MinMaxExt;
 use ultraviolet::Vec3;
 
 pub struct Capsule {

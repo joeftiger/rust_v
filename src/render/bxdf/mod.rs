@@ -5,7 +5,7 @@ pub mod oren_nayar;
 pub mod sampling;
 pub mod specular;
 
-use crate::floats;
+use util::floats;
 
 use crate::render::bxdf::sampling::cos_sample_hemisphere;
 use crate::Spectrum;

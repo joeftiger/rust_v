@@ -1,10 +1,10 @@
 use ultraviolet::Vec3;
 
-use crate::geometry::aabb::Aabb;
-use crate::geometry::ray::Ray;
-use crate::geometry::{Container, Geometry, GeometryInfo};
-use crate::math::solve_quadratic;
-use crate::util::MinMaxExt;
+use crate::aabb::Aabb;
+use crate::ray::Ray;
+use crate::{Container, Geometry, GeometryInfo};
+use util::math::solve_quadratic;
+use util::MinMaxExt;
 
 #[derive(Debug, PartialEq)]
 pub struct Sphere {

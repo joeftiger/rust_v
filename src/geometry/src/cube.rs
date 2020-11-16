@@ -4,9 +4,9 @@
 
 use ultraviolet::{Mat4, Vec3};
 
-use crate::geometry::aabb::Aabb;
-use crate::geometry::ray::Ray;
-use crate::geometry::{Container, Geometry, GeometryInfo, InversibleExt};
+use crate::aabb::Aabb;
+use crate::ray::Ray;
+use crate::{Container, Geometry, GeometryInfo, InversibleExt};
 
 pub struct Cube {
     world_to_local: Mat4,

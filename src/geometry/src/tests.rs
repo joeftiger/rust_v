@@ -1,7 +1,7 @@
 #[cfg(test)]
 #[allow(dead_code)]
 mod util {
-    use crate::geometry::ray::Ray;
+    use crate::ray::Ray;
     use ultraviolet::Vec3;
 
     pub fn unit_vec3s() -> [Vec3; 6] {
@@ -27,9 +27,9 @@ mod util {
 #[cfg(test)]
 mod aabb {
     use crate::floats;
-    use crate::geometry::aabb::*;
-    use crate::geometry::ray::Ray;
-    use crate::geometry::{Container, Geometry};
+    use crate::aabb::*;
+    use crate::ray::Ray;
+    use crate::{Container, Geometry};
     use ultraviolet::Vec3;
 
     #[test]
@@ -315,9 +315,9 @@ mod aabb {
 
 #[cfg(test)]
 mod point {
-    use crate::geometry::point::Point;
-    use crate::geometry::ray::Ray;
-    use crate::geometry::Geometry;
+    use crate::point::Point;
+    use crate::ray::Ray;
+    use crate::Geometry;
     use ultraviolet::Vec3;
 
     #[test]
@@ -360,10 +360,10 @@ mod point {
 #[cfg(test)]
 mod sphere {
     use crate::floats;
-    use crate::geometry::aabb::Aabb;
-    use crate::geometry::ray::Ray;
-    use crate::geometry::sphere::Sphere;
-    use crate::geometry::{Container, Geometry};
+    use crate::aabb::Aabb;
+    use crate::ray::Ray;
+    use crate::sphere::Sphere;
+    use crate::{Container, Geometry};
     use ultraviolet::Vec3;
 
     #[test]

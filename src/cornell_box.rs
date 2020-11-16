@@ -1,8 +1,8 @@
-use crate::color::Color;
-use crate::geometry::aabb::Aabb;
-use crate::geometry::capsule::Capsule;
-use crate::geometry::sphere::Sphere;
-use crate::geometry::tube::Tube;
+use color::Color;
+use geometry::aabb::Aabb;
+use geometry::capsule::Capsule;
+use geometry::sphere::Sphere;
+use geometry::tube::Tube;
 use crate::render::bxdf::bsdf::BSDF;
 use crate::render::bxdf::fresnel::FresnelNoOp;
 use crate::render::bxdf::lambertian::LambertianReflection;

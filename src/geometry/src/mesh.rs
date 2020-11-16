@@ -1,11 +1,11 @@
-use crate::floats;
 use crate::formats::obj::ObjFile;
-use crate::geometry::aabb::Aabb;
-use crate::geometry::ray::Ray;
-use crate::geometry::{Geometry, GeometryInfo};
+use crate::aabb::Aabb;
+use crate::ray::Ray;
+use crate::{Geometry, GeometryInfo};
 use std::ops::Deref;
 use std::rc::Rc;
 use ultraviolet::Vec3;
+use util::floats;
 
 pub struct Triangle {
     a: Rc<Vec3>,

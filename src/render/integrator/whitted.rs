@@ -1,4 +1,4 @@
-use crate::color::Color;
+use color::Color;
 use crate::render::bxdf::BxDFType;
 use crate::render::integrator::Integrator;
 use crate::render::sampler::Sampler;
