@@ -1,9 +1,9 @@
-use color::Color;
 use crate::render::camera::Camera;
 use crate::render::integrator::Integrator;
 use crate::render::sampler::Sampler;
 use crate::render::scene::Scene;
 use crate::Spectrum;
+use color::Color;
 use image::{ImageBuffer, Rgb};
 use std::ops::DerefMut;
 

@@ -19,7 +19,7 @@ impl BxDF for LambertianReflection {
         BxDFType::REFLECTION | BxDFType::DIFFUSE
     }
 
-    fn evaluate(&self, _incident: &Vec3, _outgoing: &Vec3) -> Spectrum {
+    fn evaluate(&self, _: &Vec3, _: &Vec3) -> Spectrum {
         self.r * FRAC_1_PI
     }
 }
@@ -40,7 +40,7 @@ impl BxDF for LambertianTransmission {
         BxDFType::DIFFUSE | BxDFType::TRANSMISSION
     }
 
-    fn evaluate(&self, _incident: &Vec3, _outgoing: &Vec3) -> Spectrum {
+    fn evaluate(&self, _: &Vec3, _: &Vec3) -> Spectrum {
         self.t * FRAC_1_PI
     }
 }

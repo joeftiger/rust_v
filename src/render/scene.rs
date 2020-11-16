@@ -1,8 +1,8 @@
+use crate::render::light::Light;
+use crate::render::scene_objects::SceneObject;
 use geometry::aabb::Aabb;
 use geometry::ray::Ray;
 use geometry::{Container, Geometry, GeometryInfo};
-use crate::render::light::Light;
-use crate::render::scene_objects::SceneObject;
 use std::rc::Rc;
 use ultraviolet::Vec3;
 

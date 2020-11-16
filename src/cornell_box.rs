@@ -1,8 +1,3 @@
-use color::Color;
-use geometry::aabb::Aabb;
-use geometry::capsule::Capsule;
-use geometry::sphere::Sphere;
-use geometry::tube::Tube;
 use crate::render::bxdf::bsdf::BSDF;
 use crate::render::bxdf::fresnel::FresnelNoOp;
 use crate::render::bxdf::lambertian::LambertianReflection;
@@ -13,6 +8,11 @@ use crate::render::light::{Light, PointLight};
 use crate::render::scene::Scene;
 use crate::render::scene_objects::SceneObject;
 use crate::Spectrum;
+use color::Color;
+use geometry::aabb::Aabb;
+use geometry::capsule::Capsule;
+use geometry::sphere::Sphere;
+use geometry::tube::Tube;
 use std::rc::Rc;
 use ultraviolet::Vec3;
 
@@ -98,7 +98,7 @@ fn sphere() -> SceneObject {
     let color = Spectrum::blue();
     let oren_nayar = OrenNayar::new(color, SIGMA);
     let lamb_refl = LambertianReflection::new(color);
-    let spec_refl = SpecularReflection::new(&color, Rc::new(FresnelNoOp));
+    let spec_refl = SpecularReflection::new(color, Rc::new(FresnelNoOp));
     let bsdf = BSDF::new(vec![
         Box::new(oren_nayar),
         Box::new(lamb_refl),
@@ -125,7 +125,7 @@ fn capsule() -> SceneObject {
     let color = Spectrum::white() * 0.75;
     let oren_nayar = OrenNayar::new(color, SIGMA);
     let lamb_refl = LambertianReflection::new(color);
-    let spec_refl = SpecularReflection::new(&color, Rc::new(FresnelNoOp));
+    let spec_refl = SpecularReflection::new(color, Rc::new(FresnelNoOp));
     let bsdf = BSDF::new(vec![
         Box::new(oren_nayar),
         Box::new(lamb_refl),
@@ -149,7 +149,7 @@ fn tube() -> SceneObject {
     let color = (Spectrum::red() + Spectrum::blue()) / 2.0;
     let oren_nayar = OrenNayar::new(color, SIGMA);
     let lamb_refl = LambertianReflection::new(color);
-    let spec_refl = SpecularReflection::new(&color, Rc::new(FresnelNoOp));
+    let spec_refl = SpecularReflection::new(color, Rc::new(FresnelNoOp));
     let bsdf = BSDF::new(vec![
         Box::new(oren_nayar),
         Box::new(lamb_refl),

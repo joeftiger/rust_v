@@ -3,9 +3,9 @@
 
 use ultraviolet::Vec3;
 
-use geometry::ray::Ray;
 use crate::render::scene::{Scene, SceneIntersection};
-use crate::{Spectrum};
+use crate::Spectrum;
+use geometry::ray::Ray;
 use util::floats;
 
 bitflags! {

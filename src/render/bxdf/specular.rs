@@ -1,11 +1,10 @@
-use color::Color;
 use crate::render::bxdf;
 use crate::render::bxdf::fresnel::{Dielectric, Fresnel};
 use crate::render::bxdf::{BxDF, BxDFSample, BxDFType};
 use crate::Spectrum;
+use color::Color;
 use std::rc::Rc;
 use ultraviolet::{Vec2, Vec3};
-use crate::render::bxdf::sampling::cos_sample_hemisphere;
 
 #[derive(Debug)]
 pub struct SpecularReflection {
@@ -14,8 +13,8 @@ pub struct SpecularReflection {
 }
 
 impl SpecularReflection {
-    pub fn new(r: &Spectrum, fresnel: Rc<dyn Fresnel>) -> Self {
-        Self { r: *r, fresnel }
+    pub fn new(r: Spectrum, fresnel: Rc<dyn Fresnel>) -> Self {
+        Self { r, fresnel }
     }
 }
 
@@ -24,15 +23,12 @@ impl BxDF for SpecularReflection {
         BxDFType::REFLECTION | BxDFType::SPECULAR
     }
 
-    fn evaluate(&self, _incident: &Vec3, _outgoing: &Vec3) -> Spectrum {
+    fn evaluate(&self, _: &Vec3, _: &Vec3) -> Spectrum {
         Spectrum::black()
     }
 
-    fn sample(&self, outgoing: &Vec3, _sample: &Vec2) -> BxDFSample {
-        let mut incident = Vec3::new(-outgoing.x, -outgoing.y, outgoing.z);
-        // TODO: REMOVE THESE TWO LINES (originally not in there)
-        incident += cos_sample_hemisphere(_sample) * _sample.component_min() / _sample.component_max();
-        incident.normalize();
+    fn sample(&self, outgoing: &Vec3, _: &Vec2) -> BxDFSample {
+        let incident = Vec3::new(-outgoing.x, -outgoing.y, outgoing.z);
 
         let cos_i = bxdf::cos_theta(&incident);
         let spectrum = self.fresnel.evaluate(cos_i) * self.r / cos_i.abs();
@@ -49,8 +45,8 @@ pub struct SpecularTransmission {
 }
 
 impl SpecularTransmission {
-    pub fn new(t: &Spectrum, fresnel: Rc<Dielectric>) -> Self {
-        Self { t: *t, fresnel }
+    pub fn new(t: Spectrum, fresnel: Rc<Dielectric>) -> Self {
+        Self { t, fresnel }
     }
 }
 
@@ -59,11 +55,11 @@ impl BxDF for SpecularTransmission {
         BxDFType::SPECULAR | BxDFType::TRANSMISSION
     }
 
-    fn evaluate(&self, _incident: &Vec3, _outgoing: &Vec3) -> Spectrum {
+    fn evaluate(&self, _: &Vec3, _: &Vec3) -> Spectrum {
         Spectrum::black()
     }
 
-    fn sample(&self, outgoing: &Vec3, _sample: &Vec2) -> BxDFSample {
+    fn sample(&self, outgoing: &Vec3, _: &Vec2) -> BxDFSample {
         let entering = bxdf::cos_theta(outgoing) > 0.0;
 
         let (eta_i, eta_t, n) = if entering {

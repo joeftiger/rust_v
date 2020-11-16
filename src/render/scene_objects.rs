@@ -1,7 +1,7 @@
+use crate::render::bxdf::bsdf::BSDF;
 use geometry::aabb::Aabb;
 use geometry::ray::Ray;
 use geometry::{Geometry, GeometryInfo};
-use crate::render::bxdf::bsdf::BSDF;
 
 pub struct SceneObject {
     shape: Box<dyn Geometry>,
