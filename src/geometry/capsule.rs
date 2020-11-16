@@ -14,10 +14,7 @@ pub struct Capsule {
 
 impl Capsule {
     pub fn new(from: Vec3, to: Vec3, radius: f32) -> Self {
-        let center = (from + to) / 2.0;
-        let axis = to - from;
-
-        let cylinder = Cylinder::new(center, axis.normalized(), radius, axis.mag());
+        let cylinder = Cylinder::new(from, to, radius);
         let top = Sphere::new(from, radius);
         let bot = Sphere::new(to, radius);
 

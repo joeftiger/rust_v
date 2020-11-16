@@ -32,7 +32,7 @@ impl Tube {
 
         let mut cylinders = Vec::with_capacity(capacity);
         (0..capacity).for_each(|i| {
-            let c = Cylinder::new2(points[i], points[i + 1], radius);
+            let c = Cylinder::new(points[i], points[i + 1], radius);
             cylinders.push(c);
         });
 
