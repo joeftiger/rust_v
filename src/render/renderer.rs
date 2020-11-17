@@ -63,7 +63,8 @@ impl Renderer {
     }
 
     fn render(&mut self, x: u32, y: u32) -> Spectrum {
-        let ray = self.camera.primary_ray(x, y);
+        let sample = self.sampler.get_2d();
+        let ray = self.camera.primary_ray(x, y, &sample);
 
         let si = self.scene.intersect(&ray);
 
@@ -88,8 +89,12 @@ impl Renderer {
         self.image.iter_mut().for_each(|pixel| *pixel = 0);
     }
 
-    pub fn render_all(&mut self) {
-        if !self.is_done() {
+    pub fn render_all(&mut self, passes: u32) {
+        for _ in 0..passes {
+            if self.is_done() {
+                self.reset_progress()
+            }
+
             for x in 0..self.image.width() {
                 for y in 0..self.image.height() {
                     let pixel = self.render(x, y);

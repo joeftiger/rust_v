@@ -28,9 +28,10 @@ impl BxDF for SpecularReflection {
     }
 
     fn sample(&self, outgoing: &Vec3, _: &Vec2) -> BxDFSample {
-        let incident = Vec3::new(-outgoing.x, -outgoing.y, outgoing.z);
+        let incident = Vec3::new(-outgoing.x, outgoing.y, -outgoing.z);
 
         let cos_i = bxdf::cos_theta(&incident);
+
         let spectrum = self.fresnel.evaluate(cos_i) * self.r / cos_i.abs();
         let pdf = 1.0;
 

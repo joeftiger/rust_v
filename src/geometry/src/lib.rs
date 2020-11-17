@@ -39,9 +39,9 @@ macro_rules! geometry_info {
 
                 /// Creates a ray from `self.point` into the given direction, offset by `floats::EPSILON`.
                 pub fn create_ray(&self, direction: $vec) -> $ray {
-                    let t_start = floats::EPSILON.into();
+                    let t_start = $float::from(floats::BIG_EPSILON);
                     let t_end = f32::INFINITY.into();
-                    let origin = self.point + self.normal * $float::from(floats::BIG_EPSILON);
+                    let origin = self.point;
                     $ray::with(origin, direction, t_start, t_end)
                 }
             }

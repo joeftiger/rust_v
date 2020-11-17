@@ -3,7 +3,7 @@ use std::cmp::Ordering;
 pub const EPSILON: f32 = 10.0 * f32::EPSILON;
 pub const ONE_SUB_EPSILON: f32 = 1.0 - EPSILON;
 
-pub const BIG_EPSILON: f32 = 1000.0 * EPSILON;
+pub const BIG_EPSILON: f32 = 1e-4;
 
 #[inline(always)]
 #[must_use]

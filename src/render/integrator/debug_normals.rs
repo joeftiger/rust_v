@@ -23,7 +23,7 @@ impl Integrator for DebugNormals {
         _scene: &Scene,
         intersection: &SceneIntersection,
         _sampler: &mut dyn Sampler,
-        _depth: usize,
+        _depth: i32,
     ) -> Spectrum {
         let color = (intersection.info.normal + Vec3::one()) / 2.0;
 

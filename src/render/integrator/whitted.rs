@@ -6,11 +6,11 @@ use crate::Spectrum;
 use color::Color;
 
 pub struct Whitted {
-    pub max_depth: usize,
+    pub max_depth: i32,
 }
 
 impl Whitted {
-    pub fn new(max_depth: usize) -> Self {
+    pub fn new(max_depth: i32) -> Self {
         Self { max_depth }
     }
 }
@@ -31,9 +31,9 @@ impl Integrator for Whitted {
         scene: &Scene,
         intersection: &SceneIntersection,
         sampler: &mut dyn Sampler,
-        depth: usize,
+        depth: i32,
     ) -> Spectrum {
-        let outgoing = &-intersection.info.ray.direction;
+        let outgoing = -intersection.info.ray.direction;
 
         let bsdf = &intersection.obj.bsdf;
         let point = &intersection.info.point;
@@ -43,17 +43,16 @@ impl Integrator for Whitted {
 
         for light in &scene.lights {
             let light_sample = light.sample(intersection);
-            let c = bsdf.evaluate(normal, &light_sample.incident, outgoing, BxDFType::ALL);
 
-            if light_sample.pdf > 0.0
-                && !light_sample.spectrum.is_black()
-                && !c.is_black()
-                && light_sample.occlusion_tester.unoccluded(scene)
-            {
-                let cos = light_sample.incident.dot(*normal).abs();
+            if light_sample.pdf > 0.0 && !light_sample.spectrum.is_black() {
+                let c = bsdf.evaluate(normal, &light_sample.incident, &outgoing, BxDFType::ALL);
 
-                if cos != 0.0 {
-                    color += light_sample.spectrum * c * (cos / light_sample.pdf);
+                if !c.is_black() && light_sample.occlusion_tester.unoccluded(scene) {
+                    let cos = light_sample.incident.dot(*normal).abs();
+
+                    if cos != 0.0 {
+                        color += light_sample.spectrum * c * (cos / light_sample.pdf);
+                    }
                 }
             }
         }
@@ -62,7 +61,7 @@ impl Integrator for Whitted {
 
         if new_depth > 0 {
             color += self.specular_reflection(scene, intersection, sampler, new_depth);
-            color += self.specular_transmission(scene, intersection, sampler, new_depth);
+            // color += self.specular_transmission(scene, intersection, sampler, new_depth);
         }
 
         color

@@ -30,7 +30,7 @@ fn main() {
     let matches = App::from_yaml(yaml).get_matches();
 
     if let Some(demo) = matches.subcommand_matches(DEMO) {
-        let (scene, camera) = cornell_box::create(900, 900);
+        let (scene, camera) = cornell_box::create(2000, 2000);
 
         let sampler = Box::new(RandomSampler);
 
@@ -38,7 +38,7 @@ fn main() {
             if demo.is_present(DEBUG_RENDERER) {
                 Box::new(DebugNormals)
             } else {
-                Box::new(Whitted::new(5))
+                Box::new(Whitted::new(1000))
             }
         };
 
@@ -65,7 +65,7 @@ fn render(matches: &ArgMatches, renderer: Renderer) {
 }
 
 fn render_and_save(matches: &ArgMatches, mut renderer: Renderer) {
-    renderer.render_all();
+    renderer.render_all(1);
     let image = renderer.get_image_u16();
 
     if let Some(output) = matches.value_of_os(OUTPUT) {

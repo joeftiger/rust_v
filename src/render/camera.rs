@@ -1,5 +1,5 @@
 use geometry::ray::Ray;
-use ultraviolet::Vec3;
+use ultraviolet::{Vec2, Vec3};
 
 /// A camera consists of
 /// - position: camera center
@@ -59,10 +59,14 @@ impl Camera {
         }
     }
 
-    pub fn primary_ray(&self, x: u32, y: u32) -> Ray {
+    pub fn primary_ray(&self, x: u32, y: u32, sample: &Vec2) -> Ray {
         let origin = self.position;
-        let direction =
-            self.lower_left + (x as f32) * self.x_dir + (y as f32) * self.y_dir - origin;
+        let direction = self.lower_left
+            + (x as f32 + sample.x) * self.x_dir
+            + (y as f32 + sample.y) * self.y_dir
+            - origin;
+
+        let direction = direction.normalized();
 
         Ray::new(origin, direction)
     }
