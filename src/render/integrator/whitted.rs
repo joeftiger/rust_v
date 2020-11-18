@@ -61,7 +61,7 @@ impl Integrator for Whitted {
 
         if new_depth > 0 {
             color += self.specular_reflection(scene, intersection, sampler, new_depth);
-            // color += self.specular_transmission(scene, intersection, sampler, new_depth);
+            color += self.specular_transmission(scene, intersection, sampler, new_depth);
         }
 
         color

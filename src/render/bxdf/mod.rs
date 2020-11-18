@@ -13,6 +13,31 @@ use bitflags::_core::fmt::Debug;
 use std::f32::consts::FRAC_1_PI;
 use ultraviolet::{Rotor3, Vec2, Vec3};
 
+pub fn bxdf_refract(v: &Vec3, n: &Vec3, eta: f32) -> Option<Vec3> {
+    let cos_theta_i = n.dot(*v);
+    let sin2_theta_i = 1f32.max(1.0 - cos_theta_i * cos_theta_i);
+    let sin2_theta_t = eta * eta * sin2_theta_i;
+
+    if sin2_theta_t >= 1.0 {
+        None
+    } else {
+        let cos_theta_t = (1.0 - sin2_theta_t).sqrt();
+        let r = eta * -*v + (eta * cos_theta_t - cos_theta_t) * *n;
+
+        Some(r)
+    }
+}
+
+#[inline(always)]
+pub fn bxdf_normal() -> Vec3 {
+    Vec3::unit_y()
+}
+
+#[inline(always)]
+pub fn bxdf_incident_to(v: &Vec3) -> Vec3 {
+    Vec3::new(-v.x, v.y, -v.z)
+}
+
 #[inline(always)]
 pub fn cos_theta(v: &Vec3) -> f32 {
     v.y

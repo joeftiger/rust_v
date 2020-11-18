@@ -111,7 +111,7 @@ impl Renderer {
 
             let pixel = self.render(x, y);
 
-            let index = (x * self.image.width() + y) as usize;
+            let index = (x + y * self.image.width()) as usize;
             let mut stats = &mut self.spectrum_statistics[index];
             stats.spectrum += pixel;
             stats.num += 1;
