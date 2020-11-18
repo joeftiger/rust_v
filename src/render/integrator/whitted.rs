@@ -4,6 +4,7 @@ use crate::render::sampler::Sampler;
 use crate::render::scene::{Scene, SceneIntersection};
 use crate::Spectrum;
 use color::Color;
+use geometry::ray::Ray;
 
 pub struct Whitted {
     pub max_depth: i32,
@@ -17,13 +18,12 @@ impl Whitted {
 
 #[allow(unused_variables)]
 impl Integrator for Whitted {
-    fn integrate(
-        &self,
-        scene: &Scene,
-        intersection: &SceneIntersection,
-        sampler: &mut dyn Sampler,
-    ) -> Spectrum {
-        self.illumination(scene, intersection, sampler, self.max_depth)
+    fn integrate(&self, scene: &Scene, primary_ray: &Ray, sampler: &mut dyn Sampler) -> Spectrum {
+        if let Some(si) = scene.intersect(primary_ray) {
+            self.illumination(scene, &si, sampler, self.max_depth)
+        } else {
+            Spectrum::black()
+        }
     }
 
     fn illumination(

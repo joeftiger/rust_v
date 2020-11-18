@@ -66,15 +66,8 @@ impl Renderer {
         let sample = self.sampler.get_2d();
         let ray = self.camera.primary_ray(x, y, &sample);
 
-        let si = self.scene.intersect(&ray);
-
-        if let Some(si) = si {
-            let sampler = self.sampler.deref_mut();
-
-            self.integrator.integrate(&self.scene, &si, sampler)
-        } else {
-            Spectrum::black()
-        }
+        self.integrator
+            .integrate(&self.scene, &ray, self.sampler.deref_mut())
     }
 
     pub fn is_done(&self) -> bool {

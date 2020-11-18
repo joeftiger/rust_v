@@ -3,17 +3,13 @@ use crate::render::sampler::Sampler;
 use crate::render::scene::{Scene, SceneIntersection};
 use crate::Spectrum;
 use color::Color;
+use geometry::ray::Ray;
 
 pub mod debug_normals;
 pub mod whitted;
 
 pub trait Integrator {
-    fn integrate(
-        &self,
-        scene: &Scene,
-        intersection: &SceneIntersection,
-        sampler: &mut dyn Sampler,
-    ) -> Spectrum;
+    fn integrate(&self, scene: &Scene, primary_ray: &Ray, sampler: &mut dyn Sampler) -> Spectrum;
 
     fn illumination(
         &self,
