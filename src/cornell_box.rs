@@ -1,7 +1,7 @@
 use crate::render::bxdf::bsdf::BSDF;
-use crate::render::bxdf::fresnel::FresnelNoOp;
+use crate::render::bxdf::fresnel::{FresnelNoOp, Dielectric};
 use crate::render::bxdf::oren_nayar::OrenNayar;
-use crate::render::bxdf::specular::SpecularReflection;
+use crate::render::bxdf::specular::{SpecularReflection, SpecularTransmission};
 use crate::render::camera::Camera;
 use crate::render::light::{Light, PointLight};
 use crate::render::scene::Scene;
@@ -95,8 +95,13 @@ fn sphere() -> SceneObject {
     let sphere = Sphere::new(center, RADIUS);
 
     let color = Spectrum::white();
-    let spec_refl = SpecularReflection::new(color, Rc::new(FresnelNoOp));
-    let bsdf = BSDF::new(vec![Box::new(spec_refl)]);
+    let fresnel = Rc::new(Dielectric::new(1.0, 2.0));
+    // let spec_refl = SpecularReflection::new(color, fresnel.clone());
+    let spec_trans = SpecularTransmission::new(color, fresnel);
+    let bsdf = BSDF::new(vec![
+        // Box::new(spec_refl),
+        Box::new(spec_trans),
+    ]);
 
     SceneObject::new(Box::new(sphere), bsdf)
 }
@@ -115,9 +120,11 @@ fn capsule() -> SceneObject {
 
     let capsule = Capsule::new(from, to, RADIUS);
 
-    let color = Spectrum::white() * 0.75;
-    let oren_nayar = OrenNayar::new(color, SIGMA);
-    let bsdf = BSDF::new(vec![Box::new(oren_nayar)]);
+    let color = Spectrum::white();
+    let spec_refl = SpecularReflection::new(color, Rc::new(FresnelNoOp));
+    let bsdf = BSDF::new(vec![
+        Box::new(spec_refl),
+    ]);
 
     SceneObject::new(Box::new(capsule), bsdf)
 }
