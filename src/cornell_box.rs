@@ -1,5 +1,5 @@
 use crate::render::bxdf::bsdf::BSDF;
-use crate::render::bxdf::fresnel::{FresnelNoOp, Dielectric};
+use crate::render::bxdf::fresnel::{Dielectric, FresnelNoOp};
 use crate::render::bxdf::oren_nayar::OrenNayar;
 use crate::render::bxdf::specular::{SpecularReflection, SpecularTransmission};
 use crate::render::camera::Camera;
@@ -122,9 +122,7 @@ fn capsule() -> SceneObject {
 
     let color = Spectrum::white();
     let spec_refl = SpecularReflection::new(color, Rc::new(FresnelNoOp));
-    let bsdf = BSDF::new(vec![
-        Box::new(spec_refl),
-    ]);
+    let bsdf = BSDF::new(vec![Box::new(spec_refl)]);
 
     SceneObject::new(Box::new(capsule), bsdf)
 }
