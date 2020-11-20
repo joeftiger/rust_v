@@ -7,11 +7,11 @@ use color::Color;
 use geometry::ray::Ray;
 
 pub struct Whitted {
-    pub max_depth: i32,
+    pub max_depth: u32,
 }
 
 impl Whitted {
-    pub fn new(max_depth: i32) -> Self {
+    pub fn new(max_depth: u32) -> Self {
         Self { max_depth }
     }
 }
@@ -31,7 +31,7 @@ impl Integrator for Whitted {
         scene: &Scene,
         intersection: &SceneIntersection,
         sampler: &mut dyn Sampler,
-        depth: i32,
+        depth: u32,
     ) -> Spectrum {
         let outgoing = -intersection.info.ray.direction;
 

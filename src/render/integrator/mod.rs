@@ -16,7 +16,7 @@ pub trait Integrator {
         scene: &Scene,
         intersection: &SceneIntersection,
         sampler: &mut dyn Sampler,
-        depth: i32,
+        depth: u32,
     ) -> Spectrum;
 
     fn specular_reflection(
@@ -24,7 +24,7 @@ pub trait Integrator {
         scene: &Scene,
         intersection: &SceneIntersection,
         sampler: &mut dyn Sampler,
-        depth: i32,
+        depth: u32,
     ) -> Spectrum {
         let outgoing = -intersection.info.ray.direction;
 
@@ -63,7 +63,7 @@ pub trait Integrator {
         scene: &Scene,
         intersection: &SceneIntersection,
         sampler: &mut dyn Sampler,
-        depth: i32,
+        depth: u32,
     ) -> Spectrum {
         let outgoing = -intersection.info.ray.direction;
 
