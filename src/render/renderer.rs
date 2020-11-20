@@ -70,16 +70,20 @@ impl Renderer {
         self.image.width() * self.image.height()
     }
 
+    pub fn get_progress(&self) -> u32 {
+        self.progress
+    }
+
+    pub fn is_done(&self) -> bool {
+        self.progress >= self.len_pixels()
+    }
+
     fn render(&mut self, x: u32, y: u32) -> Spectrum {
         let sample = self.sampler.get_2d();
         let ray = self.camera.primary_ray(x, y, &sample);
 
         self.integrator
             .integrate(&self.scene, &ray, self.sampler.deref_mut())
-    }
-
-    pub fn is_done(&self) -> bool {
-        self.progress >= self.len_pixels()
     }
 
     pub fn reset_progress(&mut self) {

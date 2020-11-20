@@ -12,7 +12,6 @@ use rust_v::render::renderer::Renderer;
 use rust_v::render::sampler::RandomSampler;
 #[cfg(feature = "live-window")]
 use rust_v::render::window::RenderWindow;
-use std::time::Instant;
 
 #[cfg(feature = "live-window")]
 const LIVE_WINDOW: &str = "LIVE-WINDOW";
