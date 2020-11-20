@@ -1,5 +1,8 @@
 use crate::render::bxdf::bsdf::BSDF;
 use crate::render::bxdf::fresnel::{Dielectric, FresnelNoOp};
+use crate::render::bxdf::microfacet::{
+    roughness_to_alpha, BeckmannDistribution, MicrofacetReflection,
+};
 use crate::render::bxdf::oren_nayar::OrenNayar;
 use crate::render::bxdf::specular::{SpecularReflection, SpecularTransmission};
 use crate::render::camera::Camera;
@@ -14,7 +17,6 @@ use geometry::sphere::Sphere;
 use geometry::tube::Tube;
 use std::rc::Rc;
 use ultraviolet::Vec3;
-use crate::render::bxdf::microfacet::{roughness_to_alpha, MicrofacetReflection, BeckmannDistribution};
 
 pub const LEFT_WALL: f32 = -3.0;
 pub const RIGHT_WALL: f32 = 3.0;
@@ -123,9 +125,7 @@ fn capsule() -> SceneObject {
 
     let color = Spectrum::white();
     let oren_nayar = OrenNayar::new(color, SIGMA);
-    let bsdf = BSDF::new(vec![
-        Box::new(oren_nayar),
-    ]);
+    let bsdf = BSDF::new(vec![Box::new(oren_nayar)]);
 
     SceneObject::new(Box::new(capsule), bsdf)
 }
@@ -145,10 +145,9 @@ fn tube() -> SceneObject {
     let alpha_x = roughness_to_alpha(0.5);
     let alpha_y = roughness_to_alpha(0.5);
     let distribution = BeckmannDistribution::new(alpha_x, alpha_y, true);
-    let microfacet = MicrofacetReflection::new(color, Box::new(distribution), Box::new(FresnelNoOp));
-    let bsdf = BSDF::new(vec![
-        Box::new(microfacet)
-    ]);
+    let microfacet =
+        MicrofacetReflection::new(color, Box::new(distribution), Box::new(FresnelNoOp));
+    let bsdf = BSDF::new(vec![Box::new(microfacet)]);
 
     SceneObject::new(Box::new(tube), bsdf)
 }

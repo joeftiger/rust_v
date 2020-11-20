@@ -1,11 +1,15 @@
+use std::ops::DerefMut;
+
+use image::{ImageBuffer, Rgb};
+
+use color::Color;
+
 use crate::render::camera::Camera;
 use crate::render::integrator::Integrator;
 use crate::render::sampler::Sampler;
 use crate::render::scene::Scene;
 use crate::Spectrum;
-use color::Color;
-use image::{ImageBuffer, Rgb};
-use std::ops::DerefMut;
+use indicatif::ProgressBar;
 
 fn convert_u16_to_u8(vec: Vec<u16>) -> Vec<u8> {
     vec.iter().map(|b16| (b16 / 2u16.pow(8)) as u8).collect()
@@ -62,6 +66,10 @@ impl Renderer {
         }
     }
 
+    pub fn len_pixels(&self) -> u32 {
+        self.image.width() * self.image.height()
+    }
+
     fn render(&mut self, x: u32, y: u32) -> Spectrum {
         let sample = self.sampler.get_2d();
         let ray = self.camera.primary_ray(x, y, &sample);
@@ -71,7 +79,7 @@ impl Renderer {
     }
 
     pub fn is_done(&self) -> bool {
-        self.progress >= self.image.width() * self.image.height()
+        self.progress >= self.len_pixels()
     }
 
     pub fn reset_progress(&mut self) {
@@ -94,6 +102,22 @@ impl Renderer {
                     self.image.put_pixel(x, y, pixel.into());
                 }
             }
+        }
+    }
+
+    pub fn render_all_with(&mut self, passes: u32, bar: &ProgressBar) {
+        if self.is_done() {
+            self.reset_progress()
+        }
+
+        for y in 0..self.image.height() {
+            for x in 0..self.image.width() {
+                for _ in 0..passes {
+                    let pixel = self.render(x, y);
+                    self.image.put_pixel(x, y, pixel.into());
+                }
+            }
+            bar.inc(self.image.width() as u64);
         }
     }
 

@@ -6,8 +6,8 @@ use color::Color;
 use geometry::spherical_direction;
 use util::{floats, math};
 
-use crate::render::bxdf::*;
 use crate::render::bxdf::fresnel::{Dielectric, Fresnel};
+use crate::render::bxdf::*;
 use crate::Spectrum;
 
 #[allow(dead_code)]
@@ -97,8 +97,8 @@ impl BeckmannDistribution {
 
         let normalization = 1.0
             / (1.0
-            + c
-            + floats::FRAC_1_SQRT_PI * tan_theta_i * f32::exp(-cot_theta_i * cot_theta_i));
+                + c
+                + floats::FRAC_1_SQRT_PI * tan_theta_i * f32::exp(-cot_theta_i * cot_theta_i));
 
         for _ in 0..10 {
             /* Bisection criterion -- the oddly-looking
@@ -244,7 +244,7 @@ impl MicrofacetDistribution for BeckmannDistribution {
 
             tan2_theta = -log_sample
                 / (cos_phi * cos_phi / alpha_x2
-                + sin_phi * sin_phi / (self.alpha_y * self.alpha_y));
+                    + sin_phi * sin_phi / (self.alpha_y * self.alpha_y));
         }
 
         // Map sampled Beckmann angles to normal direction _wh_
