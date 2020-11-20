@@ -83,13 +83,13 @@ impl Renderer {
     }
 
     pub fn render_all(&mut self, passes: u32) {
-        for _ in 0..passes {
-            if self.is_done() {
-                self.reset_progress()
-            }
+        if self.is_done() {
+            self.reset_progress()
+        }
 
-            for x in 0..self.image.width() {
-                for y in 0..self.image.height() {
+        for x in 0..self.image.width() {
+            for y in 0..self.image.height() {
+                for _ in 0..passes {
                     let pixel = self.render(x, y);
                     self.image.put_pixel(x, y, pixel.into());
                 }
