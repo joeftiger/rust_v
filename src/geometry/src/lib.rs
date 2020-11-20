@@ -17,6 +17,15 @@ use crate::ray::{Ray, Ray4};
 use ultraviolet::{f32x4, Vec3, Vec3x4};
 use util::{floats, MinMaxExt};
 
+#[inline]
+pub fn spherical_direction(sin_theta: f32, cos_theta: f32, phi: f32) -> Vec3 {
+    Vec3::new(
+        sin_theta * phi.cos(),
+        sin_theta * phi.sin(),
+        cos_theta,
+    )
+}
+
 macro_rules! geometry_info {
     ($($name:ident => $ray:ident, $float:ident, $vec:ident), +) => {
         $(
