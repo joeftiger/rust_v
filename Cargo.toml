@@ -15,6 +15,8 @@ clap = { version = "", features = ["yaml"] }
 fastrand = ""
 # image loading / saving
 image = ""
+# progress bars etc.
+indicatif = ""
 # num of logical / physical cpus
 num_cpus = ""
 # parallelism
