@@ -6,12 +6,24 @@ args:
   - INPUT:
       value_name: FILE
       help: The scene input file <JSON>
-      required: true
+      required: false
+  - INPUT:
+      help: The scene input file.
+      required: false
   - OUTPUT:
-      value_name: FILE
       short: o
       long: output
       help: The output path to save the rendered PNG.
+      required: false
+  - PASSES:
+      short: p
+      long: passes
+      help: The number of render passes per pixel.
+      required: false
+  - DEPTH:
+      short: d
+      long: depth
+      help: The depth of recursive ray tracing.
       required: false
 subcommands:
   - demo:
@@ -22,4 +34,14 @@ subcommands:
         - DEBUG:
             long: debug
             help: Use a debugging renderer to render surface normals.
-              required: false
+            required: false
+        - PASSES:
+            short: p
+            long: passes
+            help: The number of render passes per pixel.
+            required: false
+        - DEPTH:
+            short: d
+            long: depth
+            help: The depth of recursive ray tracing.
+            required: false

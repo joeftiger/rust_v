@@ -13,13 +13,14 @@ use rust_v::render::sampler::RandomSampler;
 use rust_v::render::window::RenderWindow;
 
 #[cfg(feature = "live-window")]
-const LIVE_WINDOW: &str = "live_window";
+const LIVE_WINDOW: &str = "LIVE-WINDOW";
 const DEMO: &str = "demo";
 const DEBUG_RENDERER: &str = "DEBUG";
 #[allow(dead_code)]
 const INPUT: &str = "INPUT";
 const OUTPUT: &str = "OUTPUT";
 const PASSES: &str = "PASSES";
+const DEPTH: &str = "DEPTH";
 
 fn main() {
     #[cfg(not(feature = "live-window"))]
@@ -38,13 +39,18 @@ fn main() {
             if demo.is_present(DEBUG_RENDERER) {
                 Box::new(DebugNormals)
             } else {
-                Box::new(Whitted::new(5))
+                let depth = match demo.value_of(DEPTH).unwrap_or("6").parse() {
+                    Err(msg) => panic!("Unable to pass DEPTH: {}", msg),
+                    Ok(val) => val
+                };
+
+                Box::new(Whitted::new(depth))
             }
         };
 
         let renderer = Renderer::new(scene, camera, sampler, integrator);
 
-        if let Err(msg) = render(&matches, renderer) {
+        if let Err(msg) = render(demo, renderer) {
             panic!("Error: {}", msg)
         }
     }
