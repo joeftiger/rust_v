@@ -4,6 +4,7 @@ pub mod lambertian;
 pub mod oren_nayar;
 pub mod sampling;
 pub mod specular;
+pub mod microfacet;
 
 use util::floats;
 
@@ -13,21 +14,6 @@ use bitflags::_core::fmt::Debug;
 use std::f32::consts::FRAC_1_PI;
 use ultraviolet::{Rotor3, Vec2, Vec3};
 
-pub fn bxdf_refract(v: &Vec3, n: &Vec3, eta: f32) -> Option<Vec3> {
-    let cos_theta_i = n.dot(*v);
-    let sin2_theta_i = 1f32.max(1.0 - cos_theta_i * cos_theta_i);
-    let sin2_theta_t = eta * eta * sin2_theta_i;
-
-    if sin2_theta_t >= 1.0 {
-        None
-    } else {
-        let cos_theta_t = (1.0 - sin2_theta_t).sqrt();
-        let r = eta * -*v + (eta * cos_theta_t - cos_theta_t) * *n;
-
-        Some(r)
-    }
-}
-
 #[inline(always)]
 pub fn bxdf_normal() -> Vec3 {
     Vec3::unit_y()
@@ -36,6 +22,20 @@ pub fn bxdf_normal() -> Vec3 {
 #[inline(always)]
 pub fn bxdf_incident_to(v: &Vec3) -> Vec3 {
     Vec3::new(-v.x, v.y, -v.z)
+}
+
+#[inline(always)]
+pub fn is_neg(v: &Vec3) -> bool {
+    v.y < 0.0
+}
+
+#[inline(always)]
+pub fn flip_if_neg(mut v: Vec3) -> Vec3 {
+    if is_neg(&v) {
+        v.y = -v.y;
+    }
+
+    v
 }
 
 #[inline(always)]
@@ -223,10 +223,8 @@ pub trait BxDF: Debug {
     /// # Results
     /// * `BxDFSample` - The spectrum, incident and pdf at the intersection
     fn sample(&self, outgoing: &Vec3, sample: &Vec2) -> BxDFSample {
-        let mut incident = cos_sample_hemisphere(sample);
-        if incident.y < 0.0 {
-            incident.y = -incident.y;
-        }
+        let incident = cos_sample_hemisphere(sample);
+        let incident = flip_if_neg(incident);
 
         let spectrum = self.evaluate(&incident, outgoing);
         let pdf = self.pdf(&incident, outgoing);
