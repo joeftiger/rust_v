@@ -6,44 +6,69 @@ args:
   - INPUT:
       help: The scene input file.
       takes_value: true
-      required: false
   - OUTPUT:
       short: o
       long: output
       help: The output path to save the rendered PNG.
       takes_value: true
-      required: false
+  - LIVE_WINDOW:
+      short: l
+      long: live
+      help: Use a live window to progressively show rendering. The window allows saving with [Ctrl + S].
   - PASSES:
       short: p
       long: passes
       help: The number of render passes per pixel.
       takes_value: true
-      required: false
   - DEPTH:
       short: d
       long: depth
       help: The depth of recursive ray tracing.
       takes_value: true
-      required: false
+  - WIDTH:
+      short: w
+      long: width
+      help: The width of the rendering.
+      takes_value: true
+  - HEIGHT:
+      short: h
+      long: height
+      help: The height of the rendering.
+      takes_value: true
 subcommands:
-  - demo:
-      version: "0.1"
-      author: Julius Oeftiger <julius.oeftiger@students.unibe.ch>
-      about: The cornell box demo scene.
-      args:
-        - DEBUG:
-            long: debug
-            help: Use a debugging renderer to render surface normals.
-            required: false
-        - PASSES:
-            short: p
-            long: passes
-            help: The number of render passes per pixel.
-            takes_value: true
-            required: false
-        - DEPTH:
-            short: d
-            long: depth
-            help: The depth of recursive ray tracing.
-            takes_value: true
-            required: false
+    - demo:
+        version: "0.1"
+        author: Julius Oeftiger <julius.oeftiger@students.unibe.ch>
+        about: The cornell box demo scene.
+        args:
+            - VERBOSE:
+                short: v
+                long: verbose
+                help: Print verbose messages.
+            - DEBUG:
+                long: debug
+                help: Use a debugging renderer to render surface normals.
+            - LIVE_WINDOW:
+                short: l
+                long: live
+                help: Use a live window to progressively show rendering. The window allows saving with [Ctrl + S].
+            - PASSES:
+                short: p
+                long: passes
+                help: The number of render passes per pixel.
+                takes_value: true
+            - DEPTH:
+                short: d
+                long: depth
+                help: The depth of recursive ray tracing.
+                takes_value: true
+            - WIDTH:
+                short: w
+                long: width
+                help: The width of the rendering.
+                takes_value: true
+            - HEIGHT:
+                short: h
+                long: height
+                help: The height of the rendering.
+                takes_value: true

@@ -1,7 +1,7 @@
 #[macro_use]
 extern crate clap;
 
-use clap::{App, ArgMatches};
+use clap::App;
 
 use indicatif::{ProgressBar, ProgressStyle};
 use rust_v::cornell_box;
@@ -10,102 +10,123 @@ use rust_v::render::integrator::whitted::Whitted;
 use rust_v::render::integrator::Integrator;
 use rust_v::render::renderer::Renderer;
 use rust_v::render::sampler::RandomSampler;
-#[cfg(feature = "live-window")]
 use rust_v::render::window::RenderWindow;
 
-#[cfg(feature = "live-window")]
-const LIVE_WINDOW: &str = "LIVE-WINDOW";
+const LIVE: &str = "LIVE_WINDOW";
 const DEMO: &str = "demo";
-const DEBUG_RENDERER: &str = "DEBUG";
+const VERBOSE: &str = "VERBOSE";
+const DEBUG: &str = "DEBUG";
 #[allow(dead_code)]
 const INPUT: &str = "INPUT";
 const OUTPUT: &str = "OUTPUT";
 const PASSES: &str = "PASSES";
 const DEPTH: &str = "DEPTH";
+const WIDTH: &str = "WIDTH";
+const HEIGHT: &str = "HEIGHT";
 
-fn main() {
-    #[cfg(not(feature = "live-window"))]
+fn main() -> Result<(), String> {
     let yaml = load_yaml!("cli.yml");
-    #[cfg(feature = "live-window")]
-    let yaml = load_yaml!("cli-live-window.yml");
 
     let matches = App::from_yaml(yaml).get_matches();
 
     if let Some(demo) = matches.subcommand_matches(DEMO) {
-        let (scene, camera) = cornell_box::create(2000, 2000);
+        let verbose = demo.is_present(VERBOSE);
+        let debug = demo.is_present(DEBUG);
+        let width = demo.value_of(WIDTH).unwrap_or("900").parse().unwrap();
+        let height = demo.value_of(HEIGHT).unwrap_or("900").parse().unwrap();
+        let depth = demo.value_of(DEPTH).unwrap_or("6").parse().unwrap();
+        let passes = demo.value_of(PASSES).unwrap_or("1").parse().unwrap();
+        let live = demo.is_present(LIVE);
 
-        let sampler = Box::new(RandomSampler);
-
-        let integrator: Box<dyn Integrator> = {
-            if demo.is_present(DEBUG_RENDERER) {
-                Box::new(DebugNormals)
-            } else {
-                let depth = match demo.value_of(DEPTH).unwrap_or("6").parse() {
-                    Err(msg) => panic!("Unable to pass DEPTH: {}", msg),
-                    Ok(val) => val,
-                };
-
-                Box::new(Whitted::new(depth))
-            }
+        let output = if let Some(o) = demo.value_of(OUTPUT) {
+            o.to_string()
+        } else {
+            format!(
+                "{}.png",
+                std::time::SystemTime::now()
+                    .duration_since(std::time::UNIX_EPOCH)
+                    .unwrap()
+                    .as_millis()
+            )
         };
+        let output = output.as_str();
 
-        let renderer = Renderer::new(scene, camera, sampler, integrator);
+        let mut main = Main::new(verbose, debug, width, height, depth, passes, live, output);
+        main.start()
+    } else {
+        Err("Currently we only support the demo subcommand!".to_string())
+    }
+}
 
-        if let Err(msg) = render(demo, renderer) {
-            panic!("Error: {}", msg)
+#[derive(Debug)]
+struct Main<'a> {
+    verbose: bool,
+    debug: bool,
+    width: u32,
+    height: u32,
+    depth: u32,
+    passes: u32,
+    live: bool,
+    output: &'a str,
+}
+
+impl<'a> Main<'a> {
+    #[allow(clippy::too_many_arguments)]
+    fn new(
+        verbose: bool,
+        debug: bool,
+        width: u32,
+        height: u32,
+        depth: u32,
+        passes: u32,
+        live: bool,
+        output: &'a str,
+    ) -> Self {
+        Self {
+            verbose,
+            debug,
+            width,
+            height,
+            depth,
+            passes,
+            live,
+            output,
         }
     }
-}
 
-#[cfg(not(feature = "live-window"))]
-fn render(matches: &ArgMatches, renderer: Renderer) -> Result<(), String> {
-    render_and_save(matches, renderer)
-}
+    fn start(&mut self) -> Result<(), String> {
+        if self.verbose {
+            println!("{:?}", self);
+        }
 
-#[cfg(feature = "live-window")]
-fn render(matches: &ArgMatches, renderer: Renderer) -> Result<(), String> {
-    if matches.is_present(LIVE_WINDOW) {
-        RenderWindow::new("Rust-V".to_string(), renderer)
-            .map_err(|e| format!("Unable to create window: {}", e))?
-            .start_rendering();
-        Ok(())
-    } else {
-        render_and_save(matches, renderer)
-    }
-}
+        let (scene, camera) = cornell_box::create(self.width, self.height);
+        let sampler = Box::new(RandomSampler);
+        let integrator: Box<dyn Integrator> = if self.debug {
+            Box::new(DebugNormals)
+        } else {
+            Box::new(Whitted::new(self.depth))
+        };
+        let mut renderer = Renderer::new(scene, camera, sampler, integrator);
 
-fn render_and_save(matches: &ArgMatches, mut renderer: Renderer) -> Result<(), String> {
-    let passes = matches
-        .value_of(PASSES)
-        .unwrap_or("1")
-        .parse::<u32>()
-        .map_err(|e| format!("Unable to pass PASSES: {}", e))?;
-    println!("Using {} of passes...", passes);
+        if self.live {
+            RenderWindow::new("Rust-V".to_string(), &mut renderer)
+                .map_err(|e| format!("Unable to create window: {}", e))?
+                .start_rendering();
+            Ok(())
+        } else {
+            let bar = ProgressBar::new(renderer.len_pixels() as u64);
+            bar.set_style(ProgressStyle::default_bar().template(
+                "[{elapsed} elapsed] {wide_bar:.cyan/white} {percent}% [{eta} remaining]",
+            ));
 
-    let bar = ProgressBar::new(renderer.len_pixels() as u64);
-    bar.set_style(
-        ProgressStyle::default_bar()
-            .template("[{elapsed} elapsed] {wide_bar:.cyan/white} {percent}% [{eta} remaining]"),
-    );
+            renderer.render_all_with(self.passes, &bar);
+            bar.finish();
 
-    println!("Rendering...");
-    renderer.render_all_with(passes, &bar);
-    bar.finish();
-    println!("Rendering finished");
+            let image = renderer.get_image_u16();
 
-    let image = renderer.get_image_u16();
-    if let Some(output) = matches.value_of_os(OUTPUT) {
-        image
-            .save(&output)
-            .map_err(|e| format!("Unable to save image: {}", e))
-    } else {
-        let since = std::time::SystemTime::now()
-            .duration_since(std::time::UNIX_EPOCH)
-            .map_err(|e| e.to_string())?;
-        let file = format!("{}.png", since.as_nanos());
-
-        image
-            .save(&file)
-            .map_err(|e| format!("Unable to save image: {}", e))
+            image
+                .save(&self.output)
+                .map_err(|e| format!("Unable to save image: {}", e))
+        }
     }
 }

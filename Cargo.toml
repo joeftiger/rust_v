@@ -33,10 +33,6 @@ util = { path = "./src/util" }
 [dev-dependencies]
 criterion= ""
 
-[features]
-default = ["live-window"]
-live-window = []
-
 [[bench]]
 name = "bxdf_inlines"
 harness = false
