@@ -3,14 +3,16 @@ extern crate clap;
 
 use clap::{App, ArgMatches};
 
+use indicatif::{ProgressBar, ProgressStyle};
 use rust_v::cornell_box;
 use rust_v::render::integrator::debug_normals::DebugNormals;
-use rust_v::render::integrator::Integrator;
 use rust_v::render::integrator::whitted::Whitted;
+use rust_v::render::integrator::Integrator;
 use rust_v::render::renderer::Renderer;
 use rust_v::render::sampler::RandomSampler;
 #[cfg(feature = "live-window")]
 use rust_v::render::window::RenderWindow;
+use std::time::Instant;
 
 #[cfg(feature = "live-window")]
 const LIVE_WINDOW: &str = "LIVE-WINDOW";
@@ -24,9 +26,9 @@ const DEPTH: &str = "DEPTH";
 
 fn main() {
     #[cfg(not(feature = "live-window"))]
-        let yaml = load_yaml!("cli.yml");
+    let yaml = load_yaml!("cli.yml");
     #[cfg(feature = "live-window")]
-        let yaml = load_yaml!("cli-live-window.yml");
+    let yaml = load_yaml!("cli-live-window.yml");
 
     let matches = App::from_yaml(yaml).get_matches();
 
@@ -41,7 +43,7 @@ fn main() {
             } else {
                 let depth = match demo.value_of(DEPTH).unwrap_or("6").parse() {
                     Err(msg) => panic!("Unable to pass DEPTH: {}", msg),
-                    Ok(val) => val
+                    Ok(val) => val,
                 };
 
                 Box::new(Whitted::new(depth))
@@ -74,23 +76,36 @@ fn render(matches: &ArgMatches, renderer: Renderer) -> Result<(), String> {
 }
 
 fn render_and_save(matches: &ArgMatches, mut renderer: Renderer) -> Result<(), String> {
-    let passes = matches.value_of(PASSES)
+    let passes = matches
+        .value_of(PASSES)
         .unwrap_or("1")
         .parse::<u32>()
         .map_err(|e| format!("Unable to pass PASSES: {}", e))?;
 
+    let bar = ProgressBar::new(renderer.len_pixels() as u64);
+    bar.set_style(
+        ProgressStyle::default_bar()
+            .template("[{elapsed} elapsed] {wide_bar:.cyan/white} {percent}% [{eta} remaining]"),
+    );
 
-    renderer.render_all(passes);
+    println!("Rendering...");
+    renderer.render_all_with(passes, &bar);
+    bar.finish();
+    println!("Rendering finished");
+
     let image = renderer.get_image_u16();
-
     if let Some(output) = matches.value_of_os(OUTPUT) {
-        image.save(&output).map_err(|e| format!("Unable to save image: {}", e))
+        image
+            .save(&output)
+            .map_err(|e| format!("Unable to save image: {}", e))
     } else {
         let since = std::time::SystemTime::now()
             .duration_since(std::time::UNIX_EPOCH)
             .map_err(|e| e.to_string())?;
         let file = format!("{}.png", since.as_nanos());
 
-        image.save(&file).map_err(|e| format!("Unable to save image: {}", e))
+        image
+            .save(&file)
+            .map_err(|e| format!("Unable to save image: {}", e))
     }
 }
