@@ -17,15 +17,15 @@ enum Direction {
     RIGHT,
 }
 
-pub struct RenderWindow {
+pub struct RenderWindow<'a> {
     window: Window,
-    renderer: Renderer,
+    renderer: &'a mut Renderer,
     should_exit: bool,
     should_reset_image: bool,
 }
 
-impl RenderWindow {
-    pub fn new(name: String, mut renderer: Renderer) -> Result<Self, String> {
+impl<'a> RenderWindow<'a> {
+    pub fn new(name: String, renderer: &'a mut Renderer) -> Result<Self, String> {
         let camera = renderer.get_camera();
 
         let div = f32::max(camera.width as f32 / 900.0, camera.height as f32 / 900.0).max(1.0);
