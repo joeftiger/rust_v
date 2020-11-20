@@ -80,6 +80,7 @@ fn render_and_save(matches: &ArgMatches, mut renderer: Renderer) -> Result<(), S
         .unwrap_or("1")
         .parse::<u32>()
         .map_err(|e| format!("Unable to pass PASSES: {}", e))?;
+    println!("Using {} of passes...", passes);
 
     let bar = ProgressBar::new(renderer.len_pixels() as u64);
     bar.set_style(

@@ -5,11 +5,13 @@ about: A rust ray tracer supporting rgb and spectral ray tracing. Currently WIP.
 args:
   - INPUT:
       help: The scene input file.
+      takes_value: true
       required: false
   - OUTPUT:
       short: o
       long: output
       help: The output path to save the rendered PNG.
+      takes_value: true
       required: false
   - LIVE-WINDOW:
       short: l
@@ -20,11 +22,13 @@ args:
       short: p
       long: passes
       help: The number of render passes per pixel.
+      takes_value: true
       required: false
   - DEPTH:
       short: d
       long: depth
       help: The depth of recursive ray tracing.
+      takes_value: true
       required: false
 subcommands:
   - demo:
@@ -45,9 +49,11 @@ subcommands:
             short: p
             long: passes
             help: The number of render passes per pixel.
+            takes_value: true
             required: false
         - DEPTH:
             short: d
             long: depth
             help: The depth of recursive ray tracing.
+            takes_value: true
             required: false
