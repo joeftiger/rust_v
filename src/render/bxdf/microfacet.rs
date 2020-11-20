@@ -4,11 +4,11 @@ use util::{floats, math};
 use crate::render::bxdf::*;
 use std::f32::consts::{PI, FRAC_PI_2};
 use geometry::spherical_direction;
-use std::rc::Rc;
 use crate::render::bxdf::fresnel::Fresnel;
 use color::Color;
 
-fn roughness_to_alpha(roughness: f32) -> f32 {
+#[allow(dead_code)]
+pub fn roughness_to_alpha(roughness: f32) -> f32 {
     let roughness = roughness.max(floats::BIG_EPSILON);
     let x = roughness.ln();
     let x2 = x * x;
@@ -92,7 +92,7 @@ impl BeckmannDistribution {
 
         let normalization = 1.0 / (1.0 + c + floats::FRAC_1_SQRT_PI * tan_theta_i * f32::exp(-cot_theta_i * cot_theta_i));
 
-        for it in 0..10 {
+        for _ in 0..10 {
             /* Bisection criterion -- the oddly-looking
                Boolean expression are intentional to check
                for NaNs at little additional cost */
@@ -297,12 +297,12 @@ impl MicrofacetDistribution for BeckmannDistribution {
 #[derive(Debug)]
 pub struct MicrofacetReflection {
     r: Spectrum,
-    distribution: Rc<dyn MicrofacetDistribution>,
-    fresnel: Rc<dyn Fresnel>,
+    distribution: Box<dyn MicrofacetDistribution>,
+    fresnel: Box<dyn Fresnel>,
 }
 
 impl MicrofacetReflection {
-    pub fn new(r: Spectrum, distribution: Rc<dyn MicrofacetDistribution>, fresnel: Rc<dyn Fresnel>) -> Self {
+    pub fn new(r: Spectrum, distribution: Box<dyn MicrofacetDistribution>, fresnel: Box<dyn Fresnel>) -> Self {
         Self { r, distribution, fresnel }
     }
 }
