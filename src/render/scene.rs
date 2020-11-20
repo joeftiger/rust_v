@@ -43,7 +43,7 @@ impl Scene {
     pub fn is_occluded(&self, ray: &Ray) -> bool {
         self.objects
             .iter()
-            .any(|object| object.intersect(ray).is_some())
+            .any(|object| object.intersects(ray))
         //.any(|object| object.bounding_box().intersect(ray).is_some() && object.intersect(ray).is_some())
     }
 
