@@ -1,10 +1,10 @@
 pub mod bsdf;
 pub mod fresnel;
 pub mod lambertian;
+pub mod microfacet;
 pub mod oren_nayar;
 pub mod sampling;
 pub mod specular;
-pub mod microfacet;
 
 use util::floats;
 
@@ -36,6 +36,11 @@ pub fn flip_if_neg(mut v: Vec3) -> Vec3 {
     }
 
     v
+}
+
+#[inline(always)]
+pub fn bxdf_is_parallel(v: &Vec3) -> bool {
+    v.y == 0.0
 }
 
 #[inline(always)]
@@ -173,6 +178,10 @@ impl BxDFSample {
             incident,
             pdf,
         }
+    }
+
+    pub fn black_nan_0() -> Self {
+        Self::new(0.0.into(), Vec3::broadcast(f32::NAN), 0.0)
     }
 }
 

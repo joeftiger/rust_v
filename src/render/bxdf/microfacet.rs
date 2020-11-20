@@ -6,8 +6,8 @@ use color::Color;
 use geometry::spherical_direction;
 use util::{floats, math};
 
-use crate::render::bxdf::fresnel::{Dielectric, Fresnel};
 use crate::render::bxdf::*;
+use crate::render::bxdf::fresnel::{Dielectric, Fresnel};
 use crate::Spectrum;
 
 #[allow(dead_code)]
@@ -97,8 +97,8 @@ impl BeckmannDistribution {
 
         let normalization = 1.0
             / (1.0
-                + c
-                + floats::FRAC_1_SQRT_PI * tan_theta_i * f32::exp(-cot_theta_i * cot_theta_i));
+            + c
+            + floats::FRAC_1_SQRT_PI * tan_theta_i * f32::exp(-cot_theta_i * cot_theta_i));
 
         for _ in 0..10 {
             /* Bisection criterion -- the oddly-looking
@@ -244,7 +244,7 @@ impl MicrofacetDistribution for BeckmannDistribution {
 
             tan2_theta = -log_sample
                 / (cos_phi * cos_phi / alpha_x2
-                    + sin_phi * sin_phi / (self.alpha_y * self.alpha_y));
+                + sin_phi * sin_phi / (self.alpha_y * self.alpha_y));
         }
 
         // Map sampled Beckmann angles to normal direction _wh_
@@ -351,6 +351,40 @@ impl BxDF for MicrofacetReflection {
 
         dist * f / (4.0 * cos_theta_i * cos_theta_o)
     }
+
+    fn sample(&self, outgoing: &Vec3, sample: &Vec2) -> BxDFSample {
+        // Sample microfacet orientation $\wh$ and reflected direction $\wi$
+        if bxdf_is_parallel(outgoing) {
+            return BxDFSample::black_nan_0();
+        }
+
+        let wh = self.distribution.sample_wh(outgoing, sample);
+        let cos_o = outgoing.dot(wh);
+        // Should be rare
+        if cos_o < 0.0 {
+            return BxDFSample::black_nan_0();
+        }
+
+        let incident = outgoing.reflected(wh);
+        if !same_hemisphere(&incident, outgoing) {
+            return BxDFSample::black_nan_0();
+        }
+
+        let spectrum = self.evaluate(&incident, outgoing);
+        let pdf = self.distribution.pdf(outgoing, &wh) / (4.0 * cos_o);
+
+        BxDFSample::new(spectrum, incident, pdf)
+    }
+
+    fn pdf(&self, incident: &Vec3, outgoing: &Vec3) -> f32 {
+        if !same_hemisphere(incident, outgoing) {
+            0.0
+        } else {
+            let wh = (*incident + *outgoing).normalized();
+
+            self.distribution.pdf(outgoing, &wh) / (4.0 * outgoing.dot(wh))
+        }
+    }
 }
 
 #[derive(Debug)]
@@ -418,5 +452,55 @@ impl BxDF for MicrofacetTransmission {
             cos_i.abs() * cos_t.abs() / (cos_theta_i * cos_theta_i * sqrt_denom * sqrt_denom);
 
         t * (dist * factor).abs()
+    }
+
+    fn sample(&self, outgoing: &Vec3, sample: &Vec2) -> BxDFSample {
+        if bxdf_is_parallel(outgoing) {
+            return BxDFSample::black_nan_0();
+        }
+
+        let wh = self.distribution.sample_wh(outgoing, sample);
+        // Should be rare
+        if outgoing.dot(wh) < 0.0 {
+            return BxDFSample::black_nan_0();
+        }
+
+        let eta = if cos_theta(outgoing) > 0.0 {
+            self.fresnel.eta_i / self.fresnel.eta_t
+        } else {
+            self.fresnel.eta_t / self.fresnel.eta_i
+        };
+
+        let incident = outgoing.refracted(wh, eta);
+        let spectrum = self.evaluate(&incident, outgoing);
+        let pdf = self.pdf(&incident, outgoing);
+
+        BxDFSample::new(spectrum, incident, pdf)
+    }
+
+    fn pdf(&self, incident: &Vec3, outgoing: &Vec3) -> f32 {
+        if same_hemisphere(incident, outgoing) {
+            return 0.0;
+        }
+
+        // Compute $\wh$ from $\wo$ and $\wi$ for microfacet transmission
+        let eta = if cos_theta(outgoing) > 0.0 {
+            self.fresnel.eta_i / self.fresnel.eta_t
+        } else {
+            self.fresnel.eta_t / self.fresnel.eta_i
+        };
+
+        let wh = (*outgoing + *incident * eta).normalized();
+
+        let cos_i = incident.dot(wh);
+        let cos_o = outgoing.dot(wh);
+        if cos_i * cos_o > 0.0 {
+            return 0.0;
+        }
+
+        let sqrt_denom = cos_o + eta * cos_i;
+        let dwh_dwi = eta * eta * cos_i.abs() / (sqrt_denom * sqrt_denom);
+
+        self.distribution.pdf(outgoing, &wh) * dwh_dwi
     }
 }
