@@ -96,7 +96,7 @@ impl<'a> Main<'a> {
 
     fn start(&mut self) -> Result<(), String> {
         if self.verbose {
-            println!("{:?}", self);
+            println!("{:#?}", self);
         }
 
         let (scene, camera) = cornell_box::create(self.width, self.height);

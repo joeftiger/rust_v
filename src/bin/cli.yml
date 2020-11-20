@@ -18,22 +18,22 @@ args:
   - PASSES:
       short: p
       long: passes
-      help: The number of render passes per pixel.
+      help: The number of render passes per pixel. (Default = 1)
       takes_value: true
   - DEPTH:
       short: d
       long: depth
-      help: The depth of recursive ray tracing.
+      help: The depth of recursive ray tracing. (Default = 6)
       takes_value: true
   - WIDTH:
       short: w
       long: width
-      help: The width of the rendering.
+      help: The width of the rendering in pixels. (Default = 900)
       takes_value: true
   - HEIGHT:
       short: h
       long: height
-      help: The height of the rendering.
+      help: The height of the rendering in pixels. (Default = 900)
       takes_value: true
 subcommands:
     - demo:
@@ -55,20 +55,20 @@ subcommands:
             - PASSES:
                 short: p
                 long: passes
-                help: The number of render passes per pixel.
+                help: The number of render passes per pixel. (Default = 1)
                 takes_value: true
             - DEPTH:
                 short: d
                 long: depth
-                help: The depth of recursive ray tracing.
+                help: The depth of recursive ray tracing. (Default = 6)
                 takes_value: true
             - WIDTH:
                 short: w
                 long: width
-                help: The width of the rendering.
+                help: The width of the rendering in pixels. (Default = 900)
                 takes_value: true
             - HEIGHT:
                 short: h
                 long: height
-                help: The height of the rendering.
+                help: The height of the rendering in pixels. (Default = 900)
                 takes_value: true
