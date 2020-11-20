@@ -24,7 +24,7 @@ impl Integrator for DebugNormals {
         _: &Scene,
         _: &SceneIntersection,
         _: &mut dyn Sampler,
-        _: i32,
+        _: u32,
     ) -> Spectrum {
         Spectrum::black()
     }
