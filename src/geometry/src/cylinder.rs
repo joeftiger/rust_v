@@ -20,7 +20,7 @@ impl Cylinder {
     }
 
     fn check_cylinder_height(&self, ray: &Ray, t: f32) -> Option<f32> {
-        ray.check_range(t)?;
+        ray.is_in_range_op(t)?;
 
         let z = self.axis().dot(ray.at(t) - self.center());
 
@@ -113,5 +113,27 @@ impl Geometry for Cylinder {
         }
 
         Some(GeometryInfo::new(*ray, t_min, point, normal))
+    }
+
+    fn intersects(&self, ray: &Ray) -> bool {
+        // Intersect with the infinite cylinder
+        let center = self.center();
+        let dir = ray.direction;
+        let oc = ray.origin - center;
+
+        let dir_parallel = self.axis().dot(dir);
+        let oc_parallel = self.axis().dot(oc);
+
+        let a = dir.dot(dir) - dir_parallel * dir_parallel;
+        let b = 2.0 * (dir.dot(oc) - dir_parallel * oc_parallel);
+        let c = oc.dot(oc) - oc_parallel * oc_parallel - self.radius * self.radius;
+
+        // Find the closest valid solution in front of the viewer).
+        if let Some((t0, t1)) = solve_quadratic(a, b, c) {
+            // Check if the intersection height is between the caps (checked against ray)
+            self.check_cylinder(ray, t0, t1).is_some()
+        } else {
+            false
+        }
     }
 }

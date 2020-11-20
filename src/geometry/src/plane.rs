@@ -47,13 +47,18 @@ impl Plane {
 
         let p = self.normal * self.d - ray.origin;
         let t = p.dot(self.normal) / denom;
-        if t < 0.0 || t < ray.t_start || ray.t_end < t {
+        if t < 0.0 || !ray.is_in_range(t) {
             return None;
         }
 
         let point = ray.at(t);
 
         Some(GeometryInfo::new(*ray, t, point, self.normal))
+    }
+
+    #[inline(always)]
+    fn intersects(&self, ray: &Ray) -> bool {
+        self.normal.dot(ray.direction) >= floats::EPSILON
     }
 }
 
@@ -130,6 +135,11 @@ impl Geometry for Plane2 {
         let (p0, p1) = Plane::from(self);
 
         GeometryInfo::mmin_op2(p0.intersect(ray), p1.intersect(ray))
+    }
+
+    #[inline(always)]
+    fn intersects(&self, ray: &Ray) -> bool {
+        self.normal.dot(ray.direction) >= floats::EPSILON
     }
 }
 

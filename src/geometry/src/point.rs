@@ -19,7 +19,13 @@ impl Geometry for Point {
         Aabb::new(self.position, self.position)
     }
 
+    #[inline(always)]
     fn intersect(&self, _: &Ray) -> Option<GeometryInfo> {
         None
+    }
+
+    #[inline(always)]
+    fn intersects(&self, _ray: &Ray) -> bool {
+        false
     }
 }

@@ -75,4 +75,8 @@ impl Geometry for Tube {
 
         intersection
     }
+
+    fn intersects(&self, ray: &Ray) -> bool {
+        self.cylinders.iter().any(|c| c.intersects(ray)) || self.spheres.iter().any(|s| s.intersects(ray))
+    }
 }

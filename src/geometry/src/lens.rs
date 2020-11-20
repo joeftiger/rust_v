@@ -38,10 +38,10 @@ impl Geometry for BiconvexLens {
         if let Some(i0) = self.sphere0.intersect(ray) {
             if let Some(i1) = self.sphere1.intersect(ray) {
                 // note the inversion of the first intersecting sphere
-                if i0.t < i1.t {
-                    return Some(i1);
+                return if i0.t < i1.t {
+                    Some(i1)
                 } else {
-                    return Some(i0);
+                    Some(i0)
                 }
             }
         }

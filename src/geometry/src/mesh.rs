@@ -69,6 +69,32 @@ impl Geometry for Triangle {
 
         Some(GeometryInfo::new(*ray, t, point, normal))
     }
+    
+    fn intersects(&self, ray: &Ray) -> bool {let ab = *self.b - *self.a;
+        let ac = *self.c - *self.a;
+        let h = ray.direction.cross(ac);
+
+        let det = ab.dot(h);
+        if det < floats::EPSILON {
+            return false;
+        }
+
+        let t = ray.origin - *self.a;
+        let u = t.dot(h) / det;
+        if u < 0.0 || u > 1.0 {
+            return false;
+        }
+
+        let q = t.cross(ab);
+        let v = ray.direction.dot(q) / det;
+        if v < 0.0 || u + v > 1.0 {
+            return false;
+        }
+
+        let t = ac.dot(q) / det;
+        
+        ray.is_in_range(t)
+    }
 }
 
 #[derive(Default)]
@@ -116,6 +142,10 @@ impl Geometry for Mesh {
         });
 
         current_info
+    }
+    
+    fn intersects(&self, ray: &Ray) -> bool {
+        self.triangles.iter().any(|t| t.intersects(ray))
     }
 }
 

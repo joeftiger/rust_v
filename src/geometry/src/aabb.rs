@@ -142,6 +142,19 @@ impl Geometry for Aabb {
         // approximating epsilon is too small (unlikely) or the given hit was illegal
         Some(GeometryInfo::new(*ray, t_min, point, normal))
     }
+
+    fn intersects(&self, ray: &Ray) -> bool {
+        let t1 = (self.min - ray.origin) / ray.direction;
+        let t2 = (self.max - ray.origin) / ray.direction;
+
+        let t_min_vec = t1.min_by_component(t2);
+        let t_max_vec = t1.max_by_component(t2);
+
+        let t_min = f32::max(t_min_vec.z, f32::max(t_min_vec.y, t_min_vec.x));
+        let t_max = f32::min(t_max_vec.z, f32::min(t_max_vec.y, t_max_vec.x));
+
+        t_max >= 0.0 && t_max >= t_min && ray.is_in_range(t_min)
+    }
 }
 
 fn compare_closest(d: f32, v: Vec3, closest: Option<(f32, Vec3)>) -> Option<(f32, Vec3)> {

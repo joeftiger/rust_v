@@ -41,4 +41,8 @@ impl Geometry for Capsule {
 
         GeometryInfo::mmin_op2(bot, GeometryInfo::mmin_op2(top, cylinder))
     }
+    
+    fn intersects(&self, ray: &Ray) -> bool {
+        self.cylinder.intersects(ray) || self.bot.intersects(ray) || self.top.intersects(ray)
+    }
 }

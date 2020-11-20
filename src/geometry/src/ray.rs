@@ -68,10 +68,12 @@ impl PartialEq for Ray4 {
 }
 
 impl Ray {
+    #[inline(always)]
     pub fn is_in_range(&self, t: f32) -> bool {
         t >= self.t_start && t <= self.t_end
     }
 
+    #[inline]
     pub fn is_in_range_op(&self, t: f32) -> Option<f32> {
         if self.is_in_range(t) {
             Some(t)

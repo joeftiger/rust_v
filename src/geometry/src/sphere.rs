@@ -43,7 +43,7 @@ impl Geometry for Sphere {
 
         let (t0, t1) = solve_quadratic(a, b, c)?;
 
-        let t_min = f32::mmin_op2(ray.check_range(t0), ray.check_range(t1))?;
+        let t_min = f32::mmin_op2(ray.is_in_range_op(t0), ray.is_in_range_op(t1))?;
 
         let point = ray.at(t_min);
         let mut normal = (point - self.center).normalized();
@@ -55,6 +55,21 @@ impl Geometry for Sphere {
         }
 
         Some(GeometryInfo::new(*ray, t_min, point, normal))
+    }
+
+    fn intersects(&self, ray: &Ray) -> bool {
+        let dir = ray.direction;
+        let oc = ray.origin - self.center;
+
+        let a = dir.dot(dir);
+        let b = 2.0 * dir.dot(oc);
+        let c = oc.dot(oc) - self.radius * self.radius;
+
+        if let Some((t0, t1)) = solve_quadratic(a, b, c) {
+            ray.is_in_range(t0) || ray.is_in_range(t1)
+        } else {
+            false
+        }
     }
 }
 

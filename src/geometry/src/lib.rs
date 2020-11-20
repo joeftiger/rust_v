@@ -107,6 +107,10 @@ pub trait Geometry {
     fn bounding_box(&self) -> Aabb;
 
     fn intersect(&self, ray: &Ray) -> Option<GeometryInfo>;
+    
+    fn intersects(&self, ray: &Ray) -> bool {
+        self.intersect(ray).is_some()
+    }
 }
 
 /// A trait that allows measuring the angle between two structs.
