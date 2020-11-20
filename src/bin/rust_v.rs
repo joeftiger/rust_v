@@ -5,11 +5,10 @@ use clap::{App, ArgMatches};
 
 use rust_v::cornell_box;
 use rust_v::render::integrator::debug_normals::DebugNormals;
-use rust_v::render::integrator::whitted::Whitted;
 use rust_v::render::integrator::Integrator;
+use rust_v::render::integrator::whitted::Whitted;
 use rust_v::render::renderer::Renderer;
 use rust_v::render::sampler::RandomSampler;
-
 #[cfg(feature = "live-window")]
 use rust_v::render::window::RenderWindow;
 
@@ -20,12 +19,13 @@ const DEBUG_RENDERER: &str = "DEBUG";
 #[allow(dead_code)]
 const INPUT: &str = "INPUT";
 const OUTPUT: &str = "OUTPUT";
+const PASSES: &str = "PASSES";
 
 fn main() {
     #[cfg(not(feature = "live-window"))]
-    let yaml = load_yaml!("cli.yml");
+        let yaml = load_yaml!("cli.yml");
     #[cfg(feature = "live-window")]
-    let yaml = load_yaml!("cli-live-window.yml");
+        let yaml = load_yaml!("cli-live-window.yml");
 
     let matches = App::from_yaml(yaml).get_matches();
 
@@ -38,49 +38,53 @@ fn main() {
             if demo.is_present(DEBUG_RENDERER) {
                 Box::new(DebugNormals)
             } else {
-                Box::new(Whitted::new(1000))
+                Box::new(Whitted::new(5))
             }
         };
 
         let renderer = Renderer::new(scene, camera, sampler, integrator);
 
-        render(demo, renderer);
+        if let Err(msg) = render(&matches, renderer) {
+            panic!("Error: {}", msg)
+        }
     }
 }
 
 #[cfg(not(feature = "live-window"))]
-fn render(matches: &ArgMatches, renderer: Renderer) {
-    render_and_save(matches, renderer);
+fn render(matches: &ArgMatches, renderer: Renderer) -> Result<(), String> {
+    render_and_save(matches, renderer)
 }
 
 #[cfg(feature = "live-window")]
-fn render(matches: &ArgMatches, renderer: Renderer) {
+fn render(matches: &ArgMatches, renderer: Renderer) -> Result<(), String> {
     if matches.is_present(LIVE_WINDOW) {
         RenderWindow::new("Rust-V".to_string(), renderer)
-            .expect("Can't create window")
+            .map_err(|e| format!("Unable to create window: {}", e))?
             .start_rendering();
+        Ok(())
     } else {
-        render_and_save(matches, renderer);
+        render_and_save(matches, renderer)
     }
 }
 
-fn render_and_save(matches: &ArgMatches, mut renderer: Renderer) {
-    renderer.render_all(1);
+fn render_and_save(matches: &ArgMatches, mut renderer: Renderer) -> Result<(), String> {
+    let passes = matches.value_of(PASSES)
+        .unwrap_or("1")
+        .parse::<u32>()
+        .map_err(|e| format!("Unable to pass PASSES: {}", e))?;
+
+
+    renderer.render_all(passes);
     let image = renderer.get_image_u16();
 
     if let Some(output) = matches.value_of_os(OUTPUT) {
-        image
-            .save(&output)
-            .unwrap_or_else(|_| panic!("Could not save to: {:?}", output));
+        image.save(&output).map_err(|e| format!("Unable to save image: {}", e))
     } else {
-        let start = std::time::SystemTime::now();
-        let since = start
+        let since = std::time::SystemTime::now()
             .duration_since(std::time::UNIX_EPOCH)
-            .expect("Time went backwards");
+            .map_err(|e| e.to_string())?;
         let file = format!("{}.png", since.as_nanos());
 
-        image
-            .save(&file)
-            .unwrap_or_else(|_| panic!("Could not save to: {}", file));
+        image.save(&file).map_err(|e| format!("Unable to save image: {}", e))
     }
 }

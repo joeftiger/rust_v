@@ -16,6 +16,10 @@ args:
       long: output
       help: The output path to save the rendered PNG.
       required: false
+  - PASSES:
+      short: p
+      long: passes
+      help: The number of render passes per pixel.
 subcommands:
   - demo:
       version: "0.1"
