@@ -35,18 +35,43 @@ impl Geometry for BiconvexLens {
     }
 
     fn intersect(&self, ray: &Ray) -> Option<GeometryInfo> {
+        let ray_start = ray.at(ray.t_start);
+
         if let Some(i0) = self.sphere0.intersect(ray) {
             if let Some(i1) = self.sphere1.intersect(ray) {
-                // note the inversion of the first intersecting sphere
-                return if i0.t < i1.t {
-                    Some(i1)
-                } else {
+                // inside lens return min
+                if self.contains(ray_start) {
+                    return if i0.t < i1.t {
+                        Some(i0)
+                    } else {
+                        Some(i1)
+                    }
+                }
+
+                // inside sphere0 return sphere1
+                if self.sphere0.contains(ray_start) {
+                    return Some(i1);
+                }
+
+                // inside sphere1 return sphere0
+                if self.sphere1.contains(ray_start) {
+                    return Some(i0);
+                }
+
+                // outside lens return max
+                return if i0.t > i1.t {
                     Some(i0)
+                } else {
+                    Some(i1)
                 }
             }
         }
 
         None
+    }
+
+    fn intersects(&self, ray: &Ray) -> bool {
+        self.sphere0.intersects(ray) && self.sphere1.intersects(ray)
     }
 }
 
