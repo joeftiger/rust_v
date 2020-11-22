@@ -113,6 +113,22 @@ pub trait Geometry {
     }
 }
 
+pub struct DefaultGeometry;
+
+impl Geometry for DefaultGeometry {
+    fn bounding_box(&self) -> Aabb {
+        Aabb::inverted_infinite()
+    }
+
+    fn intersect(&self, _: &Ray) -> Option<GeometryInfo> {
+        None
+    }
+
+    fn intersects(&self, _: &Ray) -> bool {
+        false
+    }
+}
+
 /// A trait that allows measuring the angle between two structs.
 /// For example:
 /// ```rust
