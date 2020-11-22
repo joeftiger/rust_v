@@ -11,8 +11,8 @@ use rust_v::render::integrator::Integrator;
 use rust_v::render::renderer::Renderer;
 use rust_v::render::sampler::RandomSampler;
 use rust_v::render::window::RenderWindow;
-use std::sync::{Arc, Mutex};
 use std::convert::TryInto;
+use std::sync::{Arc, Mutex};
 
 const LIVE: &str = "LIVE_WINDOW";
 const DEMO: &str = "demo";
@@ -70,7 +70,17 @@ fn main() -> Result<(), String> {
         };
         let output = output.as_str();
 
-        let mut main = Main::new(verbose, debug, width, height, depth, passes, live, output, pixel_format);
+        let mut main = Main::new(
+            verbose,
+            debug,
+            width,
+            height,
+            depth,
+            passes,
+            live,
+            output,
+            pixel_format,
+        );
         main.start()
     } else {
         Err("Currently we only support the demo subcommand!".to_string())
@@ -142,7 +152,7 @@ impl<'a> Main<'a> {
             Ok(())
         } else {
             let bar = {
-                let bar = ProgressBar::new(renderer.len_pixels() as u64);
+                let bar = ProgressBar::new(renderer.num_pixels() as u64);
                 bar.set_style(ProgressStyle::default_bar().template(
                     "[{elapsed} elapsed] {wide_bar:.cyan/white} {percent}% [{eta} remaining]",
                 ));
@@ -150,14 +160,17 @@ impl<'a> Main<'a> {
                 Arc::new(Mutex::new(bar))
             };
 
-            renderer.render_all_with(self.passes, bar.clone());
+            // renderer.render_all(self.passes, bar.clone());
+            renderer.render_all_par(self.passes, bar.clone());
             bar.lock().expect("ProgressBar poisoned").finish();
 
-            match self.pixel_format  {
-                PixelFormat::u8 => renderer.get_image_u8()
+            match self.pixel_format {
+                PixelFormat::u8 => renderer
+                    .get_image_u8()
                     .save(&self.output)
                     .map_err(|e| format!("Unable to save image: {}", e))?,
-                PixelFormat::u16 => renderer.get_image_u16()
+                PixelFormat::u16 => renderer
+                    .get_image_u16()
                     .save(&self.output)
                     .map_err(|e| format!("Unable to save image: {}", e))?,
             };
