@@ -13,6 +13,10 @@ impl BSDF {
         Self { bxdfs }
     }
 
+    pub fn empty() -> Self {
+        Self::new(Vec::with_capacity(0))
+    }
+
     pub fn num_bxdfs(&self) -> usize {
         self.bxdfs.len()
     }
