@@ -12,6 +12,7 @@ use rust_v::render::renderer::Renderer;
 use rust_v::render::sampler::RandomSampler;
 use rust_v::render::window::RenderWindow;
 use std::sync::{Arc, Mutex};
+use std::convert::TryInto;
 
 const LIVE: &str = "LIVE_WINDOW";
 const DEMO: &str = "demo";
@@ -24,6 +25,7 @@ const PASSES: &str = "PASSES";
 const DEPTH: &str = "DEPTH";
 const WIDTH: &str = "WIDTH";
 const HEIGHT: &str = "HEIGHT";
+const FORMAT: &str = "FORMAT";
 
 fn main() -> Result<(), String> {
     let yaml = load_yaml!("cli.yml");
@@ -33,11 +35,27 @@ fn main() -> Result<(), String> {
     if let Some(demo) = matches.subcommand_matches(DEMO) {
         let verbose = demo.is_present(VERBOSE);
         let debug = demo.is_present(DEBUG);
-        let width = demo.value_of(WIDTH).unwrap_or("900").parse().unwrap();
-        let height = demo.value_of(HEIGHT).unwrap_or("900").parse().unwrap();
-        let depth = demo.value_of(DEPTH).unwrap_or("6").parse().unwrap();
-        let passes = demo.value_of(PASSES).unwrap_or("1").parse().unwrap();
+        let width = match demo.value_of(WIDTH).unwrap_or("900").parse() {
+            Ok(width) => width,
+            Err(err) => panic!("Cannot parse width: {}", err),
+        };
+        let height = match demo.value_of(HEIGHT).unwrap_or("900").parse() {
+            Ok(height) => height,
+            Err(err) => panic!("Cannot parse height: {}", err),
+        };
+        let depth = match demo.value_of(DEPTH).unwrap_or("6").parse() {
+            Ok(depth) => depth,
+            Err(err) => panic!("Cannot parse depth: {}", err),
+        };
+        let passes = match demo.value_of(PASSES).unwrap_or("1").parse() {
+            Ok(passes) => passes,
+            Err(err) => panic!("Cannot parse passes: {}", err),
+        };
         let live = demo.is_present(LIVE);
+        let pixel_format = match demo.value_of(FORMAT).unwrap_or("u8").try_into() {
+            Ok(format) => format,
+            Err(err) => panic!("Cannot parse pixel format: {}", err),
+        };
 
         let output = if let Some(o) = demo.value_of(OUTPUT) {
             o.to_string()
@@ -52,7 +70,7 @@ fn main() -> Result<(), String> {
         };
         let output = output.as_str();
 
-        let mut main = Main::new(verbose, debug, width, height, depth, passes, live, output);
+        let mut main = Main::new(verbose, debug, width, height, depth, passes, live, output, pixel_format);
         main.start()
     } else {
         Err("Currently we only support the demo subcommand!".to_string())
@@ -69,6 +87,7 @@ struct Main<'a> {
     passes: u32,
     live: bool,
     output: &'a str,
+    pixel_format: PixelFormat,
 }
 
 impl<'a> Main<'a> {
@@ -82,6 +101,7 @@ impl<'a> Main<'a> {
         passes: u32,
         live: bool,
         output: &'a str,
+        pixel_format: PixelFormat,
     ) -> Self {
         Self {
             verbose,
@@ -92,6 +112,7 @@ impl<'a> Main<'a> {
             passes,
             live,
             output,
+            pixel_format,
         }
     }
 
@@ -132,11 +153,35 @@ impl<'a> Main<'a> {
             renderer.render_all_with(self.passes, bar.clone());
             bar.lock().expect("ProgressBar poisoned").finish();
 
-            let image = renderer.get_image_u16();
+            match self.pixel_format  {
+                PixelFormat::u8 => renderer.get_image_u8()
+                    .save(&self.output)
+                    .map_err(|e| format!("Unable to save image: {}", e))?,
+                PixelFormat::u16 => renderer.get_image_u16()
+                    .save(&self.output)
+                    .map_err(|e| format!("Unable to save image: {}", e))?,
+            };
 
-            image
-                .save(&self.output)
-                .map_err(|e| format!("Unable to save image: {}", e))
+            Ok(())
+        }
+    }
+}
+
+#[allow(non_camel_case_types)]
+#[derive(Debug)]
+enum PixelFormat {
+    u8,
+    u16,
+}
+
+impl TryInto<PixelFormat> for &str {
+    type Error = String;
+
+    fn try_into(self) -> Result<PixelFormat, Self::Error> {
+        match self {
+            "u8" => Ok(PixelFormat::u8),
+            "u16" => Ok(PixelFormat::u16),
+            _ => Err(self.to_string()),
         }
     }
 }
