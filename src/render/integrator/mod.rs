@@ -6,6 +6,7 @@ use color::Color;
 use geometry::ray::Ray;
 
 pub mod debug_normals;
+pub mod path;
 pub mod whitted;
 
 pub trait Integrator {
