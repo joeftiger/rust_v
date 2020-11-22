@@ -2,17 +2,17 @@ use crate::render::bxdf::fresnel::{Dielectric, Fresnel};
 use crate::render::bxdf::*;
 use crate::Spectrum;
 use color::Color;
-use std::rc::Rc;
+use std::sync::Arc;
 use ultraviolet::{Vec2, Vec3};
 
 #[derive(Debug)]
 pub struct SpecularReflection {
     r: Spectrum,
-    fresnel: Rc<dyn Fresnel>,
+    fresnel: Arc<dyn Fresnel>,
 }
 
 impl SpecularReflection {
-    pub fn new(r: Spectrum, fresnel: Rc<dyn Fresnel>) -> Self {
+    pub fn new(r: Spectrum, fresnel: Arc<dyn Fresnel>) -> Self {
         Self { r, fresnel }
     }
 }
@@ -41,11 +41,11 @@ impl BxDF for SpecularReflection {
 #[derive(Debug)]
 pub struct SpecularTransmission {
     t: Spectrum,
-    fresnel: Rc<Dielectric>,
+    fresnel: Arc<Dielectric>,
 }
 
 impl SpecularTransmission {
-    pub fn new(t: Spectrum, fresnel: Rc<Dielectric>) -> Self {
+    pub fn new(t: Spectrum, fresnel: Arc<Dielectric>) -> Self {
         Self { t, fresnel }
     }
 }

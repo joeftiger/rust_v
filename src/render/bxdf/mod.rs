@@ -189,7 +189,7 @@ impl BxDFSample {
 /// The common base shared between BRDFs and BTDFs.
 /// Provides methods for evaluating and sampling the distribution function for pairs of directions
 /// at an intersection
-pub trait BxDF: Debug {
+pub trait BxDF: Debug + Send + Sync {
     /// # Summary
     /// Some light transport algorithms need to distinguish different BxDFTypes.
     ///

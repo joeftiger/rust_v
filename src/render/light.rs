@@ -58,7 +58,7 @@ impl LightSample {
     }
 }
 
-pub trait Light {
+pub trait Light: Send + Sync {
     fn num_samples(&self) -> usize;
 
     fn get_type(&self) -> LightType;

@@ -3,18 +3,18 @@ use crate::aabb::Aabb;
 use crate::ray::Ray;
 use crate::{Geometry, GeometryInfo};
 use std::ops::Deref;
-use std::rc::Rc;
 use ultraviolet::Vec3;
 use util::floats;
+use std::sync::Arc;
 
 pub struct Triangle {
-    a: Rc<Vec3>,
-    b: Rc<Vec3>,
-    c: Rc<Vec3>,
+    a: Arc<Vec3>,
+    b: Arc<Vec3>,
+    c: Arc<Vec3>,
 }
 
 impl Triangle {
-    pub fn new(a: Rc<Vec3>, b: Rc<Vec3>, c: Rc<Vec3>) -> Self {
+    pub fn new(a: Arc<Vec3>, b: Arc<Vec3>, c: Arc<Vec3>) -> Self {
         Self { a, b, c }
     }
 }
@@ -100,13 +100,13 @@ impl Geometry for Triangle {
 
 #[derive(Default)]
 pub struct Mesh {
-    vertices: Vec<Rc<Vec3>>,
+    vertices: Vec<Arc<Vec3>>,
     triangles: Vec<Triangle>,
     aabb: Aabb,
 }
 
 impl Mesh {
-    pub fn new(vertices: Vec<Rc<Vec3>>, triangles: Vec<Triangle>) -> Self {
+    pub fn new(vertices: Vec<Arc<Vec3>>, triangles: Vec<Triangle>) -> Self {
         let mut aabb = Aabb::inverted_infinite();
         vertices.iter().for_each(|v| {
             aabb.min = aabb.min.min_by_component(*v.deref());
@@ -160,7 +160,7 @@ impl From<ObjFile> for Mesh {
         let mut mesh = Mesh::default();
         file.v.iter().for_each(|v| {
             let vertex = Vec3::new(v.0, v.1, v.2);
-            mesh.vertices.push(Rc::new(vertex));
+            mesh.vertices.push(Arc::new(vertex));
         });
         file.f.iter().for_each(|f| {
             let v = f.v;

@@ -11,6 +11,7 @@ use rust_v::render::integrator::Integrator;
 use rust_v::render::renderer::Renderer;
 use rust_v::render::sampler::RandomSampler;
 use rust_v::render::window::RenderWindow;
+use std::sync::{Arc, Mutex};
 
 const LIVE: &str = "LIVE_WINDOW";
 const DEMO: &str = "demo";
@@ -100,13 +101,18 @@ impl<'a> Main<'a> {
         }
 
         let (scene, camera) = cornell_box::create(self.width, self.height);
-        let sampler = Box::new(RandomSampler);
-        let integrator: Box<dyn Integrator> = if self.debug {
-            Box::new(DebugNormals)
+        let sampler = Mutex::new(RandomSampler);
+        let integrator: Arc<dyn Integrator> = if self.debug {
+            Arc::new(DebugNormals)
         } else {
-            Box::new(Whitted::new(self.depth))
+            Arc::new(Whitted::new(self.depth))
         };
-        let mut renderer = Renderer::new(scene, camera, sampler, integrator);
+        let mut renderer = Renderer::new(
+            Arc::new(scene),
+            Arc::new(camera),
+            Arc::new(sampler),
+            integrator,
+        );
 
         if self.live {
             RenderWindow::new("Rust-V".to_string(), &mut renderer)
@@ -114,13 +120,17 @@ impl<'a> Main<'a> {
                 .start_rendering();
             Ok(())
         } else {
-            let bar = ProgressBar::new(renderer.len_pixels() as u64);
-            bar.set_style(ProgressStyle::default_bar().template(
-                "[{elapsed} elapsed] {wide_bar:.cyan/white} {percent}% [{eta} remaining]",
-            ));
+            let bar = {
+                let bar = ProgressBar::new(renderer.len_pixels() as u64);
+                bar.set_style(ProgressStyle::default_bar().template(
+                    "[{elapsed} elapsed] {wide_bar:.cyan/white} {percent}% [{eta} remaining]",
+                ));
 
-            renderer.render_all_with(self.passes, &bar);
-            bar.finish();
+                Arc::new(Mutex::new(bar))
+            };
+
+            renderer.render_all_with(self.passes, bar.clone());
+            bar.lock().expect("ProgressBar poisoned").finish();
 
             let image = renderer.get_image_u16();
 

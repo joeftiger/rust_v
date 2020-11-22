@@ -15,7 +15,7 @@ use geometry::aabb::Aabb;
 use geometry::capsule::Capsule;
 use geometry::sphere::Sphere;
 use geometry::tube::Tube;
-use std::rc::Rc;
+use std::sync::Arc;
 use ultraviolet::Vec3;
 
 pub const LEFT_WALL: f32 = -3.0;
@@ -75,7 +75,7 @@ pub fn create_camera(width: u32, height: u32) -> Camera {
     Camera::new(position, center, up, FOVY, width, height)
 }
 
-fn light() -> Box<dyn Light> {
+fn light() -> Arc<dyn Light> {
     let point = Vec3::new(
         (LEFT_WALL + RIGHT_WALL) / 2.0,
         CEILING - (CEILING - FLOOR) / 3.0,
@@ -84,7 +84,7 @@ fn light() -> Box<dyn Light> {
 
     let color = Spectrum::white() * 20.0;
 
-    Box::new(PointLight::new(point, color))
+    Arc::new(PointLight::new(point, color))
 }
 
 fn sphere() -> SceneObject {
@@ -98,7 +98,7 @@ fn sphere() -> SceneObject {
     let sphere = Sphere::new(center, RADIUS);
 
     let color = Spectrum::white();
-    let fresnel = Rc::new(Dielectric::new(1.0, 2.0));
+    let fresnel = Arc::new(Dielectric::new(1.0, 2.0));
     // let spec_refl = SpecularReflection::new(color, fresnel.clone());
     let spec_trans = SpecularTransmission::new(color, fresnel);
     let bsdf = BSDF::new(vec![
@@ -193,7 +193,7 @@ fn back_wall() -> SceneObject {
     );
 
     let color = Spectrum::white();
-    let spec_refl = SpecularReflection::new(color, Rc::new(FresnelNoOp));
+    let spec_refl = SpecularReflection::new(color, Arc::new(FresnelNoOp));
     let bsdf = BSDF::new(vec![Box::new(spec_refl)]);
 
     SceneObject::new(Box::new(aabb), bsdf)

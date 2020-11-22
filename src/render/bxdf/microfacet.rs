@@ -19,7 +19,7 @@ pub fn roughness_to_alpha(roughness: f32) -> f32 {
     1.62142 + 0.819955 * x + 0.1734 * x2 + 0.0171201 * x2 * x + 0.000640711 * x2 * x2
 }
 
-pub trait MicrofacetDistribution: Debug {
+pub trait MicrofacetDistribution: Debug + Send + Sync {
     fn d(&self, wh: &Vec3) -> f32;
 
     fn lambda(&self, w: &Vec3) -> f32;

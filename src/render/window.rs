@@ -1,3 +1,7 @@
+#![allow(dead_code)]
+#![allow(unused_variables)]
+#![allow(unused_imports)]
+
 use std::time::{Duration, Instant};
 
 use show_image::{make_window_full, KeyCode, Window, WindowOptions};
@@ -148,31 +152,31 @@ impl<'a> RenderWindow<'a> {
     }
 
     fn rotate_camera(&mut self, dir: Direction) {
-        let camera = self.renderer.get_camera();
-        let direction = camera.position - camera.center;
-
-        println!("camera position: {:?}", camera.position);
-
-        let new_direction = match dir {
-            Direction::LEFT => Some(direction.rotated_by(Rotor3::from_rotation_xz(-ROTATION))),
-            Direction::RIGHT => Some(direction.rotated_by(Rotor3::from_rotation_xz(ROTATION))),
-            Direction::UP => Some(direction.rotated_by(Rotor3::from_angle_plane(
-                ROTATION,
-                Bivec3::from_normalized_axis(camera.right),
-            ))),
-            Direction::DOWN => Some(direction.rotated_by(Rotor3::from_angle_plane(
-                -ROTATION,
-                Bivec3::from_normalized_axis(camera.right),
-            ))),
-        };
-
-        if let Some(new_direction) = new_direction {
-            camera.position = camera.center + new_direction;
-            println!("camera position: {:?}", camera.position);
-
-            // important
-            camera.reset();
-            self.should_reset_image = true;
-        }
+        // let camera = self.renderer.get_camera();
+        // let direction = camera.position - camera.center;
+        //
+        // println!("camera position: {:?}", camera.position);
+        //
+        // let new_direction = match dir {
+        //     Direction::LEFT => Some(direction.rotated_by(Rotor3::from_rotation_xz(-ROTATION))),
+        //     Direction::RIGHT => Some(direction.rotated_by(Rotor3::from_rotation_xz(ROTATION))),
+        //     Direction::UP => Some(direction.rotated_by(Rotor3::from_angle_plane(
+        //         ROTATION,
+        //         Bivec3::from_normalized_axis(camera.right),
+        //     ))),
+        //     Direction::DOWN => Some(direction.rotated_by(Rotor3::from_angle_plane(
+        //         -ROTATION,
+        //         Bivec3::from_normalized_axis(camera.right),
+        //     ))),
+        // };
+        //
+        // if let Some(new_direction) = new_direction {
+        //     camera.position = camera.center + new_direction;
+        //     println!("camera position: {:?}", camera.position);
+        //
+        //     // important
+        //     camera.reset();
+        //     self.should_reset_image = true;
+        // }
     }
 }

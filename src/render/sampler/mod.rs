@@ -13,7 +13,7 @@ impl Sample {
     }
 }
 
-pub trait Sampler {
+pub trait Sampler: Send + Sync {
     fn get_1d(&mut self) -> f32;
 
     fn get_2d(&mut self) -> Vec2 {

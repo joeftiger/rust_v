@@ -103,7 +103,7 @@ pub trait Container {
     fn contains(&self, obj: Vec3) -> bool;
 }
 
-pub trait Geometry {
+pub trait Geometry: Send + Sync {
     fn bounding_box(&self) -> Aabb;
 
     fn intersect(&self, ray: &Ray) -> Option<GeometryInfo>;

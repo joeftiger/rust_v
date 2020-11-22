@@ -4,34 +4,44 @@ use crate::render::scene::{Scene, SceneIntersection};
 use crate::Spectrum;
 use color::Color;
 use geometry::ray::Ray;
+use std::sync::{Arc, Mutex};
 
 pub mod debug_normals;
 pub mod path;
 pub mod whitted;
 
-pub trait Integrator {
-    fn integrate(&self, scene: &Scene, primary_ray: &Ray, sampler: &mut dyn Sampler) -> Spectrum;
+pub trait Integrator: Send + Sync {
+    fn integrate(
+        &self,
+        scene: &Scene,
+        primary_ray: &Ray,
+        sampler: Arc<Mutex<dyn Sampler>>,
+    ) -> Spectrum;
 
     fn illumination(
         &self,
         scene: &Scene,
         intersection: &SceneIntersection,
-        sampler: &mut dyn Sampler,
+        sampler: Arc<Mutex<dyn Sampler>>,
         depth: u32,
     ) -> Spectrum;
 
+    //noinspection DuplicatedCode
     fn specular_reflection(
         &self,
         scene: &Scene,
         intersection: &SceneIntersection,
-        sampler: &mut dyn Sampler,
+        sampler: Arc<Mutex<dyn Sampler>>,
         depth: u32,
     ) -> Spectrum {
         let outgoing = -intersection.info.ray.direction;
 
         let bsdf = &intersection.obj.bsdf;
         let normal = intersection.info.normal;
-        let sample = sampler.get_sample();
+        let sample = {
+            let mut sampler = sampler.lock().expect("Sampler poisoned");
+            sampler.get_sample()
+        };
 
         let bxdf_sample = bsdf.sample(
             &normal,
@@ -59,18 +69,22 @@ pub trait Integrator {
         Spectrum::black()
     }
 
+    //noinspection DuplicatedCode
     fn specular_transmission(
         &self,
         scene: &Scene,
         intersection: &SceneIntersection,
-        sampler: &mut dyn Sampler,
+        sampler: Arc<Mutex<dyn Sampler>>,
         depth: u32,
     ) -> Spectrum {
         let outgoing = -intersection.info.ray.direction;
 
         let bsdf = &intersection.obj.bsdf;
         let normal = intersection.info.normal;
-        let sample = sampler.get_sample();
+        let sample = {
+            let mut sampler = sampler.lock().expect("Sampler poisoned");
+            sampler.get_sample()
+        };
 
         let bxdf_sample = bsdf.sample(
             &normal,
