@@ -12,7 +12,7 @@ use rust_v::render::renderer::Renderer;
 use rust_v::render::sampler::RandomSampler;
 use rust_v::render::window::RenderWindow;
 use std::convert::TryInto;
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 use rust_v::render::integrator::path::Path;
 
 const LIVE: &str = "LIVE_WINDOW";
