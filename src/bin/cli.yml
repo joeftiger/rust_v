@@ -3,100 +3,106 @@ version: "0.0.4"
 author: "Julius Oeftiger <julius.oeftiger@students.unibe.ch>"
 about: "A rust ray tracer supporting rgb and spectral ray tracing. Currently WIP."
 args:
-    - INPUT:
-          help: "The scene input file."
-          takes_value: true
-    - OUTPUT:
-          short: o
-          long: output
-          help: "The output path to save the rendered PNG. (Default = system time since UNIX epoch)"
-          takes_value: true
-          value_name: String
-    - LIVE_WINDOW:
-          short: l
-          long: live
-          help: "Use a live window to progressively show rendering. The window allows saving with [Ctrl + S]."
-    - PASSES:
-          short: p
-          long: passes
-          help: "The number of render passes per pixel. (Default = 1)"
-          takes_value: true
-          value_name: u32
-    - DEPTH:
-          short: d
-          long: depth
-          help: "The depth of recursive ray tracing. (Default = 6)"
-          takes_value: true
-          value_name: u32
-    - WIDTH:
-          short: w
-          long: width
-          help: "The width of the rendering in pixels. (Default = 900)"
-          takes_value: true
-          value_name: u32
-    - HEIGHT:
-          short: h
-          long: height
-          help: "The height of the rendering in pixels. (Default = 900)"
-          takes_value: true
-          value_name: u32
-    - FORMAT:
-          short: f
-          long: format
-          value_name: "{u8, u16}"
-          help: "The output pixel format. (Default = u8)"
+  - INPUT:
+      help: "The scene input file."
+      takes_value: true
+  - OUTPUT:
+      short: o
+      long: output
+      help: "The output path to save the rendered PNG. (Default = system time since UNIX epoch)"
+      takes_value: true
+      value_name: String
+  - LIVE_WINDOW:
+      short: l
+      long: live
+      help: "Use a live window to progressively show rendering. The window allows saving with [Ctrl + S]."
+  - PASSES:
+      short: p
+      long: passes
+      help: "The number of render passes per pixel. (Default = 1)"
+      takes_value: true
+      value_name: u32
+  - DEPTH:
+      short: d
+      long: depth
+      help: "The depth of recursive ray tracing. (Default = 6)"
+      takes_value: true
+      value_name: u32
+  - WIDTH:
+      short: w
+      long: width
+      help: "The width of the rendering in pixels. (Default = 900)"
+      takes_value: true
+      value_name: u32
+  - HEIGHT:
+      short: h
+      long: height
+      help: "The height of the rendering in pixels. (Default = 900)"
+      takes_value: true
+      value_name: u32
+  - FORMAT:
+      short: f
+      long: format
+      value_name: "{u8, u16}"
+      help: "The output pixel format. (Default = u8)"
+  - THREADED:
+      long: threaded
+      help: "Run in parallel using all cores/threads."
 subcommands:
-    - demo:
-          version: "0.1"
-          author: "Julius Oeftiger <julius.oeftiger@students.unibe.ch>"
-          about: "The cornell box demo scene."
-          args:
-              - VERBOSE:
-                    short: v
-                    long: verbose
-                    help: Print verbose messages.
-              - OUTPUT:
-                    short: o
-                    long: output
-                    help: "The output path to save the rendered PNG. (Default = system time since UNIX epoch)"
-                    takes_value: true
-                    value_name: String
-              - LIVE_WINDOW:
-                    short: l
-                    long: live
-                    help: "Use a live window to progressively show rendering. The window allows saving with [Ctrl + S]."
-              - PASSES:
-                    short: p
-                    long: passes
-                    help: "The number of render passes per pixel. (Default = 1)"
-                    takes_value: true
-                    value_name: u32
-              - DEPTH:
-                    short: d
-                    long: depth
-                    help: "The depth of recursive ray tracing. (Default = 6)"
-                    takes_value: true
-                    value_name: u32
-              - WIDTH:
-                    short: w
-                    long: width
-                    help: "The width of the rendering in pixels. (Default = 900)"
-                    takes_value: true
-                    value_name: u32
-              - HEIGHT:
-                    short: h
-                    long: height
-                    help: "The height of the rendering in pixels. (Default = 900)"
-                    takes_value: true
-                    value_name: u32
-              - FORMAT:
-                  short: f
-                  long: format
-                  value_name: "{8, u16}"
-                  help: "The output pixel format. (Default = u8)"
-              - INTEGRATOR_BACKEND:
-                  short: i
-                  long: integrator
-                  help: "The integrator backend to use. Debug renders surface normals. (Default = Whitted)"
-                  takes_value: true
-                  value_name: "{Whitted, Path, Debug}"
+  - demo:
+      version: "0.1"
+      author: "Julius Oeftiger <julius.oeftiger@students.unibe.ch>"
+      about: "The cornell box demo scene."
+      args:
+        - VERBOSE:
+            short: v
+            long: verbose
+            help: Print verbose messages.
+        - OUTPUT:
+            short: o
+            long: output
+            help: "The output path to save the rendered PNG. (Default = system time since UNIX epoch)"
+            takes_value: true
+            value_name: String
+        - LIVE_WINDOW:
+            short: l
+            long: live
+            help: "Use a live window to progressively show rendering. The window allows saving with [Ctrl + S]."
+        - PASSES:
+            short: p
+            long: passes
+            help: "The number of render passes per pixel. (Default = 1)"
+            takes_value: true
+            value_name: u32
+        - DEPTH:
+            short: d
+            long: depth
+            help: "The depth of recursive ray tracing. (Default = 6)"
+            takes_value: true
+            value_name: u32
+        - WIDTH:
+            short: w
+            long: width
+            help: "The width of the rendering in pixels. (Default = 900)"
+            takes_value: true
+            value_name: u32
+        - HEIGHT:
+            short: h
+            long: height
+            help: "The height of the rendering in pixels. (Default = 900)"
+            takes_value: true
+            value_name: u32
+        - FORMAT:
+            short: f
+            long: format
+            value_name: "{8, u16}"
+            help: "The output pixel format. (Default = u8)"
+        - INTEGRATOR_BACKEND:
+            short: i
+            long: integrator
+            help: "The integrator backend to use. Debug renders surface normals. (Default = Whitted)"
+            takes_value: true
+            value_name: "{Whitted, Path, Debug}"
+        - THREADED:
+            long: threaded
+            help: "Run in parallel using all cores/threads."

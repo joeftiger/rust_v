@@ -27,6 +27,7 @@ const WIDTH: &str = "WIDTH";
 const HEIGHT: &str = "HEIGHT";
 const FORMAT: &str = "FORMAT";
 const INTEGRATOR_BACKEND: &str = "INTEGRATOR_BACKEND";
+const THREADED: &str = "THREADED";
 
 fn main() -> Result<(), String> {
     let yaml = load_yaml!("cli.yml");
@@ -52,6 +53,7 @@ fn main() -> Result<(), String> {
             Err(err) => panic!("Cannot parse passes: {}", err),
         };
         let live = demo.is_present(LIVE);
+        let threaded = demo.is_present(THREADED);
         let pixel_format = match demo.value_of(FORMAT).unwrap_or("U8").try_into() {
             Ok(format) => format,
             Err(err) => panic!("Cannot parse pixel format: {}", err),
@@ -81,6 +83,7 @@ fn main() -> Result<(), String> {
             depth,
             passes,
             live,
+            threaded,
             output,
             pixel_format,
             integrator_backend
@@ -99,6 +102,7 @@ struct Configuration<'a> {
     depth: u32,
     passes: u32,
     live: bool,
+    threaded: bool,
     output: &'a str,
     pixel_format: PixelFormat,
     integrator_backend: IntegratorBackend,
@@ -113,6 +117,7 @@ impl<'a> Configuration<'a> {
         depth: u32,
         passes: u32,
         live: bool,
+        threaded: bool,
         output: &'a str,
         pixel_format: PixelFormat,
         integrator_backend: IntegratorBackend,
@@ -124,6 +129,7 @@ impl<'a> Configuration<'a> {
             depth,
             passes,
             live,
+            threaded,
             output,
             pixel_format,
             integrator_backend,
@@ -136,7 +142,6 @@ impl<'a> Configuration<'a> {
         }
 
         let (scene, camera) = cornell_box::create(self.width, self.height);
-        let sampler = Mutex::new(RandomSampler);
 
         let integrator: Arc<dyn Integrator> = match self.integrator_backend {
             IntegratorBackend::Debug => Arc::new(DebugNormals),
@@ -147,7 +152,7 @@ impl<'a> Configuration<'a> {
         let mut renderer = Renderer::new(
             Arc::new(scene),
             Arc::new(camera),
-            Arc::new(sampler),
+            Arc::new(RandomSampler),
             integrator,
         );
 
@@ -163,12 +168,15 @@ impl<'a> Configuration<'a> {
                     "[{elapsed} elapsed] {wide_bar:.cyan/white} {percent}% [{eta} remaining]",
                 ));
 
-                Arc::new(Mutex::new(bar))
+                Arc::new(bar)
             };
 
-            // renderer.render_all(self.passes, bar.clone());
-            renderer.render_all_par(self.passes, bar.clone());
-            bar.lock().expect("ProgressBar poisoned").finish();
+            if self.threaded {
+                renderer.render_all_par(self.passes, bar.clone());
+            } else {
+                renderer.render_all(self.passes, bar.clone());
+            }
+            bar.finish();
 
             match self.pixel_format {
                 PixelFormat::U8 => renderer
