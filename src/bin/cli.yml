@@ -55,9 +55,6 @@ subcommands:
                     short: v
                     long: verbose
                     help: Print verbose messages.
-              - DEBUG:
-                    long: debug
-                    help: "Use a debugging renderer to render surface normals."
               - OUTPUT:
                     short: o
                     long: output
@@ -97,3 +94,9 @@ subcommands:
                   long: format
                   value_name: "{8, u16}"
                   help: "The output pixel format. (Default = u8)"
+              - INTEGRATOR_BACKEND:
+                  short: i
+                  long: integrator
+                  help: "The integrator backend to use. Debug renders surface normals. (Default = Whitted)"
+                  takes_value: true
+                  value_name: "{Whitted, Path, Debug}"
