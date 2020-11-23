@@ -8,6 +8,7 @@ use ultraviolet::Vec3;
 
 /// Consists of
 /// - info: [GeometryInfo](../geometry_leg/struct.GeometryInfo.html)
+#[derive(Clone)]
 pub struct SceneIntersection {
     pub info: GeometryInfo,
     pub obj: Arc<SceneObject>,

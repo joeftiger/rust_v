@@ -41,7 +41,7 @@ pub struct Renderer {
     camera: Arc<Camera>,
     sampler: Arc<Mutex<dyn Sampler>>,
     integrator: Arc<dyn Integrator>,
-    spectrum_statistics: Arc<Mutex<Vec<SpectrumStatistic>>>,
+    spectrum_statistics: Arc<Vec<RwLock<SpectrumStatistic>>>,
     image: Arc<RwLock<ImageBuffer<Rgb<u16>, Vec<u16>>>>,
     progress: Arc<RwLock<u32>>,
     render_blocks: Arc<RangeBlock>,
@@ -60,11 +60,11 @@ impl Renderer {
         let image = ImageBuffer::new(camera.width, camera.height);
 
         let capacity = (image.width() * image.height()) as usize;
-        let spectrum_statistics = Arc::new(Mutex::new(
+        let spectrum_statistics = Arc::new(
             (0..capacity)
-                .map(|_| SpectrumStatistic::default())
+                .map(|_| RwLock::new(SpectrumStatistic::default()))
                 .collect(),
-        ));
+        );
 
         let render_blocks = RangeBlock::new(img_width, img_height, 64);
 
@@ -186,27 +186,27 @@ impl Renderer {
         self.render_blocks[index]
             .prod()
             .into_par_iter()
-            .into_par_iter()
             .for_each(|(x, y)| {
                 let mut this = self.clone();
                 let x = x as u32;
                 let y = y as u32;
 
-                let index = x * self.img_width + y;
+                let index = (x * this.img_width + y) as usize;
 
                 let pixel = this.render(x, y);
                 {
-                    let stats = &mut this.spectrum_statistics.lock().unwrap()[index as usize];
+                    let stats = &mut this.spectrum_statistics[index].write().expect("Spectrum Statistics poisoned");
 
-                    stats.spectrum += pixel;
                     stats.num += 1;
+                    stats.spectrum += pixel;
+                };
+                let spectrum = this.spectrum_statistics[index].read().expect("Spectrum Statistics poisoned").average();
 
-                    this.image.write().expect("Image poisoned").put_pixel(
-                        x,
-                        y,
-                        stats.average().into(),
-                    );
-                }
+                this.image.write().expect("Image poisoned").put_pixel(
+                    x,
+                    y,
+                    spectrum.into(),
+                );
             });
     }
 
