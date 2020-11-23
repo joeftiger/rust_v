@@ -92,7 +92,7 @@ fn sphere() -> SceneObject {
     let center = Vec3::new(
         LEFT_WALL + RIGHT_WALL * 1.5,
         FLOOR + RADIUS,
-        (FRONT + BACK_WALL) / 4.0,
+        FRONT + (BACK_WALL - FRONT) * 0.75,
     );
 
     let sphere = Sphere::new(center, RADIUS);
