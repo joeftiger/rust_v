@@ -1,6 +1,6 @@
-use std::sync::{Arc, RwLock};
+use std::sync::{Arc, RwLock, Mutex};
 
-use color::{Color, Srgb};
+use color::Color;
 use image::{ImageBuffer, Rgb};
 use indicatif::ProgressBar;
 use rayon::prelude::*;
@@ -19,12 +19,12 @@ pub const BLOCK_SIZE: u32 = 64;
 //     vec.iter().map(|b16| (b16 / 2u16.pow(8)) as u8).collect()
 // }
 
-fn convert_to_u8(vec: &[RwLock<Spectrum>]) -> Vec<u8> {
+fn convert_to_u8(vec: &[Mutex<SpectrumStatistic>]) -> Vec<u8> {
     let mut out = Vec::with_capacity(vec.len() * 3);
 
     vec.iter()
         .for_each(|px| {
-            let color = px.read().expect("Image is poisoned").to_rgb();
+            let color = px.lock().expect("Image is poisoned").average().to_rgb();
             out.push((color[0] * 2u32.pow(8) as f32) as u8);
             out.push((color[1] * 2u32.pow(8) as f32) as u8);
             out.push((color[2] * 2u32.pow(8) as f32) as u8);
@@ -33,12 +33,12 @@ fn convert_to_u8(vec: &[RwLock<Spectrum>]) -> Vec<u8> {
     out
 }
 
-fn convert_to_u16(vec: &[RwLock<Spectrum>]) -> Vec<u16> {
+fn convert_to_u16(vec: &[Mutex<SpectrumStatistic>]) -> Vec<u16> {
     let mut out = Vec::with_capacity(vec.len() * 3);
 
     vec.iter()
         .for_each(|px| {
-            let color = px.read().expect("Image is poisoned").to_rgb();
+            let color = px.lock().expect("Image is poisoned").average().to_rgb();
             out.push((color[0] * 2u32.pow(16) as f32) as u16);
             out.push((color[1] * 2u32.pow(16) as f32) as u16);
             out.push((color[2] * 2u32.pow(16) as f32) as u16);
@@ -71,6 +71,11 @@ impl SpectrumStatistic {
             self.spectrum / self.num as f32
         }
     }
+
+    pub fn reset(&mut self) {
+        self.num = 0;
+        self.spectrum = Spectrum::black();
+    }
 }
 
 #[allow(clippy::rc_buffer)]
@@ -80,8 +85,7 @@ pub struct Renderer {
     camera: Arc<Camera>,
     sampler: Arc<dyn Sampler>,
     integrator: Arc<dyn Integrator>,
-    spectrum_statistics: Arc<Vec<RwLock<SpectrumStatistic>>>,
-    image: Arc<Vec<RwLock<Spectrum>>>,
+    spectrum_statistics: Arc<Vec<Mutex<SpectrumStatistic>>>,
     progress: Arc<RwLock<u32>>,
     render_blocks: Arc<RangeBlock>,
     img_width: u32,
@@ -97,15 +101,10 @@ impl Renderer {
     ) -> Self {
         let (img_width, img_height) = (camera.width, camera.height);
         let capacity = (img_width * img_height) as usize;
-        let image = Arc::new(
-            (0..capacity)
-                .map(|_| RwLock::new(Spectrum::black()))
-                .collect(),
-        );
 
         let spectrum_statistics = Arc::new(
             (0..capacity)
-                .map(|_| RwLock::new(SpectrumStatistic::default()))
+                .map(|_| Mutex::new(SpectrumStatistic::default()))
                 .collect(),
         );
 
@@ -117,7 +116,6 @@ impl Renderer {
             sampler,
             integrator,
             spectrum_statistics,
-            image,
             progress: Arc::new(RwLock::new(0)),
             render_blocks: Arc::new(render_blocks),
             img_width,
@@ -154,8 +152,8 @@ impl Renderer {
     }
 
     pub fn reset_image(&mut self) {
-        self.image.iter()
-            .for_each(|px| *px.write().expect("Image is poisoned") = Srgb::black());
+        self.spectrum_statistics.iter()
+            .for_each(|px| px.lock().expect("Spectrum is poisoned").reset());
     }
 
     pub fn render_all(&mut self, passes: u32, bar: Arc<ProgressBar>) {
@@ -178,9 +176,11 @@ impl Renderer {
                     for _ in 0..passes {
                         let pixel = this.render(x, y);
                         {
-                            let mut px = this.image[index].write().expect("Image poisoned");
-                            *px = pixel;
-                        }
+                            let stats = &mut this.spectrum_statistics[index].lock().expect("Spectrum Statistics poisoned");
+
+                            stats.num += 1;
+                            stats.spectrum += pixel;
+                        };
                     }
                 });
                 bar.inc_length(1)
@@ -208,9 +208,11 @@ impl Renderer {
                     for _ in 0..passes {
                         let pixel = this.render(x, y);
                         {
-                            let mut px = this.image[index].write().expect("Image poisoned");
-                            *px = pixel;
-                        }
+                            let stats = &mut this.spectrum_statistics[index].lock().expect("Spectrum Statistics poisoned");
+
+                            stats.num += 1;
+                            stats.spectrum += pixel;
+                        };
                     }
                 });
                 bar.inc_length(1)
@@ -237,17 +239,11 @@ impl Renderer {
 
                 let pixel = this.render(x, y);
                 {
-                    let stats = &mut this.spectrum_statistics[index].write().expect("Spectrum Statistics poisoned");
+                    let stats = &mut this.spectrum_statistics[index].lock().expect("Spectrum Statistics poisoned");
 
                     stats.num += 1;
                     stats.spectrum += pixel;
                 };
-                let spectrum = this.spectrum_statistics[index].read().expect("Spectrum Statistics poisoned").average();
-
-                {
-                    let mut px = this.image[index].write().expect("Image poisoned");
-                    *px = spectrum;
-                }
             });
     }
 
@@ -256,13 +252,13 @@ impl Renderer {
     }
 
     pub fn get_image_u8(&self) -> ImageBuffer<Rgb<u8>, Vec<u8>> {
-        let data = convert_to_u8(self.image.as_slice());
+        let data = convert_to_u8(self.spectrum_statistics.as_slice());
 
         ImageBuffer::from_vec(self.img_width, self.img_height, data).unwrap()
     }
 
     pub fn get_image_u16(&self) -> ImageBuffer<Rgb<u16>, Vec<u16>> {
-        let data = convert_to_u16(self.image.as_slice());
+        let data = convert_to_u16(self.spectrum_statistics.as_slice());
 
         ImageBuffer::from_vec(self.img_width, self.img_height, data).unwrap()
     }
