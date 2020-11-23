@@ -4,7 +4,7 @@ use crate::render::scene::{Scene, SceneIntersection};
 use crate::Spectrum;
 use color::Color;
 use geometry::ray::Ray;
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 use crate::render::bxdf::BxDFType;
 
 pub struct Path {
@@ -20,7 +20,7 @@ impl Path {
 
 impl Integrator for Path {
     //noinspection DuplicatedCode
-    fn integrate(&self, scene: &Scene, primary_ray: &Ray, sampler: Arc<Mutex<dyn Sampler>>) -> Spectrum {
+    fn integrate(&self, scene: &Scene, primary_ray: &Ray, sampler: Arc<dyn Sampler>) -> Spectrum {
         if let Some(si) = scene.intersect(primary_ray) {
             self.illumination(scene, &si, sampler, self.max_depth)
         } else {
@@ -32,7 +32,7 @@ impl Integrator for Path {
         &self,
         scene: &Scene,
         intersection: &SceneIntersection,
-        sampler: Arc<Mutex<dyn Sampler>>,
+        sampler: Arc<dyn Sampler>,
         _: u32,
     ) -> Spectrum {
         let mut color = Spectrum::black();
@@ -66,10 +66,7 @@ impl Integrator for Path {
 
             color += throughput * li;
 
-            let sample = {
-                let mut lock = sampler.lock().expect("Sampler is poisoned");
-                lock.get_sample()
-            };
+            let sample = sampler.get_sample();
 
             color += throughput * self.specular_reflection(scene, &hit, sampler.clone(), self.max_depth);
             color += throughput * self.specular_transmission(scene, &hit, sampler.clone(), self.max_depth);

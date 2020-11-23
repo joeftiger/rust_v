@@ -5,7 +5,7 @@ use crate::render::scene::{Scene, SceneIntersection};
 use crate::Spectrum;
 use color::Color;
 use geometry::ray::Ray;
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 
 pub struct Whitted {
     pub max_depth: u32,
@@ -23,7 +23,7 @@ impl Integrator for Whitted {
         &self,
         scene: &Scene,
         primary_ray: &Ray,
-        sampler: Arc<Mutex<dyn Sampler>>,
+        sampler: Arc<dyn Sampler>,
     ) -> Spectrum {
         if let Some(si) = scene.intersect(primary_ray) {
             self.illumination(scene, &si, sampler, self.max_depth)
@@ -36,7 +36,7 @@ impl Integrator for Whitted {
         &self,
         scene: &Scene,
         intersection: &SceneIntersection,
-        sampler: Arc<Mutex<dyn Sampler>>,
+        sampler: Arc<dyn Sampler>,
         depth: u32,
     ) -> Spectrum {
         let outgoing = -intersection.info.ray.direction;

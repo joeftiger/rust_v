@@ -4,7 +4,7 @@ use crate::render::scene::{Scene, SceneIntersection};
 use crate::Spectrum;
 use color::Color;
 use geometry::ray::Ray;
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 
 pub mod debug_normals;
 pub mod path;
@@ -15,14 +15,14 @@ pub trait Integrator: Send + Sync {
         &self,
         scene: &Scene,
         primary_ray: &Ray,
-        sampler: Arc<Mutex<dyn Sampler>>,
+        sampler: Arc<dyn Sampler>,
     ) -> Spectrum;
 
     fn illumination(
         &self,
         scene: &Scene,
         intersection: &SceneIntersection,
-        sampler: Arc<Mutex<dyn Sampler>>,
+        sampler: Arc<dyn Sampler>,
         depth: u32,
     ) -> Spectrum;
 
@@ -31,17 +31,14 @@ pub trait Integrator: Send + Sync {
         &self,
         scene: &Scene,
         intersection: &SceneIntersection,
-        sampler: Arc<Mutex<dyn Sampler>>,
+        sampler: Arc<dyn Sampler>,
         depth: u32,
     ) -> Spectrum {
         let outgoing = -intersection.info.ray.direction;
 
         let bsdf = &intersection.obj.bsdf;
         let normal = intersection.info.normal;
-        let sample = {
-            let mut sampler = sampler.lock().expect("Sampler poisoned");
-            sampler.get_sample()
-        };
+        let sample = sampler.get_sample();
 
         let bxdf_sample = bsdf.sample(
             &normal,
@@ -74,17 +71,14 @@ pub trait Integrator: Send + Sync {
         &self,
         scene: &Scene,
         intersection: &SceneIntersection,
-        sampler: Arc<Mutex<dyn Sampler>>,
+        sampler: Arc<dyn Sampler>,
         depth: u32,
     ) -> Spectrum {
         let outgoing = -intersection.info.ray.direction;
 
         let bsdf = &intersection.obj.bsdf;
         let normal = intersection.info.normal;
-        let sample = {
-            let mut sampler = sampler.lock().expect("Sampler poisoned");
-            sampler.get_sample()
-        };
+        let sample = sampler.get_sample();
 
         let bxdf_sample = bsdf.sample(
             &normal,

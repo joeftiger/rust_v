@@ -1,4 +1,4 @@
-use std::sync::{Arc, Mutex, RwLock};
+use std::sync::{Arc, RwLock};
 
 use color::Color;
 use image::{ImageBuffer, Rgb};
@@ -39,7 +39,7 @@ impl SpectrumStatistic {
 pub struct Renderer {
     scene: Arc<Scene>,
     camera: Arc<Camera>,
-    sampler: Arc<Mutex<dyn Sampler>>,
+    sampler: Arc<dyn Sampler>,
     integrator: Arc<dyn Integrator>,
     spectrum_statistics: Arc<Vec<RwLock<SpectrumStatistic>>>,
     image: Arc<RwLock<ImageBuffer<Rgb<u16>, Vec<u16>>>>,
@@ -53,7 +53,7 @@ impl Renderer {
     pub fn new(
         scene: Arc<Scene>,
         camera: Arc<Camera>,
-        sampler: Arc<Mutex<dyn Sampler>>,
+        sampler: Arc<dyn Sampler>,
         integrator: Arc<dyn Integrator>,
     ) -> Self {
         let (img_width, img_height) = (camera.width, camera.height);
@@ -99,10 +99,7 @@ impl Renderer {
     }
 
     fn render(&mut self, x: u32, y: u32) -> Spectrum {
-        let sample = {
-            let mut sampler = self.sampler.lock().expect("Sampler poisoned");
-            sampler.get_2d()
-        };
+        let sample = self.sampler.get_2d();
         let ray = self.camera.primary_ray(x, y, &sample);
 
         self.integrator
@@ -121,7 +118,7 @@ impl Renderer {
             .for_each(|pixel| *pixel = 0);
     }
 
-    pub fn render_all(&mut self, passes: u32, bar: Arc<Mutex<ProgressBar>>) {
+    pub fn render_all(&mut self, passes: u32, bar: Arc<ProgressBar>) {
         if self.is_done() {
             self.reset_progress()
         }
@@ -144,18 +141,21 @@ impl Renderer {
                     }
                 }
             });
-            bar.lock().expect("ProgressBar poisoned").inc_length(1)
+            bar.inc_length(1)
         });
     }
 
-    pub fn render_all_par(&mut self, passes: u32, bar: Arc<Mutex<ProgressBar>>) {
+    pub fn render_all_par(&mut self, passes: u32, bar: Arc<ProgressBar>) {
         if self.is_done() {
             self.reset_progress()
         }
 
         let num_blocks = self.num_blocks();
 
-        (0..num_blocks).into_par_iter().for_each(|block| {
+        (0..num_blocks)
+            .into_par_iter()
+            .for_each(|block| {
+
             let mut this = self.clone();
             let block = &this.render_blocks[block];
 
@@ -171,7 +171,7 @@ impl Renderer {
                     }
                 }
             });
-            bar.lock().expect("ProgressBar poisoned").inc_length(1)
+            bar.inc_length(1)
         });
     }
 

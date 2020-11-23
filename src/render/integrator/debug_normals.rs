@@ -4,13 +4,13 @@ use crate::render::scene::{Scene, SceneIntersection};
 use crate::Spectrum;
 use color::Color;
 use geometry::ray::Ray;
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 use ultraviolet::Vec3;
 
 pub struct DebugNormals;
 
 impl Integrator for DebugNormals {
-    fn integrate(&self, scene: &Scene, primary_ray: &Ray, _: Arc<Mutex<dyn Sampler>>) -> Spectrum {
+    fn integrate(&self, scene: &Scene, primary_ray: &Ray, _: Arc<dyn Sampler>) -> Spectrum {
         if let Some(si) = scene.intersect(primary_ray) {
             let color = (si.info.normal + Vec3::one()) / 2.0;
 
@@ -24,7 +24,7 @@ impl Integrator for DebugNormals {
         &self,
         _: &Scene,
         _: &SceneIntersection,
-        _: Arc<Mutex<dyn Sampler>>,
+        _: Arc<dyn Sampler>,
         _: u32,
     ) -> Spectrum {
         Spectrum::black()

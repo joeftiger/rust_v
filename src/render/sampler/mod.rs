@@ -14,13 +14,13 @@ impl Sample {
 }
 
 pub trait Sampler: Send + Sync {
-    fn get_1d(&mut self) -> f32;
+    fn get_1d(&self) -> f32;
 
-    fn get_2d(&mut self) -> Vec2 {
+    fn get_2d(&self) -> Vec2 {
         Vec2::new(self.get_1d(), self.get_1d())
     }
 
-    fn get_sample(&mut self) -> Sample {
+    fn get_sample(&self) -> Sample {
         Sample::new(self.get_1d(), self.get_2d())
     }
 }
@@ -29,7 +29,7 @@ pub trait Sampler: Send + Sync {
 pub struct RandomSampler;
 
 impl Sampler for RandomSampler {
-    fn get_1d(&mut self) -> f32 {
+    fn get_1d(&self) -> f32 {
         let rand = fastrand::f32();
         debug_assert_ne!(rand, 1.0);
         rand
