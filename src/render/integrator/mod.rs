@@ -11,12 +11,7 @@ pub mod path;
 pub mod whitted;
 
 pub trait Integrator: Send + Sync {
-    fn integrate(
-        &self,
-        scene: &Scene,
-        primary_ray: &Ray,
-        sampler: Arc<dyn Sampler>,
-    ) -> Spectrum;
+    fn integrate(&self, scene: &Scene, primary_ray: &Ray, sampler: Arc<dyn Sampler>) -> Spectrum;
 
     fn illumination(
         &self,

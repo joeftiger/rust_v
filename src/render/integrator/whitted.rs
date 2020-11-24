@@ -19,12 +19,7 @@ impl Whitted {
 
 #[allow(unused_variables)]
 impl Integrator for Whitted {
-    fn integrate(
-        &self,
-        scene: &Scene,
-        primary_ray: &Ray,
-        sampler: Arc<dyn Sampler>,
-    ) -> Spectrum {
+    fn integrate(&self, scene: &Scene, primary_ray: &Ray, sampler: Arc<dyn Sampler>) -> Spectrum {
         if let Some(si) = scene.intersect(primary_ray) {
             self.illumination(scene, &si, sampler, self.max_depth)
         } else {

@@ -1,3 +1,4 @@
+use crate::render::bxdf::BxDFType;
 use crate::render::integrator::Integrator;
 use crate::render::sampler::Sampler;
 use crate::render::scene::{Scene, SceneIntersection};
@@ -5,7 +6,6 @@ use crate::Spectrum;
 use color::Color;
 use geometry::ray::Ray;
 use std::sync::Arc;
-use crate::render::bxdf::BxDFType;
 
 pub struct Path {
     pub min_depth: u32,
@@ -14,7 +14,10 @@ pub struct Path {
 
 impl Path {
     pub fn new(min_depth: u32, max_depth: u32) -> Self {
-        Self { min_depth, max_depth }
+        Self {
+            min_depth,
+            max_depth,
+        }
     }
 }
 
@@ -68,8 +71,10 @@ impl Integrator for Path {
 
             let sample = sampler.get_sample();
 
-            color += throughput * self.specular_reflection(scene, &hit, sampler.clone(), self.max_depth);
-            color += throughput * self.specular_transmission(scene, &hit, sampler.clone(), self.max_depth);
+            color +=
+                throughput * self.specular_reflection(scene, &hit, sampler.clone(), self.max_depth);
+            color += throughput
+                * self.specular_transmission(scene, &hit, sampler.clone(), self.max_depth);
 
             throughput *= 0.5;
 
@@ -79,7 +84,8 @@ impl Integrator for Path {
                     break;
                 }
 
-                throughput *= bxdf_sample.spectrum * (bxdf_sample.incident.dot(hit.info.normal).abs() / bxdf_sample.pdf).min(1.0);
+                throughput *= bxdf_sample.spectrum
+                    * (bxdf_sample.incident.dot(hit.info.normal).abs() / bxdf_sample.pdf).min(1.0);
 
                 if bounce > self.min_depth {
                     let const_prob = 0.5;

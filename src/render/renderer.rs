@@ -1,4 +1,4 @@
-use std::sync::{Arc, RwLock, Mutex};
+use std::sync::{Arc, Mutex, RwLock};
 
 use color::Color;
 use image::{ImageBuffer, Rgb};
@@ -11,7 +11,7 @@ use crate::render::sampler::Sampler;
 use crate::render::scene::Scene;
 use crate::Spectrum;
 use std::ops::AddAssign;
-use util::range_block::RangeBlock;
+use util::range_block::{Block, RangeBlock};
 
 pub const BLOCK_SIZE: u32 = 64;
 
@@ -19,33 +19,33 @@ pub const BLOCK_SIZE: u32 = 64;
 //     vec.iter().map(|b16| (b16 / 2u16.pow(8)) as u8).collect()
 // }
 
-fn convert_to_u8(vec: &[Mutex<SpectrumStatistic>]) -> Vec<u8> {
-    let mut out = Vec::with_capacity(vec.len() * 3);
-
-    vec.iter()
-        .for_each(|px| {
-            let color = px.lock().expect("Image is poisoned").average().to_rgb();
-            out.push((color[0] * 2u32.pow(8) as f32) as u8);
-            out.push((color[1] * 2u32.pow(8) as f32) as u8);
-            out.push((color[2] * 2u32.pow(8) as f32) as u8);
-        });
-
-    out
-}
-
-fn convert_to_u16(vec: &[Mutex<SpectrumStatistic>]) -> Vec<u16> {
-    let mut out = Vec::with_capacity(vec.len() * 3);
-
-    vec.iter()
-        .for_each(|px| {
-            let color = px.lock().expect("Image is poisoned").average().to_rgb();
-            out.push((color[0] * 2u32.pow(16) as f32) as u16);
-            out.push((color[1] * 2u32.pow(16) as f32) as u16);
-            out.push((color[2] * 2u32.pow(16) as f32) as u16);
-        });
-
-    out
-}
+// fn convert_to_u8(vec: &[Mutex<SpectrumStatistic>]) -> Vec<u8> {
+//     let mut out = Vec::with_capacity(vec.len() * 3);
+//
+//     vec.iter()
+//         .for_each(|px| {
+//             let color = px.lock().expect("Image is poisoned").average().to_rgb();
+//             out.push((color[0] * 2u32.pow(8) as f32) as u8);
+//             out.push((color[1] * 2u32.pow(8) as f32) as u8);
+//             out.push((color[2] * 2u32.pow(8) as f32) as u8);
+//         });
+//
+//     out
+// }
+//
+// fn convert_to_u16(vec: &[Mutex<SpectrumStatistic>]) -> Vec<u16> {
+//     let mut out = Vec::with_capacity(vec.len() * 3);
+//
+//     vec.iter()
+//         .for_each(|px| {
+//             let color = px.lock().expect("Image is poisoned").average().to_rgb();
+//             out.push((color[0] * 2u32.pow(16) as f32) as u16);
+//             out.push((color[1] * 2u32.pow(16) as f32) as u16);
+//             out.push((color[2] * 2u32.pow(16) as f32) as u16);
+//         });
+//
+//     out
+// }
 
 // fn convert_to_u8(vec: Arc<Vec<RwLock<Spectrum>>>) -> Vec<Rgb<u8>> {
 //     vec.iter()
@@ -59,35 +59,64 @@ fn convert_to_u16(vec: &[Mutex<SpectrumStatistic>]) -> Vec<u16> {
 
 #[derive(Default)]
 struct SpectrumStatistic {
+    x: u32,
+    y: u32,
     spectrum: Spectrum,
-    num: usize,
+    samples: usize,
 }
 
 impl SpectrumStatistic {
+    pub fn new(x: u32, y: u32) -> Self {
+        Self {
+            x,
+            y,
+            spectrum: Spectrum::black(),
+            samples: 0,
+        }
+    }
     pub fn average(&self) -> Spectrum {
-        if self.num == 0 {
-            Spectrum::black()
+        if self.samples == 0 {
+            self.spectrum
         } else {
-            self.spectrum / self.num as f32
+            self.spectrum / self.samples as f32
         }
     }
 
     pub fn reset(&mut self) {
-        self.num = 0;
+        self.samples = 0;
         self.spectrum = Spectrum::black();
     }
 }
 
-#[allow(clippy::rc_buffer)]
+struct RenderBlock {
+    stats: Vec<SpectrumStatistic>,
+}
+
+impl RenderBlock {
+    pub fn reset(&mut self) {
+        self.stats.iter_mut().for_each(|s| s.reset());
+    }
+}
+
+impl From<&Block> for RenderBlock {
+    fn from(block: &Block) -> Self {
+        let stats = block
+            .prod()
+            .iter()
+            .map(|(x, y)| SpectrumStatistic::new(*x as u32, *y as u32))
+            .collect();
+        Self { stats }
+    }
+}
+
 #[derive(Clone)]
 pub struct Renderer {
     scene: Arc<Scene>,
     camera: Arc<Camera>,
     sampler: Arc<dyn Sampler>,
     integrator: Arc<dyn Integrator>,
-    spectrum_statistics: Arc<Vec<Mutex<SpectrumStatistic>>>,
+    render_blocks: Arc<Vec<Mutex<RenderBlock>>>,
     progress: Arc<RwLock<u32>>,
-    render_blocks: Arc<RangeBlock>,
     img_width: u32,
     img_height: u32,
 }
@@ -100,22 +129,19 @@ impl Renderer {
         integrator: Arc<dyn Integrator>,
     ) -> Self {
         let (img_width, img_height) = (camera.width, camera.height);
-        let capacity = (img_width * img_height) as usize;
 
-        let spectrum_statistics = Arc::new(
-            (0..capacity)
-                .map(|_| Mutex::new(SpectrumStatistic::default()))
-                .collect(),
-        );
-
-        let render_blocks = RangeBlock::new(img_width, img_height, 64);
+        let range_block = RangeBlock::new(img_width, img_height, 64);
+        let render_blocks = range_block
+            .blocks
+            .iter()
+            .map(|block| Mutex::new(RenderBlock::from(block)))
+            .collect();
 
         Self {
             scene,
             camera,
             sampler,
             integrator,
-            spectrum_statistics,
             progress: Arc::new(RwLock::new(0)),
             render_blocks: Arc::new(render_blocks),
             img_width,
@@ -124,7 +150,7 @@ impl Renderer {
     }
 
     pub fn num_blocks(&self) -> usize {
-        self.render_blocks.num_blocks()
+        self.render_blocks.len()
     }
 
     pub fn num_pixels(&self) -> u32 {
@@ -139,7 +165,7 @@ impl Renderer {
         self.get_progress() >= self.num_blocks() as u32
     }
 
-    fn render(&mut self, x: u32, y: u32) -> Spectrum {
+    fn render(&self, x: u32, y: u32) -> Spectrum {
         let sample = self.sampler.get_2d();
         let ray = self.camera.primary_ray(x, y, &sample);
 
@@ -152,8 +178,9 @@ impl Renderer {
     }
 
     pub fn reset_image(&mut self) {
-        self.spectrum_statistics.iter()
-            .for_each(|px| px.lock().expect("Spectrum is poisoned").reset());
+        self.render_blocks
+            .iter()
+            .for_each(|b| b.lock().expect("Block is poisoned").reset());
     }
 
     pub fn render_all(&mut self, passes: u32, bar: Arc<ProgressBar>) {
@@ -161,30 +188,19 @@ impl Renderer {
             self.reset_progress()
         }
 
-        let num_blocks = self.num_blocks();
+        self.render_blocks.iter().for_each(|block| {
+            let this = self.clone();
+            let mut lock = block.lock().expect("Block is poisoned");
 
-        (0..num_blocks)
-            .for_each(|block| {
-                let mut this = self.clone();
-                let block = &this.render_blocks[block];
-
-                block.prod().into_iter().for_each(|(x, y)| {
-                    let x = x as u32;
-                    let y = y as u32;
-
-                    let index = (x * this.img_width + y) as usize;
-                    for _ in 0..passes {
-                        let pixel = this.render(x, y);
-                        {
-                            let stats = &mut this.spectrum_statistics[index].lock().expect("Spectrum Statistics poisoned");
-
-                            stats.num += 1;
-                            stats.spectrum += pixel;
-                        };
-                    }
-                });
-                bar.inc_length(1)
+            lock.stats.iter_mut().for_each(|stats| {
+                for _ in 0..passes {
+                    let pixel = this.render(stats.x, stats.y);
+                    stats.spectrum += pixel;
+                    stats.samples += 1;
+                }
             });
+            bar.inc_length(1)
+        });
     }
 
     pub fn render_all_par(&mut self, passes: u32, bar: Arc<ProgressBar>) {
@@ -192,74 +208,69 @@ impl Renderer {
             self.reset_progress()
         }
 
-        let num_blocks = self.num_blocks();
+        (0..self.num_blocks()).into_par_iter().for_each(|index| {
+            let this = self.clone();
 
-        (0..num_blocks)
-            .into_par_iter()
-            .for_each(|block| {
-                let mut this = self.clone();
-                let block = &this.render_blocks[block];
-
-                block.prod().into_iter().for_each(|(x, y)| {
-                    let x = x as u32;
-                    let y = y as u32;
-
-                    let index = (x * this.img_width + y) as usize;
-                    for _ in 0..passes {
-                        let pixel = this.render(x, y);
-                        {
-                            let stats = &mut this.spectrum_statistics[index].lock().expect("Spectrum Statistics poisoned");
-
-                            stats.num += 1;
-                            stats.spectrum += pixel;
-                        };
-                    }
-                });
-                bar.inc_length(1)
+            let mut lock = this.render_blocks[index].lock().expect("Block is poisoned");
+            lock.stats.iter_mut().for_each(|stats| {
+                for _ in 0..passes {
+                    let pixel = this.render(stats.x, stats.y);
+                    stats.spectrum += pixel;
+                    stats.samples += 1;
+                }
             });
+            bar.inc_length(1)
+        });
     }
 
     pub fn render_pass(&mut self) {
+        let num_cpus = num_cpus::get();
         let index = {
             let mut lock = self.progress.write().expect("Progress poisoned");
-            let progress = *lock;
-            lock.add_assign(1);
-            progress
-        } as usize;
+            let progress = *lock as usize;
+            lock.add_assign(num_cpus as u32);
+            progress..(progress + num_cpus).min(self.num_blocks() - 1)
+        };
 
-        self.render_blocks[index]
-            .prod()
-            .into_par_iter()
-            .for_each(|(x, y)| {
-                let mut this = self.clone();
-                let x = x as u32;
-                let y = y as u32;
+        self.render_blocks[index].par_iter().for_each(|block| {
+            let this = self.clone();
+            let mut lock = block.lock().expect("Block is poisoned");
 
-                let index = (x * this.img_width + y) as usize;
-
-                let pixel = this.render(x, y);
-                {
-                    let stats = &mut this.spectrum_statistics[index].lock().expect("Spectrum Statistics poisoned");
-
-                    stats.num += 1;
-                    stats.spectrum += pixel;
-                };
+            lock.stats.iter_mut().for_each(|stats| {
+                let pixel = this.render(stats.x, stats.y);
+                stats.spectrum += pixel;
+                stats.samples += 1;
             });
+        });
     }
 
     pub fn get_camera(&mut self) -> Arc<Camera> {
         self.camera.clone()
     }
 
-    pub fn get_image_u8(&self) -> ImageBuffer<Rgb<u8>, Vec<u8>> {
-        let data = convert_to_u8(self.spectrum_statistics.as_slice());
+    pub fn get_image_u8(&mut self) -> ImageBuffer<Rgb<u8>, Vec<u8>> {
+        let mut buffer = ImageBuffer::new(self.img_width, self.img_height);
+        self.render_blocks.iter().for_each(|block| {
+            let lock = block.lock().expect("Block is poisoned");
 
-        ImageBuffer::from_vec(self.img_width, self.img_height, data).unwrap()
+            lock.stats
+                .iter()
+                .for_each(|stat| buffer.put_pixel(stat.x, stat.y, stat.average().into()));
+        });
+
+        buffer
     }
 
-    pub fn get_image_u16(&self) -> ImageBuffer<Rgb<u16>, Vec<u16>> {
-        let data = convert_to_u16(self.spectrum_statistics.as_slice());
+    pub fn get_image_u16(&mut self) -> ImageBuffer<Rgb<u16>, Vec<u16>> {
+        let mut buffer = ImageBuffer::new(self.img_width, self.img_height);
+        self.render_blocks.iter().for_each(|block| {
+            let lock = block.lock().expect("Block is poisoned");
 
-        ImageBuffer::from_vec(self.img_width, self.img_height, data).unwrap()
+            lock.stats
+                .iter()
+                .for_each(|stat| buffer.put_pixel(stat.x, stat.y, stat.average().into()));
+        });
+
+        buffer
     }
 }
