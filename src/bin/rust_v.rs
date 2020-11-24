@@ -6,6 +6,7 @@ use clap::App;
 use indicatif::{ProgressBar, ProgressStyle};
 use rust_v::cornell_box;
 use rust_v::render::integrator::debug_normals::DebugNormals;
+use rust_v::render::integrator::path::Path;
 use rust_v::render::integrator::whitted::Whitted;
 use rust_v::render::integrator::Integrator;
 use rust_v::render::renderer::Renderer;
@@ -13,7 +14,6 @@ use rust_v::render::sampler::RandomSampler;
 use rust_v::render::window::RenderWindow;
 use std::convert::TryInto;
 use std::sync::Arc;
-use rust_v::render::integrator::path::Path;
 
 const LIVE: &str = "LIVE_WINDOW";
 const DEMO: &str = "demo";
@@ -58,7 +58,11 @@ fn main() -> Result<(), String> {
             Ok(format) => format,
             Err(err) => panic!("Cannot parse pixel format: {}", err),
         };
-        let integrator_backend = match demo.value_of(INTEGRATOR_BACKEND).unwrap_or("whitted").try_into() {
+        let integrator_backend = match demo
+            .value_of(INTEGRATOR_BACKEND)
+            .unwrap_or("whitted")
+            .try_into()
+        {
             Ok(integrator) => integrator,
             Err(err) => panic!("Cannot parse integrator backend: {}", err),
         };
@@ -86,7 +90,7 @@ fn main() -> Result<(), String> {
             threaded,
             output,
             pixel_format,
-            integrator_backend
+            integrator_backend,
         );
         main.start()
     } else {
@@ -214,7 +218,9 @@ impl TryInto<PixelFormat> for &str {
 
 #[derive(Debug)]
 enum IntegratorBackend {
-    Debug, Whitted, Path,
+    Debug,
+    Whitted,
+    Path,
 }
 
 impl TryInto<IntegratorBackend> for &str {
