@@ -22,7 +22,7 @@ pub struct RangeBlock {
     pub block_border_size: u32,
     pub block_width: u32,
     pub block_height: u32,
-    blocks: Vec<Block>,
+    pub blocks: Vec<Block>,
     index: AtomicUsize,
 }
 
