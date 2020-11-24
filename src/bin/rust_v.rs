@@ -22,6 +22,7 @@ const VERBOSE: &str = "VERBOSE";
 const INPUT: &str = "INPUT";
 const OUTPUT: &str = "OUTPUT";
 const PASSES: &str = "PASSES";
+const BLOCK_SIZE: &str = "BLOCK_SIZE";
 const DEPTH: &str = "DEPTH";
 const WIDTH: &str = "WIDTH";
 const HEIGHT: &str = "HEIGHT";
@@ -51,6 +52,10 @@ fn main() -> Result<(), String> {
         let passes = match demo.value_of(PASSES).unwrap_or("1").parse() {
             Ok(passes) => passes,
             Err(err) => panic!("Cannot parse passes: {}", err),
+        };
+        let block_size = match demo.value_of(BLOCK_SIZE).unwrap_or("32").parse() {
+            Ok(block_size) => block_size,
+            Err(err) => panic!("Cannot parse block size: {}", err),
         };
         let live = demo.is_present(LIVE);
         let threaded = demo.is_present(THREADED);
@@ -86,6 +91,7 @@ fn main() -> Result<(), String> {
             height,
             depth,
             passes,
+            block_size,
             live,
             threaded,
             output,
@@ -105,6 +111,7 @@ struct Configuration<'a> {
     height: u32,
     depth: u32,
     passes: u32,
+    block_size: u32,
     live: bool,
     threaded: bool,
     output: &'a str,
@@ -120,6 +127,7 @@ impl<'a> Configuration<'a> {
         height: u32,
         depth: u32,
         passes: u32,
+        block_size: u32,
         live: bool,
         threaded: bool,
         output: &'a str,
@@ -132,6 +140,7 @@ impl<'a> Configuration<'a> {
             height,
             depth,
             passes,
+            block_size,
             live,
             threaded,
             output,
@@ -158,6 +167,7 @@ impl<'a> Configuration<'a> {
             Arc::new(camera),
             Arc::new(RandomSampler),
             integrator,
+            self.block_size,
         );
 
         if self.live {

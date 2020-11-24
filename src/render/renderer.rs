@@ -127,10 +127,11 @@ impl Renderer {
         camera: Arc<Camera>,
         sampler: Arc<dyn Sampler>,
         integrator: Arc<dyn Integrator>,
+        block_size: u32,
     ) -> Self {
         let (img_width, img_height) = (camera.width, camera.height);
 
-        let range_block = RangeBlock::new(img_width, img_height, 64);
+        let range_block = RangeBlock::new(img_width, img_height, block_size);
         let render_blocks = range_block
             .blocks
             .iter()

@@ -48,6 +48,10 @@ args:
   - THREADED:
       long: threaded
       help: "Run in parallel using all cores/threads."
+  - BLOCK_SIZE:
+      long: block-size
+      help: "The block size for to render in chunks. E.g. 64 for 64x64 blocks. (Default: 32)"
+      takes_value: true
 subcommands:
   - demo:
       version: "0.1"
@@ -106,3 +110,7 @@ subcommands:
         - THREADED:
             long: threaded
             help: "Run in parallel using all cores/threads."
+        - BLOCK_SIZE:
+            long: block-size
+            help: "The block size for to render in chunks. E.g. 64 for 64x64 blocks. (Default: 32)"
+            takes_value: true
