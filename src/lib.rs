@@ -8,5 +8,6 @@ use color::*;
 
 pub mod cornell_box;
 pub mod render;
+pub mod plain_scene;
 
 pub type Spectrum = Srgb;

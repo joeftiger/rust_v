@@ -6,6 +6,7 @@ use crate::Spectrum;
 use color::Color;
 use geometry::ray::Ray;
 use std::sync::Arc;
+use util::floats;
 
 pub struct Path {
     pub min_depth: u32,
@@ -31,6 +32,7 @@ impl Integrator for Path {
         }
     }
 
+    //noinspection DuplicatedCode
     fn illumination(
         &self,
         scene: &Scene,
@@ -43,7 +45,7 @@ impl Integrator for Path {
 
         let mut hit = intersection.clone();
 
-        for bounce in 0..self.max_depth {
+        for _ in 0..self.max_depth {
             let outgoing = -hit.info.ray.direction;
 
             let bsdf = &hit.obj.bsdf;
@@ -52,16 +54,23 @@ impl Integrator for Path {
             let mut li = Spectrum::black();
 
             for light in &scene.lights {
-                let light_sample = light.sample(intersection);
+                let light_sample = light.sample(&hit);
 
                 if light_sample.pdf > 0.0 && !light_sample.spectrum.is_black() {
-                    let c = bsdf.evaluate(normal, &light_sample.incident, &outgoing, BxDFType::ALL);
+                    let c = bsdf.evaluate(
+                        normal,
+                        &light_sample.incident,
+                        &outgoing,
+                        BxDFType::ALL);
 
-                    if !c.is_black() && light_sample.occlusion_tester.unoccluded(scene) {
-                        let cos = light_sample.incident.dot(*normal).abs();
+                    if !c.is_black() {
+                        let u = light_sample.occlusion_tester.unoccluded(scene);
+                        if u {
+                            let cos = light_sample.incident.dot(*normal).abs();
 
-                        if cos != 0.0 {
-                            li += light_sample.spectrum * c * (cos / light_sample.pdf);
+                            if cos != 0.0 {
+                                li += light_sample.spectrum * c * (cos / light_sample.pdf);
+                            }
                         }
                     }
                 }
@@ -71,39 +80,34 @@ impl Integrator for Path {
 
             let sample = sampler.get_sample();
 
-            color +=
-                throughput * self.specular_reflection(scene, &hit, sampler.clone(), self.max_depth);
-            color += throughput
-                * self.specular_transmission(scene, &hit, sampler.clone(), self.max_depth);
-
-            throughput *= 0.5;
-
             let bxdf_sample = bsdf.sample(normal, &outgoing, BxDFType::ALL, &sample);
             if let Some(bxdf_sample) = bxdf_sample {
                 if bxdf_sample.pdf == 0.0 || bxdf_sample.spectrum.is_black() {
                     break;
                 }
 
-                throughput *= bxdf_sample.spectrum
-                    * (bxdf_sample.incident.dot(hit.info.normal).abs() / bxdf_sample.pdf).min(1.0);
+                let dot = bxdf_sample.incident.dot(hit.info.normal).abs();
+                let dot = floats::fast_clamp(dot, 0.0, 1.0);
 
-                if bounce > self.min_depth {
-                    let const_prob = 0.5;
-                    if fastrand::f32() > const_prob {
-                        break;
-                    }
+                throughput *= bxdf_sample.spectrum * (dot / bxdf_sample.pdf);
 
-                    throughput *= const_prob;
-                }
+                /* if bounce > self.min_depth {
+                     let const_prob = 0.5;
+                     if fastrand::f32() > const_prob {
+                         break;
+                     }
+
+                     throughput *= const_prob;
+                 }*/
 
                 let ray = hit.info.create_ray(bxdf_sample.incident);
 
                 match scene.intersect(&ray) {
                     Some(i) => hit = i,
-                    None => break,
+                    None => return color,
                 }
             } else {
-                break;
+                return color;
             }
         }
 

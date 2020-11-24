@@ -184,7 +184,7 @@ impl Renderer {
             .for_each(|b| b.lock().expect("Block is poisoned").reset());
     }
 
-    pub fn render_all(&mut self, passes: u32, bar: Arc<ProgressBar>) {
+    pub fn render_all(&mut self, passes: u32, bar: &ProgressBar) {
         if self.is_done() {
             self.reset_progress()
         }
@@ -200,11 +200,11 @@ impl Renderer {
                     stats.samples += 1;
                 }
             });
-            bar.inc_length(1)
+            bar.inc(1)
         });
     }
 
-    pub fn render_all_par(&mut self, passes: u32, bar: Arc<ProgressBar>) {
+    pub fn render_all_par(&mut self, passes: u32, bar: &ProgressBar) {
         if self.is_done() {
             self.reset_progress()
         }
@@ -220,7 +220,7 @@ impl Renderer {
                     stats.samples += 1;
                 }
             });
-            bar.inc_length(1)
+            bar.inc(1)
         });
     }
 
@@ -233,12 +233,14 @@ impl Renderer {
             progress..(progress + num_cpus).min(self.num_blocks() - 1)
         };
 
+        // self.render_blocks[index].iter().for_each(|block| {
         self.render_blocks[index].par_iter().for_each(|block| {
             let this = self.clone();
             let mut lock = block.lock().expect("Block is poisoned");
 
             lock.stats.iter_mut().for_each(|stats| {
                 let pixel = this.render(stats.x, stats.y);
+
                 stats.spectrum += pixel;
                 stats.samples += 1;
             });

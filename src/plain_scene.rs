@@ -1,10 +1,5 @@
 use crate::render::bxdf::bsdf::BSDF;
-use crate::render::bxdf::fresnel::{Dielectric, FresnelNoOp};
-use crate::render::bxdf::microfacet::{
-    roughness_to_alpha, BeckmannDistribution, MicrofacetReflection,
-};
 use crate::render::bxdf::oren_nayar::OrenNayar;
-use crate::render::bxdf::specular::{SpecularReflection, SpecularTransmission};
 use crate::render::camera::Camera;
 use crate::render::light::{Light, PointLight};
 use crate::render::scene::Scene;
@@ -12,9 +7,7 @@ use crate::render::scene_objects::SceneObject;
 use crate::Spectrum;
 use color::Color;
 use geometry::aabb::Aabb;
-use geometry::capsule::Capsule;
 use geometry::sphere::Sphere;
-use geometry::tube::Tube;
 use std::sync::Arc;
 use ultraviolet::Vec3;
 
@@ -46,8 +39,6 @@ pub fn create_box() -> Scene {
 
     // objects
     scene.push_obj(sphere());
-    scene.push_obj(capsule());
-    scene.push_obj(tube());
 
     // light
     scene.push_light(light());
@@ -90,68 +81,20 @@ fn light() -> Arc<dyn Light> {
 fn sphere() -> SceneObject {
     // center on ground
     let center = Vec3::new(
-        LEFT_WALL + RIGHT_WALL * 1.5,
+        LEFT_WALL + (RIGHT_WALL - LEFT_WALL) * 0.5,
         FLOOR + RADIUS,
-        FRONT + (BACK_WALL - FRONT) * 0.75,
+        FRONT + (BACK_WALL - FRONT) * 0.5,
     );
 
     let sphere = Sphere::new(center, RADIUS);
 
     let color = Spectrum::white();
-    let fresnel = Arc::new(Dielectric::new(1.0, 2.0));
-    // let spec_refl = SpecularReflection::new(color, fresnel.clone());
-    let spec_trans = SpecularTransmission::new(color, fresnel);
+    let diffuse = OrenNayar::new(color, SIGMA);
     let bsdf = BSDF::new(vec![
-        // Box::new(spec_refl),
-        Box::new(spec_trans),
+        Box::new(diffuse),
     ]);
 
     SceneObject::new(Box::new(sphere), bsdf)
-}
-
-fn capsule() -> SceneObject {
-    let from = Vec3::new(
-        LEFT_WALL * 1.5 + RIGHT_WALL,
-        FLOOR + RADIUS,
-        (FRONT + BACK_WALL) / 1.5,
-    );
-
-    let height = (CEILING - FLOOR) / 4.0;
-    let height = height.min(FLOOR + RADIUS + 1.0);
-
-    let to = from + Vec3::unit_y() * height;
-
-    let capsule = Capsule::new(from, to, RADIUS);
-
-    let color = Spectrum::white();
-    let oren_nayar = OrenNayar::new(color, SIGMA);
-    let bsdf = BSDF::new(vec![Box::new(oren_nayar)]);
-
-    SceneObject::new(Box::new(capsule), bsdf)
-}
-
-fn tube() -> SceneObject {
-    let radius = RADIUS / 4.0;
-    let points = [
-        Vec3::unit_y() * radius - Vec3::unit_x() * 2.0 - Vec3::unit_z() * 3.0,
-        Vec3::unit_y() * radius - Vec3::unit_z() * 3.0,
-        Vec3::unit_y() * radius - Vec3::unit_x() - Vec3::unit_z() * f32::sqrt(2.0),
-        Vec3::unit_y() * radius - Vec3::unit_x() * 2.0 - Vec3::unit_z() * 3.0,
-    ];
-
-    let tube = Tube::new(&points, radius);
-
-    let color = (Spectrum::red() + Spectrum::blue()) / 2.0;
-    let oren_nayar = OrenNayar::new(color, SIGMA);
-    let bsdf = BSDF::new(vec![Box::new(oren_nayar)]);
-    // let alpha_x = roughness_to_alpha(0.5);
-    // let alpha_y = roughness_to_alpha(0.5);
-    // let distribution = BeckmannDistribution::new(alpha_x, alpha_y, true);
-    // let microfacet =
-    //     MicrofacetReflection::new(color, Box::new(distribution), Box::new(FresnelNoOp));
-    // let bsdf = BSDF::new(vec![Box::new(microfacet)]);
-
-    SceneObject::new(Box::new(tube), bsdf)
 }
 
 fn left_wall() -> SceneObject {
@@ -195,8 +138,8 @@ fn back_wall() -> SceneObject {
     );
 
     let color = Spectrum::white();
-    let spec_refl = SpecularReflection::new(color, Arc::new(FresnelNoOp));
-    let bsdf = BSDF::new(vec![Box::new(spec_refl)]);
+    let oren_nayar = OrenNayar::new(color, SIGMA);
+    let bsdf = BSDF::new(vec![Box::new(oren_nayar)]);
 
     SceneObject::new(Box::new(aabb), bsdf)
 }

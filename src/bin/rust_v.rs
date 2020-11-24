@@ -4,7 +4,7 @@ extern crate clap;
 use clap::App;
 
 use indicatif::{ProgressBar, ProgressStyle};
-use rust_v::cornell_box;
+use rust_v::{cornell_box, plain_scene};
 use rust_v::render::integrator::debug_normals::DebugNormals;
 use rust_v::render::integrator::path::Path;
 use rust_v::render::integrator::whitted::Whitted;
@@ -45,7 +45,7 @@ fn main() -> Result<(), String> {
             Ok(height) => height,
             Err(err) => panic!("Cannot parse height: {}", err),
         };
-        let depth = match demo.value_of(DEPTH).unwrap_or("6").parse() {
+        let depth = match demo.value_of(DEPTH).unwrap_or("20").parse() {
             Ok(depth) => depth,
             Err(err) => panic!("Cannot parse depth: {}", err),
         };
@@ -155,17 +155,18 @@ impl<'a> Configuration<'a> {
         }
 
         let (scene, camera) = cornell_box::create(self.width, self.height);
+        // let (scene, camera) = plain_scene::create(self.width, self.height);
 
         let integrator: Arc<dyn Integrator> = match self.integrator_backend {
             IntegratorBackend::Debug => Arc::new(DebugNormals),
             IntegratorBackend::Whitted => Arc::new(Whitted::new(self.depth)),
-            IntegratorBackend::Path => Arc::new(Path::new(0, self.depth)),
+            IntegratorBackend::Path => Arc::new(Path::new(3, self.depth)),
         };
 
         let mut renderer = Renderer::new(
             Arc::new(scene),
             Arc::new(camera),
-            Arc::new(RandomSampler),
+            Arc::new(RandomSampler::default()),
             integrator,
             self.block_size,
         );
@@ -176,19 +177,17 @@ impl<'a> Configuration<'a> {
                 .start_rendering();
             Ok(())
         } else {
-            let bar = {
-                let bar = ProgressBar::new(renderer.num_blocks() as u64);
-                bar.set_style(ProgressStyle::default_bar().template(
-                    "[{elapsed} elapsed] {wide_bar:.cyan/white} {percent}% [{eta} remaining]",
-                ));
+            let bar = ProgressBar::new(renderer.num_blocks() as u64);
+            bar.set_style(ProgressStyle::default_bar().template(
+                "[{elapsed} elapsed] {wide_bar:.cyan/white} {percent}% [{eta} remaining]",
+            ));
 
-                Arc::new(bar)
-            };
+            // bar.enable_steady_tick(100);
 
             if self.threaded {
-                renderer.render_all_par(self.passes, bar.clone());
+                renderer.render_all_par(self.passes, &bar);
             } else {
-                renderer.render_all(self.passes, bar.clone());
+                renderer.render_all(self.passes, &bar);
             }
             bar.finish();
 

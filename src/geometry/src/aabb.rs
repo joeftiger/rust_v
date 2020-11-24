@@ -153,7 +153,7 @@ impl Geometry for Aabb {
         let t_min = f32::max(t_min_vec.z, f32::max(t_min_vec.y, t_min_vec.x));
         let t_max = f32::min(t_max_vec.z, f32::min(t_max_vec.y, t_max_vec.x));
 
-        t_max >= 0.0 && t_max >= t_min && ray.is_in_range(t_min)
+        t_max >= ray.t_start && t_min <= ray.t_end && t_max >= t_min
     }
 }
 

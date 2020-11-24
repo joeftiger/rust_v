@@ -28,6 +28,13 @@ pub trait Sampler: Send + Sync {
 /// A simple Sampler only returning random numbers.
 pub struct RandomSampler;
 
+impl Default for RandomSampler {
+    fn default() -> Self {
+        fastrand::seed(0);
+        Self
+    }
+}
+
 impl Sampler for RandomSampler {
     fn get_1d(&self) -> f32 {
         let rand = fastrand::f32();
