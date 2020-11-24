@@ -4,7 +4,7 @@ extern crate clap;
 use clap::App;
 
 use indicatif::{ProgressBar, ProgressStyle};
-use rust_v::{cornell_box, plain_scene};
+use rust_v::cornell_box;
 use rust_v::render::integrator::debug_normals::DebugNormals;
 use rust_v::render::integrator::path::Path;
 use rust_v::render::integrator::whitted::Whitted;

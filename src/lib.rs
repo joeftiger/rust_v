@@ -7,7 +7,7 @@ extern crate bitflags;
 use color::*;
 
 pub mod cornell_box;
-pub mod render;
 pub mod plain_scene;
+pub mod render;
 
 pub type Spectrum = Srgb;

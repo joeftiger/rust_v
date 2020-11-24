@@ -90,9 +90,7 @@ fn sphere() -> SceneObject {
 
     let color = Spectrum::white();
     let diffuse = OrenNayar::new(color, SIGMA);
-    let bsdf = BSDF::new(vec![
-        Box::new(diffuse),
-    ]);
+    let bsdf = BSDF::new(vec![Box::new(diffuse)]);
 
     SceneObject::new(Box::new(sphere), bsdf)
 }
