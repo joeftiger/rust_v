@@ -203,6 +203,10 @@ impl Renderer {
         });
     }
 
+    pub fn set_camera(&mut self, camera: Camera) {
+        self.camera = Arc::new(camera);
+    }
+
     pub fn get_camera(&mut self) -> Arc<Camera> {
         self.camera.clone()
     }

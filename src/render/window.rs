@@ -8,6 +8,8 @@ use ultraviolet::{Bivec3, Rotor3};
 
 use crate::render::renderer::Renderer;
 use image::ImageFormat;
+use crate::render::camera::Camera;
+use std::sync::Arc;
 
 const WAIT_KEY_MS: u64 = 1;
 const RENDER_TIME_MS: u64 = 1000 / 2;
@@ -62,12 +64,6 @@ impl<'a> RenderWindow<'a> {
             if self.should_exit {
                 return;
             }
-
-            println!("# Entering waiting loop");
-            self.waiting_loop(wait_key);
-            if self.should_exit {
-                return;
-            }
         }
     }
 
@@ -118,18 +114,6 @@ impl<'a> RenderWindow<'a> {
         }
     }
 
-    fn waiting_loop(&mut self, wait_key: Duration) {
-        while let Ok(event) = self.window.wait_key(wait_key) {
-            if self.should_exit || self.should_reset_image {
-                return;
-            }
-
-            if let Some(event) = event {
-                self.handle_input(event.key);
-            }
-        }
-    }
-
     fn handle_input(&mut self, input: KeyCode) {
         match input {
             KeyCode::Escape => self.should_exit = true,
@@ -151,31 +135,30 @@ impl<'a> RenderWindow<'a> {
     }
 
     fn rotate_camera(&mut self, dir: Direction) {
-        // let camera = self.renderer.get_camera();
-        // let direction = camera.position - camera.center;
-        //
-        // println!("camera position: {:?}", camera.position);
-        //
-        // let new_direction = match dir {
-        //     Direction::LEFT => Some(direction.rotated_by(Rotor3::from_rotation_xz(-ROTATION))),
-        //     Direction::RIGHT => Some(direction.rotated_by(Rotor3::from_rotation_xz(ROTATION))),
-        //     Direction::UP => Some(direction.rotated_by(Rotor3::from_angle_plane(
-        //         ROTATION,
-        //         Bivec3::from_normalized_axis(camera.right),
-        //     ))),
-        //     Direction::DOWN => Some(direction.rotated_by(Rotor3::from_angle_plane(
-        //         -ROTATION,
-        //         Bivec3::from_normalized_axis(camera.right),
-        //     ))),
-        // };
-        //
-        // if let Some(new_direction) = new_direction {
-        //     camera.position = camera.center + new_direction;
-        //     println!("camera position: {:?}", camera.position);
-        //
-        //     // important
-        //     camera.reset();
-        //     self.should_reset_image = true;
-        // }
+        let mut camera = *self.renderer.get_camera();
+        let direction = camera.position - camera.center;
+
+        let new_direction = match dir {
+            Direction::LEFT => Some(direction.rotated_by(Rotor3::from_rotation_xz(-ROTATION))),
+            Direction::RIGHT => Some(direction.rotated_by(Rotor3::from_rotation_xz(ROTATION))),
+            Direction::UP => Some(direction.rotated_by(Rotor3::from_angle_plane(
+                ROTATION,
+                Bivec3::from_normalized_axis(camera.right),
+            ))),
+            Direction::DOWN => Some(direction.rotated_by(Rotor3::from_angle_plane(
+                -ROTATION,
+                Bivec3::from_normalized_axis(camera.right),
+            ))),
+        };
+
+        if let Some(new_direction) = new_direction {
+            camera.position = camera.center + new_direction;
+
+            // important
+            camera.reset();
+            self.renderer.set_camera(camera);
+            self.renderer.reset_progress();
+            self.renderer.reset_image();
+        }
     }
 }

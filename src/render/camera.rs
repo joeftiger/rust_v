@@ -8,6 +8,7 @@ use ultraviolet::{Vec2, Vec3};
 /// - fovy: opening angle (field of view) in y-direction
 /// - width: width of the image in pixels
 /// - height: height of the image in pixels
+#[derive(Copy, Clone)]
 pub struct Camera {
     pub position: Vec3,
     pub center: Vec3,
