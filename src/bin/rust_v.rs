@@ -184,7 +184,7 @@ impl<'a> Configuration<'a> {
                 return Ok(())
             }
         }
-        
+
         let bar = ProgressBar::new(renderer.num_blocks() as u64);
         bar.set_style(ProgressStyle::default_bar().template(
             "[{elapsed} elapsed] {wide_bar:.cyan/white} {percent}% [{eta} remaining]",
