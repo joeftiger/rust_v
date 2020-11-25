@@ -175,37 +175,40 @@ impl<'a> Configuration<'a> {
             self.block_size,
         );
 
-        if cfg!(feature = "live-window") && self.live {
-            RenderWindow::new("Rust-V".to_string(), &mut renderer)
-                .map_err(|e| format!("Unable to create window: {}", e))?
-                .start_rendering();
-            Ok(())
-        } else {
-            let bar = ProgressBar::new(renderer.num_blocks() as u64);
-            bar.set_style(ProgressStyle::default_bar().template(
-                "[{elapsed} elapsed] {wide_bar:.cyan/white} {percent}% [{eta} remaining]",
-            ));
-
-            if self.threaded {
-                renderer.render_all_par(self.passes, &bar);
-            } else {
-                renderer.render_all(self.passes, &bar);
+        #[cfg(feature = "live-window")]
+        {
+            if self.live {
+                RenderWindow::new("Rust-V".to_string(), &mut renderer)
+                    .map_err(|e| format!("Unable to create window: {}", e))?
+                    .start_rendering();
+                return Ok(())
             }
-            bar.finish();
-
-            match self.pixel_format {
-                PixelFormat::U8 => renderer
-                    .get_image_u8()
-                    .save(&self.output)
-                    .map_err(|e| format!("Unable to save image: {}", e))?,
-                PixelFormat::U16 => renderer
-                    .get_image_u16()
-                    .save(&self.output)
-                    .map_err(|e| format!("Unable to save image: {}", e))?,
-            };
-
-            Ok(())
         }
+        
+        let bar = ProgressBar::new(renderer.num_blocks() as u64);
+        bar.set_style(ProgressStyle::default_bar().template(
+            "[{elapsed} elapsed] {wide_bar:.cyan/white} {percent}% [{eta} remaining]",
+        ));
+
+        if self.threaded {
+            renderer.render_all_par(self.passes, &bar);
+        } else {
+            renderer.render_all(self.passes, &bar);
+        }
+        bar.finish();
+
+        match self.pixel_format {
+            PixelFormat::U8 => renderer
+                .get_image_u8()
+                .save(&self.output)
+                .map_err(|e| format!("Unable to save image: {}", e))?,
+            PixelFormat::U16 => renderer
+                .get_image_u16()
+                .save(&self.output)
+                .map_err(|e| format!("Unable to save image: {}", e))?,
+        };
+
+        Ok(())
     }
 }
 
