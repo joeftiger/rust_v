@@ -56,7 +56,7 @@ fn main() -> Result<(), String> {
             Ok(passes) => passes,
             Err(err) => panic!("Cannot parse passes: {}", err),
         };
-        let block_size = match demo.value_of(BLOCK_SIZE).unwrap_or("32").parse() {
+        let block_size = match demo.value_of(BLOCK_SIZE).unwrap_or("8").parse() {
             Ok(block_size) => block_size,
             Err(err) => panic!("Cannot parse block size: {}", err),
         };
