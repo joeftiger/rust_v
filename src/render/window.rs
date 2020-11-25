@@ -11,7 +11,7 @@ use crate::render::renderer::Renderer;
 use image::ImageFormat;
 
 const WAIT_KEY_MS: u64 = 1;
-const RENDER_TIME_MS: u64 = 1000 / 25;
+const RENDER_TIME_MS: u64 = 1000 / 2;
 const ROTATION: f32 = -std::f32::consts::FRAC_PI_8 / 2.0; // 11.25°
 
 enum Direction {

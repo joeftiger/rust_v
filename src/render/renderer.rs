@@ -13,50 +13,6 @@ use crate::Spectrum;
 use std::ops::AddAssign;
 use util::range_block::{Block, RangeBlock};
 
-pub const BLOCK_SIZE: u32 = 64;
-
-// fn convert_u16_to_u8(vec: Vec<u16>) -> Vec<u8> {
-//     vec.iter().map(|b16| (b16 / 2u16.pow(8)) as u8).collect()
-// }
-
-// fn convert_to_u8(vec: &[Mutex<SpectrumStatistic>]) -> Vec<u8> {
-//     let mut out = Vec::with_capacity(vec.len() * 3);
-//
-//     vec.iter()
-//         .for_each(|px| {
-//             let color = px.lock().expect("Image is poisoned").average().to_rgb();
-//             out.push((color[0] * 2u32.pow(8) as f32) as u8);
-//             out.push((color[1] * 2u32.pow(8) as f32) as u8);
-//             out.push((color[2] * 2u32.pow(8) as f32) as u8);
-//         });
-//
-//     out
-// }
-//
-// fn convert_to_u16(vec: &[Mutex<SpectrumStatistic>]) -> Vec<u16> {
-//     let mut out = Vec::with_capacity(vec.len() * 3);
-//
-//     vec.iter()
-//         .for_each(|px| {
-//             let color = px.lock().expect("Image is poisoned").average().to_rgb();
-//             out.push((color[0] * 2u32.pow(16) as f32) as u16);
-//             out.push((color[1] * 2u32.pow(16) as f32) as u16);
-//             out.push((color[2] * 2u32.pow(16) as f32) as u16);
-//         });
-//
-//     out
-// }
-
-// fn convert_to_u8(vec: Arc<Vec<RwLock<Spectrum>>>) -> Vec<Rgb<u8>> {
-//     vec.iter()
-//         .map(|px| px.read().expect("Image is poisoned").to_rgb().into()).collect()
-// }
-//
-// fn convert_to_u16(vec: Arc<Vec<RwLock<Spectrum>>>) -> Vec<Rgb<u16>> {
-//     vec.iter()
-//         .map(|px| px.read().expect("Image is poisoned").to_rgb().into()).collect()
-// }
-
 #[derive(Default)]
 struct SpectrumStatistic {
     x: u32,
