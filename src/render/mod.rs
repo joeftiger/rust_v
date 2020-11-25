@@ -6,4 +6,6 @@ pub mod renderer;
 pub mod sampler;
 pub mod scene;
 pub mod scene_objects;
+#[cfg(feature = "live-window")]
 pub mod window;
+pub mod emitter;
