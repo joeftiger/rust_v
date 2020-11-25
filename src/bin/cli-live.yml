@@ -12,6 +12,10 @@ args:
       help: "The output path to save the rendered PNG. (Default = system time since UNIX epoch)"
       takes_value: true
       value_name: String
+  - LIVE_WINDOW:
+      short: l
+      long: live
+      help: "Use a live window to progressively show rendering. The window allows saving with [Ctrl + S]."
   - PASSES:
       short: p
       long: passes
@@ -64,6 +68,10 @@ subcommands:
             help: "The output path to save the rendered PNG. (Default = system time since UNIX epoch)"
             takes_value: true
             value_name: String
+        - LIVE_WINDOW:
+            short: l
+            long: live
+            help: "Use a live window to progressively show rendering. The window allows saving with [Ctrl + S]."
         - PASSES:
             short: p
             long: passes

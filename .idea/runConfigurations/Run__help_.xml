@@ -1,7 +1,7 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="Run (help)" type="CargoCommandRunConfiguration" factoryName="Cargo Command">
     <option name="channel" value="DEFAULT" />
-    <option name="command" value="run --package rust_v --bin rust_v -- --help -v" />
+    <option name="command" value="run --package rust_v --bin rust_v --features &quot;live-window&quot; -- --help -v" />
     <option name="allFeatures" value="false" />
     <option name="emulateTerminal" value="false" />
     <option name="backtrace" value="SHORT" />

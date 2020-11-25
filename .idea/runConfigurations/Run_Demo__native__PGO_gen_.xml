@@ -1,7 +1,7 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="Run Demo (native, PGO gen)" type="CargoCommandRunConfiguration" factoryName="Cargo Command">
     <option name="channel" value="DEFAULT" />
-    <option name="command" value="run --package rust_v --bin rust_v --release -- demo --live -v" />
+    <option name="command" value="run --package rust_v --bin rust_v --release --features &quot;live-window&quot; -- demo --live -v" />
     <option name="allFeatures" value="false" />
     <option name="emulateTerminal" value="false" />
     <option name="backtrace" value="SHORT" />

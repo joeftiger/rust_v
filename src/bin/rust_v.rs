@@ -31,7 +31,10 @@ const INTEGRATOR_BACKEND: &str = "INTEGRATOR_BACKEND";
 const THREADED: &str = "THREADED";
 
 fn main() -> Result<(), String> {
+    #[cfg(not(feature = "live-window"))]
     let yaml = load_yaml!("cli.yml");
+    #[cfg(feature = "live-window")]
+    let yaml = load_yaml!("cli-live.yml");
 
     let matches = App::from_yaml(yaml).get_matches();
 
@@ -57,7 +60,7 @@ fn main() -> Result<(), String> {
             Ok(block_size) => block_size,
             Err(err) => panic!("Cannot parse block size: {}", err),
         };
-        let live = demo.is_present(LIVE);
+        let live = cfg!(feature = "live-window") && demo.is_present(LIVE);
         let threaded = demo.is_present(THREADED);
         let pixel_format = match demo.value_of(FORMAT).unwrap_or("U8").try_into() {
             Ok(format) => format,
@@ -171,7 +174,7 @@ impl<'a> Configuration<'a> {
             self.block_size,
         );
 
-        if self.live {
+        if cfg!(feature = "live-window") && self.live {
             RenderWindow::new("Rust-V".to_string(), &mut renderer)
                 .map_err(|e| format!("Unable to create window: {}", e))?
                 .start_rendering();
@@ -181,8 +184,6 @@ impl<'a> Configuration<'a> {
             bar.set_style(ProgressStyle::default_bar().template(
                 "[{elapsed} elapsed] {wide_bar:.cyan/white} {percent}% [{eta} remaining]",
             ));
-
-            // bar.enable_steady_tick(100);
 
             if self.threaded {
                 renderer.render_all_par(self.passes, &bar);

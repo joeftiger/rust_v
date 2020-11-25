@@ -30,6 +30,10 @@ geometry = { path = "./src/geometry" }
 color = { path = "./src/color" }
 util = { path = "./src/util" }
 
+[features]
+default = []
+live-window = []
+
 [dev-dependencies]
 criterion= ""
 
@@ -40,7 +44,7 @@ harness = false
 [profile.release]
 #codegen-units = 1
 opt-level = 3
-#lto = true
+lto = true
 incremental = true
 
 [profile.release.package."*"]
