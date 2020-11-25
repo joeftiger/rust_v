@@ -22,7 +22,7 @@ num_cpus = ""
 # parallelism
 rayon = ""
 # live image of rendering
-show-image = { version = "", features = ["image", "save"] }
+show-image = { version = "", features = ["image", "save"], optional = true }
 # linear algebra
 ultraviolet = { version = "", features = ["int" ] }
 
@@ -32,7 +32,7 @@ util = { path = "./src/util" }
 
 [features]
 default = []
-live-window = []
+live-window = ["show-image"]
 
 [dev-dependencies]
 criterion= ""
