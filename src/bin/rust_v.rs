@@ -11,6 +11,7 @@ use rust_v::render::integrator::whitted::Whitted;
 use rust_v::render::integrator::Integrator;
 use rust_v::render::renderer::Renderer;
 use rust_v::render::sampler::RandomSampler;
+#[cfg(feature = "live-window")]
 use rust_v::render::window::RenderWindow;
 use std::convert::TryInto;
 use std::sync::Arc;
