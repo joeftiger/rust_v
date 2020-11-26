@@ -1,4 +1,4 @@
-use crate::formats::obj::ObjFile;
+use tobj::Mesh as TobjMesh;
 use crate::aabb::Aabb;
 use crate::ray::Ray;
 use crate::{Geometry, GeometryInfo};
@@ -130,7 +130,11 @@ impl Geometry for Mesh {
 
     fn intersect(&self, ray: &Ray) -> Option<GeometryInfo> {
         let mut current_info: Option<GeometryInfo> = None;
-        self.triangles.iter().for_each(|t: &Triangle| {
+        self.triangles.iter().for_each(|t| {
+            if !t.bounding_box().intersects(ray) {
+                return;
+            }
+
             if let Some(i) = t.intersect(ray) {
                 if current_info.is_none() {
                     current_info = Some(i);
@@ -146,33 +150,62 @@ impl Geometry for Mesh {
     }
     
     fn intersects(&self, ray: &Ray) -> bool {
-        self.triangles.iter().any(|t| t.intersects(ray))
+        self.triangles.iter().any(|t| t.bounding_box().intersects(ray) && t.intersects(ray))
     }
 }
 
-impl From<ObjFile> for Mesh {
-    fn from(file: ObjFile) -> Self {
-        debug_assert!({
-            file.assert_ok();
-            true
-        });
-
+impl From<(&TobjMesh, Vec3)> for Mesh {
+    fn from((tobj_mesh, scale): (&TobjMesh, Vec3)) -> Self {
         let mut mesh = Mesh::default();
-        file.v.iter().for_each(|v| {
-            let vertex = Vec3::new(v.0, v.1, v.2);
+        let mut i = 0;
+        while i < tobj_mesh.positions.len() {
+            let vertex = Vec3::new(
+                tobj_mesh.positions[i] * scale.x,
+                tobj_mesh.positions[i + 1] * scale.y,
+                tobj_mesh.positions[i + 2] * scale.z,
+            );
             mesh.vertices.push(Arc::new(vertex));
-        });
-        file.f.iter().for_each(|f| {
-            let v = f.v;
-            // off by one due to .obj counting
-            let a = mesh.vertices[v.0 - 1].clone();
-            let b = mesh.vertices[v.1 - 1].clone();
-            let c = mesh.vertices[v.2 - 1].clone();
+            i += 3;
+        }
+
+        let mut i = 0;
+        while i < tobj_mesh.indices.len() {
+            let a = mesh.vertices[tobj_mesh.indices[i] as usize].clone();
+            let b = mesh.vertices[tobj_mesh.indices[i + 1] as usize].clone();
+            let c = mesh.vertices[tobj_mesh.indices[i + 2] as usize].clone();
 
             let triangle = Triangle::new(a, b, c);
             mesh.triangles.push(triangle);
-        });
+            i += 3;
+        }
 
         mesh
     }
 }
+
+// impl From<ObjFile> for Mesh {
+//     fn from(file: ObjFile) -> Self {
+//         debug_assert!({
+//             file.assert_ok();
+//             true
+//         });
+//
+//         let mut mesh = Mesh::default();
+//         file.v.iter().for_each(|v| {
+//             let vertex = Vec3::new(v.0, v.1, v.2);
+//             mesh.vertices.push(Arc::new(vertex));
+//         });
+//         file.f.iter().for_each(|f| {
+//             let v = f.v;
+//             // off by one due to .obj counting
+//             let a = mesh.vertices[v.0 - 1].clone();
+//             let b = mesh.vertices[v.1 - 1].clone();
+//             let c = mesh.vertices[v.2 - 1].clone();
+//
+//             let triangle = Triangle::new(a, b, c);
+//             mesh.triangles.push(triangle);
+//         });
+//
+//         mesh
+//     }
+// }

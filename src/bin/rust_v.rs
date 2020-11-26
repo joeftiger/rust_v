@@ -4,7 +4,7 @@ extern crate clap;
 use clap::App;
 
 use indicatif::{ProgressBar, ProgressStyle};
-use rust_v::cornell_box;
+use rust_v::{cornell_box, bunny};
 use rust_v::render::integrator::debug_normals::DebugNormals;
 use rust_v::render::integrator::path::Path;
 use rust_v::render::integrator::whitted::Whitted;
@@ -161,8 +161,9 @@ impl<'a> Configuration<'a> {
             println!("{:#?}", self);
         }
 
-        let (scene, camera) = cornell_box::create(self.width, self.height);
+        // let (scene, camera) = cornell_box::create(self.width, self.height);
         // let (scene, camera) = plain_scene::create(self.width, self.height);
+        let (scene, camera) = bunny::create(self.width, self.height);
 
         let integrator: Arc<dyn Integrator> = match self.integrator_backend {
             IntegratorBackend::Debug => Arc::new(DebugNormals),

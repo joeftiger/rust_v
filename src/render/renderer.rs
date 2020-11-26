@@ -186,7 +186,7 @@ impl Renderer {
             let mut lock = self.progress.write().expect("Progress poisoned");
             let progress = *lock as usize;
             lock.add_assign(num_cpus as u32);
-            progress..(progress + num_cpus).min(self.num_blocks() - 1)
+            progress..(progress + num_cpus).min(self.num_blocks())
         };
 
         // self.render_blocks[index].iter().for_each(|block| {

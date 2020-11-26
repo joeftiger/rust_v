@@ -2,7 +2,6 @@ pub mod aabb;
 pub mod capsule;
 pub mod cube;
 pub mod cylinder;
-pub mod formats;
 pub mod lens;
 pub mod mesh;
 pub mod plane;
