@@ -23,6 +23,8 @@ num_cpus = ""
 rayon = ""
 # live image of rendering
 show-image = { version = "", features = ["image", "save"], optional = true }
+# wavefront obj files
+tobj = ""
 # linear algebra
 ultraviolet = { version = "", features = ["int" ] }
 
@@ -42,9 +44,9 @@ name = "bxdf_inlines"
 harness = false
 
 [profile.release]
-#codegen-units = 1
+codegen-units = 1
 opt-level = 3
-lto = true
+#lto = true
 incremental = true
 
 [profile.release.package."*"]
