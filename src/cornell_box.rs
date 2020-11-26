@@ -1,3 +1,6 @@
+#![allow(dead_code)]
+#![allow(unused_imports)]
+
 use crate::render::bxdf::bsdf::BSDF;
 use crate::render::bxdf::fresnel::{Dielectric, FresnelNoOp};
 use crate::render::bxdf::oren_nayar::OrenNayar;
@@ -14,6 +17,7 @@ use geometry::sphere::Sphere;
 use geometry::tube::Tube;
 use std::sync::Arc;
 use ultraviolet::Vec3;
+use geometry::mesh::Mesh;
 
 pub const LEFT_WALL: f32 = -3.0;
 pub const RIGHT_WALL: f32 = 3.0;
@@ -26,6 +30,10 @@ pub const RADIUS: f32 = 1.0;
 pub const FOVY: f32 = 70.0;
 
 pub const SIGMA: f32 = 20.0;
+
+pub const X_DIFF: f32 = RIGHT_WALL - LEFT_WALL;
+pub const Y_DIFF: f32 = CEILING - FLOOR;
+pub const Z_DIFF: f32 = BACK_WALL - FRONT;
 
 pub fn create(width: u32, height: u32) -> (Scene, Camera) {
     (create_box(), create_camera(width, height))
@@ -42,9 +50,10 @@ pub fn create_box() -> Scene {
     scene.push_obj(ceiling());
 
     // objects
-    scene.push_obj(sphere());
-    scene.push_obj(capsule());
-    scene.push_obj(tube());
+    // scene.push_obj(sphere());
+    // scene.push_obj(capsule());
+    // scene.push_obj(tube());
+    scene.push_obj(bunny());
 
     // light
     scene.push_light(light());
@@ -82,6 +91,36 @@ fn light() -> Arc<dyn Light> {
     let color = Spectrum::white() * 20.0;
 
     Arc::new(PointLight::new(point, color))
+}
+
+fn bunny() -> SceneObject {
+    let file_name = "./resources/meshes/bunny.obj";
+    let (model, _) = tobj::load_obj(file_name, true)
+        .expect("Could not load bunny file");
+    let scale = Vec3::one() * 25.0;
+    let translate = Vec3::new(X_DIFF * 0.1, -scale.y * 0.036, Z_DIFF * 0.5);
+
+    let bunny = Mesh::from((&model[0].mesh, scale, translate));
+
+    let color = Spectrum::white();
+    let dielectric = Arc::new(
+        Dielectric::new(1.0, 1.3)
+    );
+    let transmission = Box::new(
+        SpecularTransmission::new(color, dielectric.clone())
+    );
+    // let reflection = Box::new(
+    //     SpecularReflection::new(color, dielectric)
+    // );
+    // let oren_nayar = Box::new(OrenNayar::new(color, SIGMA));
+    let bsdf = BSDF::new(vec![
+        // oren_nayar,
+        // reflection,
+        transmission,
+    ]);
+
+
+    SceneObject::new(Box::new(bunny), bsdf)
 }
 
 fn sphere() -> SceneObject {
@@ -192,8 +231,10 @@ fn back_wall() -> SceneObject {
     );
 
     let color = Spectrum::white();
-    let spec_refl = SpecularReflection::new(color, Arc::new(FresnelNoOp));
-    let bsdf = BSDF::new(vec![Box::new(spec_refl)]);
+    // let spec_refl = SpecularReflection::new(color, Arc::new(FresnelNoOp));
+    // let bsdf = BSDF::new(vec![Box::new(spec_refl)]);
+    let oren_nayar = OrenNayar::new(color, SIGMA);
+    let bsdf = BSDF::new(vec![Box::new(oren_nayar)]);
 
     SceneObject::new(Box::new(aabb), bsdf)
 }

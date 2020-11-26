@@ -59,7 +59,7 @@ impl Geometry for Triangle {
 
         let ab = *self.b - *self.a;
         let ac = *self.c - *self.a;
-        let mut normal = ac.cross(ab);
+        let mut normal = ac.cross(ab).normalized();
 
         // Choose the normal's orientation to be opposite the ray's
         // (in case the ray intersects the inside surface)
@@ -98,11 +98,12 @@ impl Geometry for Triangle {
     }
 }
 
+#[allow(dead_code)]
 #[derive(Default)]
 pub struct Mesh {
     vertices: Vec<Arc<Vec3>>,
     triangles: Vec<Triangle>,
-    aabb: Aabb,
+    pub aabb: Aabb,
 }
 
 impl Mesh {
@@ -154,58 +155,34 @@ impl Geometry for Mesh {
     }
 }
 
-impl From<(&TobjMesh, Vec3)> for Mesh {
-    fn from((tobj_mesh, scale): (&TobjMesh, Vec3)) -> Self {
-        let mut mesh = Mesh::default();
+impl From<(&TobjMesh, Vec3, Vec3)> for Mesh {
+    fn from((tobj_mesh, scale, translate): (&TobjMesh, Vec3, Vec3)) -> Self {
+        let mut vertices = Vec::with_capacity(tobj_mesh.positions.len());
         let mut i = 0;
         while i < tobj_mesh.positions.len() {
             let vertex = Vec3::new(
-                tobj_mesh.positions[i] * scale.x,
-                tobj_mesh.positions[i + 1] * scale.y,
-                tobj_mesh.positions[i + 2] * scale.z,
+                tobj_mesh.positions[i] * scale.x + translate.x,
+                tobj_mesh.positions[i + 1] * scale.y + translate.y,
+                tobj_mesh.positions[i + 2] * scale.z + translate.z,
             );
-            mesh.vertices.push(Arc::new(vertex));
+            vertices.push(Arc::new(vertex));
             i += 3;
         }
+        vertices.shrink_to_fit();
 
+        let mut triangles = Vec::with_capacity(tobj_mesh.indices.len() / 3);
         let mut i = 0;
         while i < tobj_mesh.indices.len() {
-            let a = mesh.vertices[tobj_mesh.indices[i] as usize].clone();
-            let b = mesh.vertices[tobj_mesh.indices[i + 1] as usize].clone();
-            let c = mesh.vertices[tobj_mesh.indices[i + 2] as usize].clone();
+            let a = vertices[tobj_mesh.indices[i] as usize].clone();
+            let b = vertices[tobj_mesh.indices[i + 1] as usize].clone();
+            let c = vertices[tobj_mesh.indices[i + 2] as usize].clone();
 
             let triangle = Triangle::new(a, b, c);
-            mesh.triangles.push(triangle);
+            triangles.push(triangle);
             i += 3;
         }
+        triangles.shrink_to_fit();
 
-        mesh
+        Mesh::new(vertices, triangles)
     }
 }
-
-// impl From<ObjFile> for Mesh {
-//     fn from(file: ObjFile) -> Self {
-//         debug_assert!({
-//             file.assert_ok();
-//             true
-//         });
-//
-//         let mut mesh = Mesh::default();
-//         file.v.iter().for_each(|v| {
-//             let vertex = Vec3::new(v.0, v.1, v.2);
-//             mesh.vertices.push(Arc::new(vertex));
-//         });
-//         file.f.iter().for_each(|f| {
-//             let v = f.v;
-//             // off by one due to .obj counting
-//             let a = mesh.vertices[v.0 - 1].clone();
-//             let b = mesh.vertices[v.1 - 1].clone();
-//             let c = mesh.vertices[v.2 - 1].clone();
-//
-//             let triangle = Triangle::new(a, b, c);
-//             mesh.triangles.push(triangle);
-//         });
-//
-//         mesh
-//     }
-// }
