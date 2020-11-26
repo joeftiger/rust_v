@@ -79,15 +79,18 @@ fn main() -> Result<(), String> {
         let output = if let Some(o) = demo.value_of(OUTPUT) {
             o.to_string()
         } else {
-            format!(
-                "{}.png",
+            format!("{}.png",
                 std::time::SystemTime::now()
                     .duration_since(std::time::UNIX_EPOCH)
                     .unwrap()
-                    .as_millis()
-            )
+                    .as_millis())
         };
-        let output = output.as_str();
+
+        let output = if output.is_empty() {
+            None
+        } else {
+            Some(output.as_str())
+        };
 
         let mut main = Configuration::new(
             verbose,
@@ -118,7 +121,7 @@ struct Configuration<'a> {
     block_size: u32,
     live: bool,
     threaded: bool,
-    output: &'a str,
+    output: Option<&'a str>,
     pixel_format: PixelFormat,
     integrator_backend: IntegratorBackend,
 }
@@ -134,7 +137,7 @@ impl<'a> Configuration<'a> {
         block_size: u32,
         live: bool,
         threaded: bool,
-        output: &'a str,
+        output: Option<&'a str>,
         pixel_format: PixelFormat,
         integrator_backend: IntegratorBackend,
     ) -> Self {
@@ -197,16 +200,18 @@ impl<'a> Configuration<'a> {
         }
         bar.finish();
 
-        match self.pixel_format {
-            PixelFormat::U8 => renderer
-                .get_image_u8()
-                .save(&self.output)
-                .map_err(|e| format!("Unable to save image: {}", e))?,
-            PixelFormat::U16 => renderer
-                .get_image_u16()
-                .save(&self.output)
-                .map_err(|e| format!("Unable to save image: {}", e))?,
-        };
+        if let Some(output) = self.output {
+            match self.pixel_format {
+                PixelFormat::U8 => renderer
+                    .get_image_u8()
+                    .save(output)
+                    .map_err(|e| format!("Unable to save image: {}", e))?,
+                PixelFormat::U16 => renderer
+                    .get_image_u16()
+                    .save(output)
+                    .map_err(|e| format!("Unable to save image: {}", e))?,
+            };
+        }
 
         Ok(())
     }

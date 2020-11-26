@@ -9,7 +9,7 @@ args:
   - OUTPUT:
       short: o
       long: output
-      help: "The output path to save the rendered PNG. (Default = system time since UNIX epoch)"
+      help: "The output path to save the rendered PNG. If empty, the rendering will not be saved. (Default = system time since UNIX epoch)"
       takes_value: true
       value_name: String
   - PASSES:
@@ -61,7 +61,7 @@ subcommands:
         - OUTPUT:
             short: o
             long: output
-            help: "The output path to save the rendered PNG. (Default = system time since UNIX epoch)"
+            help: "The output path to save the rendered PNG. If empty, the rendering will not be saved. (Default = system time since UNIX epoch)"
             takes_value: true
             value_name: String
         - PASSES:
