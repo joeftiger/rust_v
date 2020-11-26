@@ -3,7 +3,7 @@
 target/
 
 # Remove Cargo.lock from gitignore if creating an executable, leave it for libraries
-# More information here https://doc.rust-lang.org/cargo/guide/cargo-toml-vs-cargo-lock.html
+# More information here https://doc.rugst-lang.org/cargo/guide/cargo-toml-vs-cargo-lock.html
 Cargo.lock
 
 # profile-guided optimization files
@@ -18,3 +18,8 @@ Cargo.lock
 
 # File-based project format
 *.iws
+
+# Big meshes
+**/dragon.obj
+**/dragon_2.obj
+**/dragon_3.obj
