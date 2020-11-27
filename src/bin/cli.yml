@@ -91,7 +91,7 @@ subcommands:
         - FORMAT:
             short: f
             long: format
-            value_name: "{8, u16}"
+            value_name: "{u8, u16}"
             help: "The output pixel format. (Default = u8)"
         - INTEGRATOR_BACKEND:
             short: i

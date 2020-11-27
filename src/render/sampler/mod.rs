@@ -42,3 +42,12 @@ impl Sampler for RandomSampler {
         rand
     }
 }
+
+/// A no-op Sampler only returning `0.5`.
+pub struct NoopSampler;
+
+impl Sampler for NoopSampler {
+    fn get_1d(&self) -> f32 {
+        0.5
+    }
+}

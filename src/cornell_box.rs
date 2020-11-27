@@ -13,11 +13,11 @@ use crate::Spectrum;
 use color::Color;
 use geometry::aabb::Aabb;
 use geometry::capsule::Capsule;
+use geometry::mesh::Mesh;
 use geometry::sphere::Sphere;
 use geometry::tube::Tube;
 use std::sync::Arc;
 use ultraviolet::Vec3;
-use geometry::mesh::Mesh;
 
 pub const LEFT_WALL: f32 = -3.0;
 pub const RIGHT_WALL: f32 = 3.0;
@@ -95,30 +95,22 @@ fn light() -> Arc<dyn Light> {
 
 fn bunny() -> SceneObject {
     let file_name = "./resources/meshes/bunny.obj";
-    let (model, _) = tobj::load_obj(file_name, true)
-        .expect("Could not load bunny file");
+    let (model, _) = tobj::load_obj(file_name, true).expect("Could not load bunny file");
     let scale = Vec3::one() * 25.0;
     let translate = Vec3::new(X_DIFF * 0.1, -scale.y * 0.036, Z_DIFF * 0.5);
 
     let bunny = Mesh::from((&model[0].mesh, scale, translate));
 
     let color = Spectrum::white();
-    let dielectric = Arc::new(
-        Dielectric::new(1.0, 1.3)
-    );
-    let transmission = Box::new(
-        SpecularTransmission::new(color, dielectric.clone())
-    );
-    // let reflection = Box::new(
-    //     SpecularReflection::new(color, dielectric)
-    // );
+    let dielectric = Arc::new(Dielectric::new(1.0, 1.3));
+    let transmission = Box::new(SpecularTransmission::new(color, dielectric.clone()));
+    let reflection = Box::new(SpecularReflection::new(color, dielectric));
     // let oren_nayar = Box::new(OrenNayar::new(color, SIGMA));
     let bsdf = BSDF::new(vec![
-        // oren_nayar,
-        // reflection,
+        reflection,
         transmission,
+        // oren_nayar,
     ]);
-
 
     SceneObject::new(Box::new(bunny), bsdf)
 }

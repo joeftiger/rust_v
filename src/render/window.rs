@@ -6,9 +6,9 @@ use std::time::{Duration, Instant};
 use show_image::{make_window_full, KeyCode, Window, WindowOptions};
 use ultraviolet::{Bivec3, Rotor3};
 
+use crate::render::camera::Camera;
 use crate::render::renderer::Renderer;
 use image::ImageFormat;
-use crate::render::camera::Camera;
 use std::sync::Arc;
 
 const WAIT_KEY_MS: u64 = 1;

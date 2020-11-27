@@ -42,7 +42,8 @@ impl Scene {
 
     /// Checks if the given ray intersects any object before reaching it's own maximum t lifespan.
     pub fn is_occluded(&self, ray: &Ray) -> bool {
-        self.objects.iter()
+        self.objects
+            .iter()
             .any(|object| object.bounding_box().intersects(ray) && object.intersects(ray))
     }
 

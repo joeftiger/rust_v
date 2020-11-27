@@ -10,11 +10,12 @@ use rust_v::render::integrator::path::Path;
 use rust_v::render::integrator::whitted::Whitted;
 use rust_v::render::integrator::Integrator;
 use rust_v::render::renderer::Renderer;
-use rust_v::render::sampler::RandomSampler;
+use rust_v::render::sampler::{NoopSampler, RandomSampler, Sampler};
 #[cfg(feature = "live-window")]
 use rust_v::render::window::RenderWindow;
 use std::convert::TryInto;
 use std::sync::Arc;
+use std::time::Instant;
 
 const LIVE: &str = "LIVE_WINDOW";
 const DEMO: &str = "demo";
@@ -79,11 +80,13 @@ fn main() -> Result<(), String> {
         let output = if let Some(o) = demo.value_of(OUTPUT) {
             o.to_string()
         } else {
-            format!("{}.png",
+            format!(
+                "{}.png",
                 std::time::SystemTime::now()
                     .duration_since(std::time::UNIX_EPOCH)
                     .unwrap()
-                    .as_millis())
+                    .as_millis()
+            )
         };
 
         let output = if output.is_empty() {
@@ -170,10 +173,15 @@ impl<'a> Configuration<'a> {
             IntegratorBackend::Path => Arc::new(Path::new(3, self.depth)),
         };
 
+        let sampler: Arc<dyn Sampler> = match self.integrator_backend {
+            IntegratorBackend::Debug => Arc::new(NoopSampler),
+            _ => Arc::new(RandomSampler::default()),
+        };
+
         let mut renderer = Renderer::new(
             Arc::new(scene),
             Arc::new(camera),
-            Arc::new(RandomSampler::default()),
+            sampler,
             integrator,
             self.block_size,
         );
@@ -184,23 +192,36 @@ impl<'a> Configuration<'a> {
                 RenderWindow::new("Rust-V".to_string(), &mut renderer)
                     .map_err(|e| format!("Unable to create window: {}", e))?
                     .start_rendering();
-                return Ok(())
+                if self.verbose {
+                    println!("Closed window");
+                }
+                return Ok(());
             }
         }
 
-        let bar = ProgressBar::new(renderer.num_blocks() as u64);
-        bar.set_style(ProgressStyle::default_bar().template(
-            "[{elapsed} elapsed] {wide_bar:.cyan/white} {percent}% [{eta} remaining]",
-        ));
+        if cfg!(not(feature = "live-window")) || !self.live {
+            let bar = ProgressBar::new(renderer.num_blocks() as u64);
+            bar.set_style(ProgressStyle::default_bar().template(
+                "[{elapsed} elapsed] {wide_bar:.cyan/white} {percent}% [{eta} remaining]",
+            ));
 
-        if self.threaded {
-            renderer.render_all_par(self.passes, &bar);
-        } else {
-            renderer.render_all(self.passes, &bar);
+            let start = Instant::now();
+            if self.threaded {
+                renderer.render_all_par(self.passes, &bar);
+            } else {
+                renderer.render_all(self.passes, &bar);
+            }
+            bar.finish();
+
+            if self.verbose {
+                println!("Took {} seconds", start.elapsed().as_secs());
+            }
         }
-        bar.finish();
 
         if let Some(output) = self.output {
+            if self.verbose {
+                println!("Saving image");
+            }
             match self.pixel_format {
                 PixelFormat::U8 => renderer
                     .get_image_u8()
@@ -211,6 +232,7 @@ impl<'a> Configuration<'a> {
                     .save(output)
                     .map_err(|e| format!("Unable to save image: {}", e))?,
             };
+            println!("Successfully saved image");
         }
 
         Ok(())
