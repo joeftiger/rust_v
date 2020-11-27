@@ -6,6 +6,7 @@ extern crate bitflags;
 
 use color::*;
 
+pub mod configuration;
 pub mod cornell_box;
 pub mod plain_scene;
 pub mod render;

@@ -10,6 +10,7 @@ pub mod ray;
 pub mod sphere;
 mod tests;
 pub mod tube;
+pub mod bvh;
 
 use crate::aabb::Aabb;
 use crate::ray::{Ray, Ray4};

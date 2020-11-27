@@ -122,6 +122,80 @@ impl Mesh {
             aabb,
         }
     }
+
+    pub fn load_center((tobj_mesh, scale, center): (&TobjMesh, Vec3, Vec3)) -> Self {
+        let mut vertices = Vec::with_capacity(tobj_mesh.positions.len());
+        let mut v_center = Vec3::zero();
+
+        let mut i = 0;
+        while i < tobj_mesh.positions.len() {
+            let vertex = Vec3::new(
+                tobj_mesh.positions[i] * scale.x,
+                tobj_mesh.positions[i + 1] * scale.y,
+                tobj_mesh.positions[i + 2] * scale.z,
+            );
+            vertices.push(vertex);
+            v_center += vertex;
+            i += 3;
+        }
+        vertices.iter_mut().for_each(|v| *v += center - v_center);
+        let vertices: Vec<Arc<Vec3>> = vertices.iter().map(|v| Arc::new(*v)).collect();
+
+        let mut triangles = Vec::with_capacity(tobj_mesh.indices.len() / 3);
+        let mut i = 0;
+        while i < tobj_mesh.indices.len() {
+            let a = vertices[tobj_mesh.indices[i] as usize].clone();
+            let b = vertices[tobj_mesh.indices[i + 1] as usize].clone();
+            let c = vertices[tobj_mesh.indices[i + 2] as usize].clone();
+
+            let triangle = Triangle::new(a, b, c);
+            triangles.push(triangle);
+            i += 3;
+        }
+        triangles.shrink_to_fit();
+
+        Mesh::new(vertices, triangles)
+    }
+
+    pub fn load_center_floor((tobj_mesh, scale, center_floor): (&TobjMesh, Vec3, Vec3)) -> Self {
+        let mut vertices = Vec::with_capacity(tobj_mesh.positions.len());
+        let mut v_center = Vec3::zero();
+        let mut minimum_y = f32::INFINITY;
+
+        let mut i = 0;
+        while i < tobj_mesh.positions.len() {
+            let vertex = Vec3::new(
+                tobj_mesh.positions[i] * scale.x,
+                tobj_mesh.positions[i + 1] * scale.y,
+                tobj_mesh.positions[i + 2] * scale.z,
+            );
+            vertices.push(vertex);
+            v_center += vertex;
+            minimum_y = minimum_y.min(vertex.y);
+            i += 3;
+        }
+        let vertices: Vec<Arc<Vec3>> = vertices.iter().map(|v| {
+            let mut v = *v + center_floor;
+            v.y -= minimum_y;
+            Arc::new(v)
+        }).collect();
+
+
+        let mut triangles = Vec::with_capacity(tobj_mesh.indices.len() / 3);
+        let mut i = 0;
+        while i < tobj_mesh.indices.len() {
+            let a = vertices[tobj_mesh.indices[i] as usize].clone();
+            let b = vertices[tobj_mesh.indices[i + 1] as usize].clone();
+            let c = vertices[tobj_mesh.indices[i + 2] as usize].clone();
+
+            let triangle = Triangle::new(a, b, c);
+            triangles.push(triangle);
+            i += 3;
+        }
+        triangles.shrink_to_fit();
+
+        Mesh::new(vertices, triangles)
+    }
 }
 
 impl Geometry for Mesh {
@@ -152,37 +226,5 @@ impl Geometry for Mesh {
     
     fn intersects(&self, ray: &Ray) -> bool {
         self.triangles.iter().any(|t| t.bounding_box().intersects(ray) && t.intersects(ray))
-    }
-}
-
-impl From<(&TobjMesh, Vec3, Vec3)> for Mesh {
-    fn from((tobj_mesh, scale, translate): (&TobjMesh, Vec3, Vec3)) -> Self {
-        let mut vertices = Vec::with_capacity(tobj_mesh.positions.len());
-        let mut i = 0;
-        while i < tobj_mesh.positions.len() {
-            let vertex = Vec3::new(
-                tobj_mesh.positions[i] * scale.x + translate.x,
-                tobj_mesh.positions[i + 1] * scale.y + translate.y,
-                tobj_mesh.positions[i + 2] * scale.z + translate.z,
-            );
-            vertices.push(Arc::new(vertex));
-            i += 3;
-        }
-        vertices.shrink_to_fit();
-
-        let mut triangles = Vec::with_capacity(tobj_mesh.indices.len() / 3);
-        let mut i = 0;
-        while i < tobj_mesh.indices.len() {
-            let a = vertices[tobj_mesh.indices[i] as usize].clone();
-            let b = vertices[tobj_mesh.indices[i + 1] as usize].clone();
-            let c = vertices[tobj_mesh.indices[i + 2] as usize].clone();
-
-            let triangle = Triangle::new(a, b, c);
-            triangles.push(triangle);
-            i += 3;
-        }
-        triangles.shrink_to_fit();
-
-        Mesh::new(vertices, triangles)
     }
 }

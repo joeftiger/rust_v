@@ -31,9 +31,9 @@ pub const FOVY: f32 = 70.0;
 
 pub const SIGMA: f32 = 20.0;
 
-pub const X_DIFF: f32 = RIGHT_WALL - LEFT_WALL;
-pub const Y_DIFF: f32 = CEILING - FLOOR;
-pub const Z_DIFF: f32 = BACK_WALL - FRONT;
+pub const X_DIFF: f32 = (RIGHT_WALL + LEFT_WALL) / 2.0;
+pub const Y_DIFF: f32 = (CEILING + FLOOR) / 2.0;
+pub const Z_DIFF: f32 = (BACK_WALL + FRONT) / 2.0;
 
 pub fn create(width: u32, height: u32) -> (Scene, Camera) {
     (create_box(), create_camera(width, height))
@@ -53,7 +53,8 @@ pub fn create_box() -> Scene {
     // scene.push_obj(sphere());
     // scene.push_obj(capsule());
     // scene.push_obj(tube());
-    scene.push_obj(bunny());
+    // scene.push_obj(bunny());
+    scene.push_obj(dragon());
 
     // light
     scene.push_light(light());
@@ -97,9 +98,9 @@ fn bunny() -> SceneObject {
     let file_name = "./resources/meshes/bunny.obj";
     let (model, _) = tobj::load_obj(file_name, true).expect("Could not load bunny file");
     let scale = Vec3::one() * 25.0;
-    let translate = Vec3::new(X_DIFF * 0.1, -scale.y * 0.036, Z_DIFF * 0.5);
+    let center_floor = Vec3::new(X_DIFF, FLOOR, Z_DIFF);
 
-    let bunny = Mesh::from((&model[0].mesh, scale, translate));
+    let bunny = Mesh::load_center_floor((&model[0].mesh, scale, center_floor));
 
     let color = Spectrum::white();
     let dielectric = Arc::new(Dielectric::new(1.0, 1.3));
@@ -113,6 +114,28 @@ fn bunny() -> SceneObject {
     ]);
 
     SceneObject::new(Box::new(bunny), bsdf)
+}
+
+fn dragon() -> SceneObject {
+    let file_name = "./resources/meshes/dragon.obj";
+    let (model, _) = tobj::load_obj(file_name, true).expect("Could not load dragon file");
+    let scale = Vec3::one() * 25.0;
+    let center_floor = Vec3::new(X_DIFF, FLOOR, Z_DIFF);
+
+    let dragon = Mesh::load_center_floor((&model[0].mesh, scale, center_floor));
+
+    let color = Spectrum::white();
+    let dielectric = Arc::new(Dielectric::new(1.0, 1.3));
+    let transmission = Box::new(SpecularTransmission::new(color, dielectric.clone()));
+    let reflection = Box::new(SpecularReflection::new(color, dielectric));
+    // let oren_nayar = Box::new(OrenNayar::new(color, SIGMA));
+    let bsdf = BSDF::new(vec![
+        reflection,
+        transmission,
+        // oren_nayar,
+    ]);
+
+    SceneObject::new(Box::new(dragon), bsdf)
 }
 
 fn sphere() -> SceneObject {

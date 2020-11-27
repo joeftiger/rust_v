@@ -5,7 +5,10 @@ use ultraviolet::Vec3;
 
 use crate::render::scene::{Scene, SceneIntersection};
 use crate::Spectrum;
+use geometry::aabb::Aabb;
 use geometry::ray::Ray;
+use geometry::{Geometry, GeometryInfo};
+use std::sync::Arc;
 use util::floats;
 
 bitflags! {
@@ -59,23 +62,7 @@ impl LightSample {
 }
 
 pub trait Light: Send + Sync {
-    fn num_samples(&self) -> usize;
-
-    fn get_type(&self) -> LightType;
-
-    fn is_type(&self, t: LightType) -> bool {
-        (self.get_type() & t) == t
-    }
-
-    fn power(&self) -> &Spectrum;
-
-    fn position(&self) -> Vec3;
-
-    fn is_delta_type(&self) -> bool {
-        let t = self.get_type();
-        (t & LightType::DELTA_POSITION) == LightType::DELTA_POSITION
-            || (t & LightType::DELTA_DIRECTION) == LightType::DELTA_DIRECTION
-    }
+    fn is_delta_light(&self) -> bool;
 
     fn sample(&self, intersection: &SceneIntersection) -> LightSample;
 }
@@ -107,20 +94,8 @@ impl PointLight {
 }
 
 impl Light for PointLight {
-    fn num_samples(&self) -> usize {
-        1
-    }
-
-    fn get_type(&self) -> LightType {
-        LightType::DELTA_POSITION | LightType::DELTA_DIRECTION
-    }
-
-    fn power(&self) -> &Spectrum {
-        &self.intensity
-    }
-
-    fn position(&self) -> Vec3 {
-        self.position
+    fn is_delta_light(&self) -> bool {
+        true
     }
 
     fn sample(&self, intersection: &SceneIntersection) -> LightSample {
@@ -133,5 +108,40 @@ impl Light for PointLight {
         let intensity = self.intensity / dir.mag_sq();
 
         LightSample::new(intensity, incident, pdf, occlusion_tester)
+    }
+}
+
+pub struct Emitter {
+    geometry: Arc<dyn Geometry>,
+    pub emission: Spectrum,
+}
+
+impl Emitter {
+    pub fn new(geometry: Arc<dyn Geometry>, emission: Spectrum) -> Self {
+        Self { geometry, emission }
+    }
+}
+
+impl Geometry for Emitter {
+    fn bounding_box(&self) -> Aabb {
+        self.geometry.bounding_box()
+    }
+
+    fn intersect(&self, ray: &Ray) -> Option<GeometryInfo> {
+        self.geometry.intersect(ray)
+    }
+
+    fn intersects(&self, ray: &Ray) -> bool {
+        self.geometry.intersects(ray)
+    }
+}
+
+impl Light for Emitter {
+    fn is_delta_light(&self) -> bool {
+        false
+    }
+
+    fn sample(&self, intersection: &SceneIntersection) -> LightSample {
+        unimplemented!()
     }
 }

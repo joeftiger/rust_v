@@ -3,19 +3,8 @@ extern crate clap;
 
 use clap::App;
 
-use indicatif::{ProgressBar, ProgressStyle};
-use rust_v::cornell_box;
-use rust_v::render::integrator::debug_normals::DebugNormals;
-use rust_v::render::integrator::path::Path;
-use rust_v::render::integrator::whitted::Whitted;
-use rust_v::render::integrator::Integrator;
-use rust_v::render::renderer::Renderer;
-use rust_v::render::sampler::{NoopSampler, RandomSampler, Sampler};
-#[cfg(feature = "live-window")]
-use rust_v::render::window::RenderWindow;
+use rust_v::configuration::{Configuration, IntegratorBackend, PixelFormat};
 use std::convert::TryInto;
-use std::sync::Arc;
-use std::time::Instant;
 
 const LIVE: &str = "LIVE_WINDOW";
 const DEMO: &str = "demo";
@@ -64,11 +53,11 @@ fn main() -> Result<(), String> {
         };
         let live = cfg!(feature = "live-window") && demo.is_present(LIVE);
         let threaded = demo.is_present(THREADED);
-        let pixel_format = match demo.value_of(FORMAT).unwrap_or("U8").try_into() {
+        let pixel_format: PixelFormat = match demo.value_of(FORMAT).unwrap_or("U8").try_into() {
             Ok(format) => format,
             Err(err) => panic!("Cannot parse pixel format: {}", err),
         };
-        let integrator_backend = match demo
+        let integrator_backend: IntegratorBackend = match demo
             .value_of(INTEGRATOR_BACKEND)
             .unwrap_or("whitted")
             .try_into()
@@ -92,10 +81,10 @@ fn main() -> Result<(), String> {
         let output = if output.is_empty() {
             None
         } else {
-            Some(output.as_str())
+            Some(output)
         };
 
-        let mut main = Configuration::new(
+        let main = Configuration::new(
             verbose,
             width,
             height,
@@ -108,171 +97,8 @@ fn main() -> Result<(), String> {
             pixel_format,
             integrator_backend,
         );
-        main.start()
+        main.start_rendering()
     } else {
         Err("Currently we only support the demo subcommand!".to_string())
-    }
-}
-
-#[derive(Debug)]
-struct Configuration<'a> {
-    verbose: bool,
-    width: u32,
-    height: u32,
-    depth: u32,
-    passes: u32,
-    block_size: u32,
-    live: bool,
-    threaded: bool,
-    output: Option<&'a str>,
-    pixel_format: PixelFormat,
-    integrator_backend: IntegratorBackend,
-}
-
-impl<'a> Configuration<'a> {
-    #[allow(clippy::too_many_arguments)]
-    fn new(
-        verbose: bool,
-        width: u32,
-        height: u32,
-        depth: u32,
-        passes: u32,
-        block_size: u32,
-        live: bool,
-        threaded: bool,
-        output: Option<&'a str>,
-        pixel_format: PixelFormat,
-        integrator_backend: IntegratorBackend,
-    ) -> Self {
-        Self {
-            verbose,
-            width,
-            height,
-            depth,
-            passes,
-            block_size,
-            live,
-            threaded,
-            output,
-            pixel_format,
-            integrator_backend,
-        }
-    }
-
-    fn start(&mut self) -> Result<(), String> {
-        if self.verbose {
-            println!("{:#?}", self);
-        }
-
-        let (scene, camera) = cornell_box::create(self.width, self.height);
-        // let (scene, camera) = plain_scene::create(self.width, self.height);
-
-        let integrator: Arc<dyn Integrator> = match self.integrator_backend {
-            IntegratorBackend::Debug => Arc::new(DebugNormals),
-            IntegratorBackend::Whitted => Arc::new(Whitted::new(self.depth)),
-            IntegratorBackend::Path => Arc::new(Path::new(3, self.depth)),
-        };
-
-        let sampler: Arc<dyn Sampler> = match self.integrator_backend {
-            IntegratorBackend::Debug => Arc::new(NoopSampler),
-            _ => Arc::new(RandomSampler::default()),
-        };
-
-        let mut renderer = Renderer::new(
-            Arc::new(scene),
-            Arc::new(camera),
-            sampler,
-            integrator,
-            self.block_size,
-        );
-
-        #[cfg(feature = "live-window")]
-        {
-            if self.live {
-                RenderWindow::new("Rust-V".to_string(), &mut renderer)
-                    .map_err(|e| format!("Unable to create window: {}", e))?
-                    .start_rendering();
-                if self.verbose {
-                    println!("Closed window");
-                }
-                return Ok(());
-            }
-        }
-
-        if cfg!(not(feature = "live-window")) || !self.live {
-            let bar = ProgressBar::new(renderer.num_blocks() as u64);
-            bar.set_style(ProgressStyle::default_bar().template(
-                "[{elapsed} elapsed] {wide_bar:.cyan/white} {percent}% [{eta} remaining]",
-            ));
-
-            let start = Instant::now();
-            if self.threaded {
-                renderer.render_all_par(self.passes, &bar);
-            } else {
-                renderer.render_all(self.passes, &bar);
-            }
-            bar.finish();
-
-            if self.verbose {
-                println!("Took {} seconds", start.elapsed().as_secs());
-            }
-        }
-
-        if let Some(output) = self.output {
-            if self.verbose {
-                println!("Saving image");
-            }
-            match self.pixel_format {
-                PixelFormat::U8 => renderer
-                    .get_image_u8()
-                    .save(output)
-                    .map_err(|e| format!("Unable to save image: {}", e))?,
-                PixelFormat::U16 => renderer
-                    .get_image_u16()
-                    .save(output)
-                    .map_err(|e| format!("Unable to save image: {}", e))?,
-            };
-            println!("Successfully saved image");
-        }
-
-        Ok(())
-    }
-}
-
-#[derive(Debug)]
-enum PixelFormat {
-    U8,
-    U16,
-}
-
-impl TryInto<PixelFormat> for &str {
-    type Error = String;
-
-    fn try_into(self) -> Result<PixelFormat, Self::Error> {
-        match self {
-            "u8" | "U8" => Ok(PixelFormat::U8),
-            "u16" | "U16" => Ok(PixelFormat::U16),
-            _ => Err(self.to_string()),
-        }
-    }
-}
-
-#[derive(Debug)]
-enum IntegratorBackend {
-    Debug,
-    Whitted,
-    Path,
-}
-
-impl TryInto<IntegratorBackend> for &str {
-    type Error = String;
-
-    fn try_into(self) -> Result<IntegratorBackend, Self::Error> {
-        match self {
-            "debug" | "Debug" | "DEBUG" => Ok(IntegratorBackend::Debug),
-            "whitted" | "Whitted" | "WHITTED" => Ok(IntegratorBackend::Whitted),
-            "path" | "Path" | "PATH" => Ok(IntegratorBackend::Path),
-            _ => Err(self.to_string()),
-        }
     }
 }

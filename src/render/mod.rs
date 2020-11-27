@@ -1,6 +1,5 @@
 pub mod bxdf;
 pub mod camera;
-pub mod emitter;
 pub mod integrator;
 pub mod light;
 pub mod renderer;
