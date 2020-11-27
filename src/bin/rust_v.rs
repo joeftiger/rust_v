@@ -5,6 +5,7 @@ use clap::App;
 
 use rust_v::configuration::{Configuration, IntegratorBackend, PixelFormat};
 use std::convert::TryInto;
+use std::thread;
 
 const LIVE: &str = "LIVE_WINDOW";
 const DEMO: &str = "demo";
@@ -21,7 +22,14 @@ const FORMAT: &str = "FORMAT";
 const INTEGRATOR_BACKEND: &str = "INTEGRATOR_BACKEND";
 const THREADED: &str = "THREADED";
 
+const GB: usize = 1024 * 1024 * 1024;
+
 fn main() -> Result<(), String> {
+    let main = thread::Builder::new().stack_size(2 * GB).spawn(start).unwrap();
+    main.join().unwrap()
+}
+
+fn start() -> Result<(), String> {
     #[cfg(not(feature = "live-window"))]
     let yaml = load_yaml!("cli.yml");
     #[cfg(feature = "live-window")]
