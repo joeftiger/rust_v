@@ -12,6 +12,8 @@ use std::convert::TryInto;
 use std::sync::Arc;
 use std::time::Instant;
 
+const GB: usize = 1024 * 1024 * 1024;
+
 #[derive(Debug, Clone)]
 pub struct Configuration {
     pub verbose: bool,
@@ -85,6 +87,13 @@ impl Configuration {
     pub fn start_rendering(&self) -> Result<(), String> {
         if self.verbose {
             println!("{:#?}", self);
+        }
+
+        if self.threaded {
+            rayon::ThreadPoolBuilder::new()
+                .stack_size(GB / 2)
+                .build_global()
+                .expect("Could not setup global thread pool");
         }
 
         let mut renderer = self.create_renderer();
