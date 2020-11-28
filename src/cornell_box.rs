@@ -17,7 +17,7 @@ use geometry::mesh::Mesh;
 use geometry::sphere::Sphere;
 use geometry::tube::Tube;
 use std::sync::Arc;
-use ultraviolet::Vec3;
+use ultraviolet::{Vec3, Bivec3, Rotor3};
 
 pub const LEFT_WALL: f32 = -3.0;
 pub const RIGHT_WALL: f32 = 3.0;
@@ -30,6 +30,7 @@ pub const RADIUS: f32 = 1.0;
 pub const FOVY: f32 = 70.0;
 
 pub const SIGMA: f32 = 20.0;
+pub const ANGLE: f32 = std::f32::consts::FRAC_PI_8;
 
 pub const X_DIFF: f32 = (RIGHT_WALL + LEFT_WALL) / 2.0;
 pub const Y_DIFF: f32 = (CEILING + FLOOR) / 2.0;
@@ -99,8 +100,9 @@ fn bunny() -> SceneObject {
     let (model, _) = tobj::load_obj(file_name, true).expect("Could not load bunny file");
     let scale = Vec3::one() * 25.0;
     let center_floor = Vec3::new(X_DIFF, FLOOR, Z_DIFF);
+    let rotation = Rotor3::default();
 
-    let bunny = Mesh::load_center_floor((&model[0].mesh, scale, center_floor));
+    let bunny = Mesh::load_scale_floor_rot((&model[0].mesh, scale, center_floor, rotation));
 
     let color = Spectrum::white();
     let dielectric = Arc::new(Dielectric::new(1.0, 1.3));
@@ -117,12 +119,13 @@ fn bunny() -> SceneObject {
 }
 
 fn dragon() -> SceneObject {
-    let file_name = "./resources/meshes/dragon.obj";
+    let file_name = "./resources/meshes/dragon_4.obj";
     let (model, _) = tobj::load_obj(file_name, true).expect("Could not load dragon file");
     let scale = Vec3::one() * 25.0;
-    let center_floor = Vec3::new(X_DIFF, FLOOR, Z_DIFF);
+    let floor = Vec3::new(X_DIFF, FLOOR, Z_DIFF);
+    let rotation = Rotor3::from_rotation_xz(-ANGLE);
 
-    let dragon = Mesh::load_center_floor((&model[0].mesh, scale, center_floor));
+    let dragon = Mesh::load_scale_floor_rot((&model[0].mesh, scale, floor, rotation));
 
     let color = Spectrum::white();
     let dielectric = Arc::new(Dielectric::new(1.0, 1.3));

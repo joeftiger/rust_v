@@ -192,13 +192,13 @@ impl Renderer {
         // self.render_blocks[index].iter().for_each(|block| {
         self.render_blocks[index].par_iter().for_each(|block| {
             let this = self.clone();
-            let mut lock = block.lock().expect("Block is poisoned");
+            let mut block_lock = block.lock().expect("Block is poisoned");
 
-            lock.stats.iter_mut().for_each(|stats| {
-                let pixel = this.render(stats.x, stats.y);
+            block_lock.stats.iter_mut().for_each(|px_stats| {
+                let pixel = this.render(px_stats.x, px_stats.y);
 
-                stats.spectrum += pixel;
-                stats.samples += 1;
+                px_stats.spectrum += pixel;
+                px_stats.samples += 1;
             });
         });
     }

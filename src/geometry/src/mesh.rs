@@ -3,7 +3,7 @@ use crate::aabb::Aabb;
 use crate::ray::Ray;
 use crate::{Geometry, GeometryInfo};
 use std::ops::Deref;
-use ultraviolet::Vec3;
+use ultraviolet::{Vec3, Rotor3};
 use util::floats;
 use std::sync::Arc;
 
@@ -123,41 +123,7 @@ impl Mesh {
         }
     }
 
-    pub fn load_center((tobj_mesh, scale, center): (&TobjMesh, Vec3, Vec3)) -> Self {
-        let mut vertices = Vec::with_capacity(tobj_mesh.positions.len());
-        let mut v_center = Vec3::zero();
-
-        let mut i = 0;
-        while i < tobj_mesh.positions.len() {
-            let vertex = Vec3::new(
-                tobj_mesh.positions[i] * scale.x,
-                tobj_mesh.positions[i + 1] * scale.y,
-                tobj_mesh.positions[i + 2] * scale.z,
-            );
-            vertices.push(vertex);
-            v_center += vertex;
-            i += 3;
-        }
-        vertices.iter_mut().for_each(|v| *v += center - v_center);
-        let vertices: Vec<Arc<Vec3>> = vertices.iter().map(|v| Arc::new(*v)).collect();
-
-        let mut triangles = Vec::with_capacity(tobj_mesh.indices.len() / 3);
-        let mut i = 0;
-        while i < tobj_mesh.indices.len() {
-            let a = vertices[tobj_mesh.indices[i] as usize].clone();
-            let b = vertices[tobj_mesh.indices[i + 1] as usize].clone();
-            let c = vertices[tobj_mesh.indices[i + 2] as usize].clone();
-
-            let triangle = Triangle::new(a, b, c);
-            triangles.push(triangle);
-            i += 3;
-        }
-        triangles.shrink_to_fit();
-
-        Mesh::new(vertices, triangles)
-    }
-
-    pub fn load_center_floor((tobj_mesh, scale, center_floor): (&TobjMesh, Vec3, Vec3)) -> Self {
+    pub fn load_scale_floor_rot((tobj_mesh, scale, center_floor, rotation): (&TobjMesh, Vec3, Vec3, Rotor3)) -> Self {
         let mut vertices = Vec::with_capacity(tobj_mesh.positions.len());
         let mut v_center = Vec3::zero();
         let mut minimum_y = f32::INFINITY;
@@ -177,6 +143,11 @@ impl Mesh {
         let vertices: Vec<Arc<Vec3>> = vertices.iter().map(|v| {
             let mut v = *v + center_floor;
             v.y -= minimum_y;
+
+            let mut v_tmp = v - center_floor;
+            v_tmp = rotation * v_tmp;
+            v = v_tmp + center_floor;
+
             Arc::new(v)
         }).collect();
 
@@ -204,24 +175,13 @@ impl Geometry for Mesh {
     }
 
     fn intersect(&self, ray: &Ray) -> Option<GeometryInfo> {
-        let mut current_info: Option<GeometryInfo> = None;
-        self.triangles.iter().for_each(|t| {
-            if !t.bounding_box().intersects(ray) {
-                return;
+        self.triangles.iter().filter_map(|t| {
+            if t.bounding_box().intersects(ray) {
+                t.intersect(ray)
+            } else {
+                None
             }
-
-            if let Some(i) = t.intersect(ray) {
-                if current_info.is_none() {
-                    current_info = Some(i);
-                    return;
-                }
-                if i.t < current_info.unwrap().t {
-                    current_info = Some(i);
-                }
-            }
-        });
-
-        current_info
+        }).min_by(|a, b| floats::fast_cmp(a.t, b.t))
     }
     
     fn intersects(&self, ray: &Ray) -> bool {
