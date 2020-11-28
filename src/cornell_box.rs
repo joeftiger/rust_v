@@ -25,16 +25,16 @@ pub const BACK_WALL: f32 = -6.0;
 pub const FLOOR: f32 = 0.0;
 pub const CEILING: f32 = 7.0;
 pub const FRONT: f32 = 0.0;
-pub const THICKNESS: f32 = 0.001;
+pub const THICKNESS: f32 = 1.0;
 pub const RADIUS: f32 = 1.0;
 pub const FOVY: f32 = 70.0;
 
 pub const SIGMA: f32 = 20.0;
 pub const ANGLE: f32 = std::f32::consts::FRAC_PI_8;
 
-pub const X_DIFF: f32 = (RIGHT_WALL + LEFT_WALL) / 2.0;
-pub const Y_DIFF: f32 = (CEILING + FLOOR) / 2.0;
-pub const Z_DIFF: f32 = (BACK_WALL + FRONT) / 2.0;
+pub const X_CENTER: f32 = (RIGHT_WALL + LEFT_WALL) / 2.0;
+pub const Y_CENTER: f32 = (CEILING + FLOOR) / 2.0;
+pub const Z_CENTER: f32 = (BACK_WALL + FRONT) / 2.0;
 
 pub fn create(width: u32, height: u32) -> (Scene, Camera) {
     (create_box(), create_camera(width, height))
@@ -85,9 +85,9 @@ pub fn create_camera(width: u32, height: u32) -> Camera {
 
 fn light() -> Arc<dyn Light> {
     let point = Vec3::new(
-        (LEFT_WALL + RIGHT_WALL) / 2.0,
-        CEILING - (CEILING - FLOOR) / 3.0,
-        (FRONT + BACK_WALL) / 2.0,
+        X_CENTER,
+        Y_CENTER,
+        Z_CENTER,
     );
 
     let color = Spectrum::white() * 20.0;
@@ -99,7 +99,7 @@ fn bunny() -> SceneObject {
     let file_name = "./resources/meshes/bunny.obj";
     let (model, _) = tobj::load_obj(file_name, true).expect("Could not load bunny file");
     let scale = Vec3::one() * 25.0;
-    let center_floor = Vec3::new(X_DIFF, FLOOR, Z_DIFF);
+    let center_floor = Vec3::new(X_CENTER, FLOOR, Z_CENTER);
     let rotation = Rotor3::default();
 
     let bunny = Mesh::load_scale_floor_rot((&model[0].mesh, scale, center_floor, rotation));
@@ -122,7 +122,7 @@ fn dragon() -> SceneObject {
     let file_name = "./resources/meshes/dragon_4.obj";
     let (model, _) = tobj::load_obj(file_name, true).expect("Could not load dragon file");
     let scale = Vec3::one() * 25.0;
-    let floor = Vec3::new(X_DIFF, FLOOR, Z_DIFF);
+    let floor = Vec3::new(X_CENTER, FLOOR, Z_CENTER * 0.75);
     let rotation = Rotor3::from_rotation_xz(-ANGLE);
 
     let dragon = Mesh::load_scale_floor_rot((&model[0].mesh, scale, floor, rotation));

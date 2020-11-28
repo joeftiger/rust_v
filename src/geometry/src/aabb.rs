@@ -1,6 +1,6 @@
 use util::floats;
 use crate::ray::Ray;
-use crate::{ComparableExt, Container, Geometry, GeometryInfo};
+use crate::{ComparableExt, Container, Geometry, GeometryInfo, CeilFloorExt};
 use ultraviolet::Vec3;
 
 #[derive(Clone, Debug, PartialEq)]
@@ -107,31 +107,19 @@ impl Geometry for Aabb {
         let t_min = f32::max(t_min_vec.z, f32::max(t_min_vec.y, t_min_vec.x));
         let t_max = f32::min(t_max_vec.z, f32::min(t_max_vec.y, t_max_vec.x));
 
-        if t_max < 0.0 || t_max < t_min || t_min < ray.t_start || ray.t_end < t_min {
+        if !(t_max >= ray.t_start && t_max >= t_min && t_min <= ray.t_end) {
             return None;
         }
 
-        let point = ray.at(t_min);
-        let min = point - self.min;
-        let max = point - self.max;
+        let hit = ray.at(t_min);
+        let point = hit - self.center();
+        let extent = self.size() / 2.0;
+        let bias = 1.0 + floats::BIG_EPSILON;
 
-        let mut closest = None;
-
-        // left
-        closest = compare_closest(min.x, -Vec3::unit_x(), closest);
-        // right
-        closest = compare_closest(max.x, Vec3::unit_x(), closest);
-        // down
-        closest = compare_closest(min.y, -Vec3::unit_y(), closest);
-        // up
-        closest = compare_closest(max.y, Vec3::unit_y(), closest);
-        // back
-        closest = compare_closest(min.z, -Vec3::unit_z(), closest);
-        // forward
-        closest = compare_closest(max.z, Vec3::unit_z(), closest);
-
-        let closest = closest?;
-        let mut normal = closest.1;
+        let mut normal = point * bias / extent;
+        normal.x = (normal.x as i32) as f32;
+        normal.y = (normal.y as i32) as f32;
+        normal.z = (normal.z as i32) as f32;
 
         // Choose the normal's orientation to be opposite the ray's
         // (in case the ray intersects the inside surface)
@@ -140,7 +128,7 @@ impl Geometry for Aabb {
         }
 
         // approximating epsilon is too small (unlikely) or the given hit was illegal
-        Some(GeometryInfo::new(*ray, t_min, point, normal))
+        Some(GeometryInfo::new(*ray, t_min, hit, normal))
     }
 
     fn intersects(&self, ray: &Ray) -> bool {
@@ -153,21 +141,8 @@ impl Geometry for Aabb {
         let t_min = f32::max(t_min_vec.z, f32::max(t_min_vec.y, t_min_vec.x));
         let t_max = f32::min(t_max_vec.z, f32::min(t_max_vec.y, t_max_vec.x));
 
-        t_max >= ray.t_start && t_min <= ray.t_end && t_max >= t_min
+        t_max >= ray.t_start && t_max >= t_min && t_min <= ray.t_end
     }
-}
-
-fn compare_closest(d: f32, v: Vec3, closest: Option<(f32, Vec3)>) -> Option<(f32, Vec3)> {
-    if floats::approx_zero(d) {
-        if let Some((dist, _)) = closest {
-            if d < dist {
-                return Some((d, v));
-            }
-        } else {
-            return Some((d, v));
-        }
-    }
-    closest
 }
 
 impl Default for Aabb {

@@ -71,7 +71,8 @@ impl Geometry for Triangle {
     }
 
     #[allow(clippy::many_single_char_names)]
-    fn intersects(&self, ray: &Ray) -> bool {let ab = *self.b - *self.a;
+    fn intersects(&self, ray: &Ray) -> bool {
+        let ab = *self.b - *self.a;
         let ac = *self.c - *self.a;
         let h = ray.direction.cross(ac);
 
