@@ -17,12 +17,14 @@ fastrand = ""
 image = ""
 # progress bars etc.
 indicatif = ""
+# lazy statics
+lazy_static = ""
 # num of logical / physical cpus
 num_cpus = ""
-# parallelism
-rayon = ""
 # live image of rendering
 show-image = { version = "", features = ["image", "save"], optional = true }
+# thread pool allowing job handles
+slave-pool = ""
 # wavefront obj files
 tobj = ""
 # linear algebra
@@ -44,7 +46,7 @@ name = "bxdf_inlines"
 harness = false
 
 [profile.release]
-codegen-units = 1
+#codegen-units = 1
 opt-level = 3
 #lto = true
 incremental = true

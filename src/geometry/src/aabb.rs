@@ -1,6 +1,6 @@
 use util::floats;
 use crate::ray::Ray;
-use crate::{ComparableExt, Container, Geometry, GeometryInfo, CeilFloorExt};
+use crate::{ComparableExt, Container, Geometry, GeometryInfo};
 use ultraviolet::Vec3;
 
 #[derive(Clone, Debug, PartialEq)]

@@ -54,8 +54,8 @@ pub fn create_box() -> Scene {
     // scene.push_obj(sphere());
     // scene.push_obj(capsule());
     // scene.push_obj(tube());
-    // scene.push_obj(bunny());
-    scene.push_obj(dragon());
+    scene.push_obj(bunny());
+    // scene.push_obj(dragon());
 
     // light
     scene.push_light(light());
@@ -119,7 +119,7 @@ fn bunny() -> SceneObject {
 }
 
 fn dragon() -> SceneObject {
-    let file_name = "./resources/meshes/dragon_4.obj";
+    let file_name = "./resources/meshes/dragon.obj";
     let (model, _) = tobj::load_obj(file_name, true).expect("Could not load dragon file");
     let scale = Vec3::one() * 25.0;
     let floor = Vec3::new(X_CENTER, FLOOR, Z_CENTER * 0.75);

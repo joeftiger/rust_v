@@ -1,17 +1,53 @@
 use std::sync::{Arc, Mutex, RwLock};
 
-use color::Color;
 use image::{ImageBuffer, Rgb};
 use indicatif::ProgressBar;
-use rayon::prelude::*;
+use indicatif::ProgressStyle;
+use lazy_static::lazy_static;
+use slave_pool::{JobHandle, JoinError, ThreadPool};
+
+use color::Color;
+use util::range_block::{Block, RangeBlock};
 
 use crate::render::camera::Camera;
 use crate::render::integrator::Integrator;
 use crate::render::sampler::Sampler;
 use crate::render::scene::Scene;
 use crate::Spectrum;
-use std::ops::AddAssign;
-use util::range_block::{Block, RangeBlock};
+
+lazy_static!{
+    pub static ref PROGRESS_BAR: Mutex<ProgressBar> = {
+        let bar = ProgressBar::new(0);
+        bar.set_style(ProgressStyle::default_bar().template(
+            "[{elapsed} elapsed] {wide_bar:.cyan/white} {percent}% [{eta} remaining]",
+        ));
+        Mutex::new(bar)
+    };
+
+    static ref POOL: ThreadPool = {
+        let pool = ThreadPool::new();
+        pool.set_threads(num_cpus::get() as u16).expect("Cannot set threads to pool");
+        pool
+    };
+}
+
+pub struct RenderJob<T> {
+    handles: Vec<JobHandle<T>>,
+}
+
+impl<T> RenderJob<T> {
+    fn new(handles: Vec<JobHandle<T>>) -> Self {
+        Self { handles }
+    }
+
+    pub fn wait_for_finish(self) -> Result<(), JoinError> {
+        for handle in self.handles {
+            handle.wait()?;
+        }
+
+        Ok(())
+    }
+}
 
 #[derive(Default)]
 struct SpectrumStatistic {
@@ -72,6 +108,7 @@ pub struct Renderer {
     sampler: Arc<dyn Sampler>,
     integrator: Arc<dyn Integrator>,
     render_blocks: Arc<Vec<Mutex<RenderBlock>>>,
+    rendering: Arc<RwLock<ImageBuffer<Rgb<u8>, Vec<u8>>>>,
     progress: Arc<RwLock<u32>>,
     img_width: u32,
     img_height: u32,
@@ -101,6 +138,7 @@ impl Renderer {
             integrator,
             progress: Arc::new(RwLock::new(0)),
             render_blocks: Arc::new(render_blocks),
+            rendering: Arc::new(RwLock::new(ImageBuffer::new(img_width, img_height))),
             img_width,
             img_height,
         }
@@ -115,11 +153,12 @@ impl Renderer {
     }
 
     pub fn get_progress(&self) -> u32 {
-        *self.progress.read().unwrap()
+        *self.progress.read().expect("Progress is poisoned")
     }
 
     pub fn is_done(&self) -> bool {
-        self.get_progress() >= self.num_blocks() as u32
+        let progress = self.progress.read().expect("Progress is poisoned");
+        *progress >= self.num_blocks() as u32
     }
 
     fn render(&self, x: u32, y: u32) -> Spectrum {
@@ -131,7 +170,7 @@ impl Renderer {
     }
 
     pub fn reset_progress(&mut self) {
-        *self.progress.write().unwrap() = 0;
+        *self.progress.write().expect("Progress is poisoned") = 0;
     }
 
     pub fn reset_image(&mut self) {
@@ -140,90 +179,63 @@ impl Renderer {
             .for_each(|b| b.lock().expect("Block is poisoned").reset());
     }
 
-    pub fn render_all(&mut self, passes: u32, bar: &ProgressBar) {
+    pub fn render_all_par(&mut self, passes: u32) -> RenderJob<()> {
         if self.is_done() {
             self.reset_progress()
         }
 
-        self.render_blocks.iter().for_each(|block| {
-            let this = self.clone();
-            let mut lock = block.lock().expect("Block is poisoned");
+        let num_threads = num_cpus::get();
+        let mut handles = Vec::with_capacity(num_threads);
 
-            lock.stats.iter_mut().for_each(|stats| {
-                for _ in 0..passes {
-                    let pixel = this.render(stats.x, stats.y);
-                    stats.spectrum += pixel;
-                    stats.samples += 1;
-                }
-            });
-            bar.inc(1)
-        });
-    }
-
-    pub fn render_all_par(&mut self, passes: u32, bar: &ProgressBar) {
-        if self.is_done() {
-            self.reset_progress()
+        {
+            let bar = PROGRESS_BAR.lock().expect("Progress bar poisoned");
+            bar.set_length(self.num_blocks() as u64);
+            bar.reset();
         }
 
-        (0..self.num_blocks()).into_par_iter().for_each(|index| {
+        for _ in 0..num_threads {
             let this = self.clone();
+            let handle = POOL.spawn_handle(move || {
+                loop {
+                    let index = {
+                        let mut p = this.progress.write().expect("Progress is poisoned");
+                        if *p >= this.num_blocks() as u32 {
+                            break;
+                        }
+                        *p += 1;
+                        *p - 1
+                    };
 
-            let mut lock = this.render_blocks[index].lock().expect("Block is poisoned");
-            lock.stats.iter_mut().for_each(|stats| {
-                for _ in 0..passes {
-                    let pixel = this.render(stats.x, stats.y);
-                    stats.spectrum += pixel;
-                    stats.samples += 1;
+                    let mut lock = this.render_blocks[index as usize].lock().expect("Block is poisoned");
+                    lock.stats.iter_mut().for_each(|stats| {
+                        for _ in 0..passes {
+                            let pixel = this.render(stats.x, stats.y);
+                            stats.spectrum += pixel;
+                            stats.samples += 1;
+                        }
+
+                        let avg = stats.average().into();
+                        this.rendering
+                            .write()
+                            .expect("Rendering poisoned")
+                            .put_pixel(stats.x, stats.y, avg);
+                    });
+
+                    PROGRESS_BAR.lock().expect("Progress bar poisoned").inc(1);
                 }
             });
-            bar.inc(1)
-        });
-    }
 
-    pub fn render_pass(&mut self) {
-        let num_cpus = num_cpus::get();
-        let index = {
-            let mut lock = self.progress.write().expect("Progress poisoned");
-            let progress = *lock as usize;
-            lock.add_assign(num_cpus as u32);
-            progress..(progress + num_cpus).min(self.num_blocks())
-        };
+            handles.push(handle);
+        }
 
-        // self.render_blocks[index].iter().for_each(|block| {
-        self.render_blocks[index].par_iter().for_each(|block| {
-            let this = self.clone();
-            let mut block_lock = block.lock().expect("Block is poisoned");
-
-            block_lock.stats.iter_mut().for_each(|px_stats| {
-                let pixel = this.render(px_stats.x, px_stats.y);
-
-                px_stats.spectrum += pixel;
-                px_stats.samples += 1;
-            });
-        });
-    }
-
-    pub fn set_camera(&mut self, camera: Camera) {
-        self.camera = Arc::new(camera);
-    }
-
-    pub fn get_camera(&mut self) -> Arc<Camera> {
-        self.camera.clone()
+        RenderJob::new(handles)
     }
 
     pub fn get_image_u8(&mut self) -> ImageBuffer<Rgb<u8>, Vec<u8>> {
-        let mut buffer = ImageBuffer::new(self.img_width, self.img_height);
-        self.render_blocks.iter().for_each(|block| {
-            let lock = block.lock().expect("Block is poisoned");
-
-            lock.stats
-                .iter()
-                .for_each(|stat| buffer.put_pixel(stat.x, stat.y, stat.average().into()));
-        });
-
-        buffer
+        self.rendering.read().expect("Rendering is poisoned").clone()
     }
 
+    // TODO: Possible to make more efficient?
     pub fn get_image_u16(&mut self) -> ImageBuffer<Rgb<u16>, Vec<u16>> {
         let mut buffer = ImageBuffer::new(self.img_width, self.img_height);
         self.render_blocks.iter().for_each(|block| {

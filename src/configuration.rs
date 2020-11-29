@@ -5,12 +5,11 @@ use crate::render::integrator::whitted::Whitted;
 use crate::render::integrator::Integrator;
 use crate::render::renderer::Renderer;
 use crate::render::sampler::{NoopSampler, RandomSampler, Sampler};
-#[cfg(feature = "live-window")]
-use crate::render::window::RenderWindow;
-use indicatif::{ProgressBar, ProgressStyle};
 use std::convert::TryInto;
 use std::sync::Arc;
 use std::time::Instant;
+#[cfg(feature = "live-window")]
+use crate::render::fast_window::FastWindow;
 
 #[derive(Debug, Clone)]
 pub struct Configuration {
@@ -82,7 +81,7 @@ impl Configuration {
         )
     }
 
-    pub fn start_rendering(&self) -> Result<(), String> {
+    pub fn start_rendering(&'static self) -> Result<(), String> {
         if self.verbose {
             println!("{:#?}", self);
         }
@@ -92,7 +91,7 @@ impl Configuration {
         #[cfg(feature = "live-window")]
         {
             if self.live {
-                RenderWindow::new("Rust-V".to_string(), self.clone(), renderer)
+                FastWindow::new("Rust-V".to_string(), self.clone(), renderer)
                     .map_err(|e| format!("Unable to create window: {}", e))?
                     .start_rendering();
                 if self.verbose {
@@ -103,18 +102,10 @@ impl Configuration {
         }
 
         if cfg!(not(feature = "live-window")) || !self.live {
-            let bar = ProgressBar::new(renderer.num_blocks() as u64);
-            bar.set_style(ProgressStyle::default_bar().template(
-                "[{elapsed} elapsed] {wide_bar:.cyan/white} {percent}% [{eta} remaining]",
-            ));
-
             let start = Instant::now();
-            if self.threaded {
-                renderer.render_all_par(self.passes, &bar);
-            } else {
-                renderer.render_all(self.passes, &bar);
-            }
-            bar.finish();
+
+            let job = renderer.render_all_par(self.passes);
+            job.wait_for_finish().expect("Could not join render threads");
 
             if self.verbose {
                 println!("Took {} seconds", start.elapsed().as_secs());
