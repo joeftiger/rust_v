@@ -72,7 +72,7 @@ impl BxDF for SpecularTransmission {
         let cos_i = cos_theta(&incident).abs();
 
         let f = Spectrum::new_const(1.0) - self.fresnel.evaluate(cos_i);
-        let spectrum = f * self.t;
+        let spectrum = f * self.t / cos_i;
 
         BxDFSample::new(spectrum, incident, 1.0, self.get_type())
     }

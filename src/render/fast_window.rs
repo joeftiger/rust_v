@@ -65,5 +65,8 @@ impl FastWindow {
                 }
             }
         }
+
+        // Make sure all background tasks are stopped cleanly.
+        show_image::stop().unwrap();
     }
 }

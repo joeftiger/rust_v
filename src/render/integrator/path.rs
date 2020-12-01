@@ -68,11 +68,7 @@ impl Integrator for Path {
                     if !c.is_black() {
                         let u = light_sample.occlusion_tester.unoccluded(scene);
                         if u {
-                            let cos = if specular {
-                                1.0
-                            } else {
-                                light_sample.incident.dot(*normal).abs()
-                            };
+                            let cos = light_sample.incident.dot(*normal).abs();
 
                             if cos != 0.0 {
                                 illumination += light_sample.spectrum * c * (cos / light_sample.pdf);
@@ -97,14 +93,14 @@ impl Integrator for Path {
 
                 throughput *= bxdf_sample.spectrum * (dot / bxdf_sample.pdf);
 
-                if bounce > self.min_depth {
-                    let const_prob = 0.5;
-                    if fastrand::f32() > const_prob {
-                        break;
-                    }
-
-                    throughput *= const_prob;
-                }
+                // if bounce > self.min_depth {
+                //     let const_prob = 0.5;
+                //     if fastrand::f32() > const_prob {
+                //         break;
+                //     }
+                //
+                //     throughput *= const_prob;
+                // }
 
                 let ray = hit.info.create_ray(bxdf_sample.incident);
 

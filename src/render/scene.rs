@@ -2,12 +2,11 @@ use crate::render::light::Light;
 use crate::render::scene_objects::SceneObject;
 use geometry::aabb::Aabb;
 use geometry::ray::Ray;
-use geometry::{Container, Geometry, GeometryInfo};
+use geometry::{Container, Geometry, GeometryInfo, bvh};
 use std::sync::Arc;
 use ultraviolet::Vec3;
+use geometry::bvh::BvhNode;
 
-/// Consists of
-/// - info: [GeometryInfo](../geometry_leg/struct.GeometryInfo.html)
 #[derive(Clone)]
 pub struct SceneIntersection {
     pub info: GeometryInfo,
@@ -24,6 +23,7 @@ pub struct Scene {
     pub aabb: Aabb,
     pub lights: Vec<Arc<dyn Light>>,
     pub objects: Vec<Arc<SceneObject>>,
+    bvh: Arc<BvhNode>,
 }
 
 impl Scene {
@@ -40,17 +40,21 @@ impl Scene {
         self.lights.push(light);
     }
 
+    pub fn build_bvh(&mut self) {
+        bvh::build_tree(self.objects.clone());
+    }
+
     /// Checks if the given ray intersects any object before reaching it's own maximum t lifespan.
     pub fn is_occluded(&self, ray: &Ray) -> bool {
-        self.objects
-            .iter()
-            .any(|object| object.bounding_box().intersects(ray) && object.intersects(ray))
+        self.bvh.intersects(ray)
     }
 
     pub fn intersect(&self, ray: &Ray) -> Option<SceneIntersection> {
         let mut ray = *ray;
         let mut obj = None;
         let mut info: Option<GeometryInfo> = None;
+
+        // self.bvh.intersect(&ray);
 
         self.objects.iter().for_each(|so| {
             if !so.bounding_box().intersects(&ray) {
@@ -91,6 +95,7 @@ impl Default for Scene {
             aabb: Aabb::inverted_infinite(),
             lights: Vec::default(),
             objects: Vec::default(),
+            bvh: Arc::new(BvhNode::new_empty()),
         }
     }
 }

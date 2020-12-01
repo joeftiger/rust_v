@@ -185,8 +185,9 @@ impl BxDF for FresnelSpecular {
             };
 
             let incident = outgoing.refracted(n, eta_i / eta_t);
+            let cos_i = bxdf::cos_theta(&incident);
             let pdf = 1.0 - f;
-            let spectrum = self.t * pdf;
+            let spectrum = self.t * (pdf / cos_i.abs());
 
             BxDFSample::new(spectrum, incident, pdf, typ)
         }

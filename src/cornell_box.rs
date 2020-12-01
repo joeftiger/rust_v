@@ -19,6 +19,7 @@ use geometry::tube::Tube;
 use std::sync::Arc;
 use ultraviolet::{Vec3, Bivec3, Rotor3};
 use crate::render::material::Material;
+use geometry::cylinder::Cylinder;
 
 pub const LEFT_WALL: f32 = -3.0;
 pub const RIGHT_WALL: f32 = 3.0;
@@ -32,8 +33,6 @@ pub const FOVY: f32 = 70.0;
 
 pub const SIGMA: f32 = 20.0;
 pub const ANGLE: f32 = std::f32::consts::FRAC_PI_8;
-
-pub const Y_HALF: f32 = (CEILING - FLOOR) / 2.0;
 
 pub const X_CENTER: f32 = (RIGHT_WALL + LEFT_WALL) / 2.0;
 pub const Y_CENTER: f32 = (CEILING + FLOOR) / 2.0;
@@ -90,11 +89,11 @@ pub fn create_camera(width: u32, height: u32) -> Camera {
 fn light() -> Arc<dyn Light> {
     let point = Vec3::new(
         X_CENTER,
-        Y_CENTER,
+        Y_CENTER + (CEILING - Y_CENTER) * 0.5,
         Z_CENTER,
     );
 
-    let color = Spectrum::white() * 20.0;
+    let color = Spectrum::white() * 10.0;
 
     Arc::new(PointLight::new(point, color))
 }
@@ -102,11 +101,11 @@ fn light() -> Arc<dyn Light> {
 fn emitter() -> SceneObject {
     let center = Vec3::new(
         X_CENTER,
-        CEILING + RADIUS,
+        CEILING + RADIUS * 2.0,
         Z_CENTER,
     );
 
-    let sphere = Sphere::new(center, RADIUS * 1.1);
+    let sphere = Sphere::new(center, RADIUS * 2.1);
 
     let color = Spectrum::white();
     let oren_nayar = OrenNayar::new(color, SIGMA);
