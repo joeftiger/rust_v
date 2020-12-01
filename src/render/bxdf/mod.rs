@@ -34,7 +34,6 @@ pub fn flip_if_neg(mut v: Vec3) -> Vec3 {
     if is_neg(&v) {
         v.y = -v.y;
     }
-
     v
 }
 
@@ -129,11 +128,12 @@ pub fn world_to_bxdf(v: &Vec3) -> Rotor3 {
 
 bitflags! {
     pub struct BxDFType: u8 {
-        const REFLECTION = 1 << 0;
-        const TRANSMISSION = 1 << 1;
-        const DIFFUSE = 1 << 2;
-        const GLOSSY = 1 << 3;
-        const SPECULAR = 1 << 4;
+        const NONE = 1 << 0;
+        const REFLECTION = 1 << 1;
+        const TRANSMISSION = 1 << 2;
+        const DIFFUSE = 1 << 3;
+        const GLOSSY = 1 << 4;
+        const SPECULAR = 1 << 5;
         const ALL = Self::REFLECTION.bits | Self::TRANSMISSION.bits | Self::DIFFUSE.bits | Self::GLOSSY.bits | Self::SPECULAR.bits;
     }
 }
@@ -169,19 +169,21 @@ pub struct BxDFSample {
     pub spectrum: Spectrum,
     pub incident: Vec3,
     pub pdf: f32,
+    pub typ: BxDFType,
 }
 
 impl BxDFSample {
-    pub fn new(spectrum: Spectrum, incident: Vec3, pdf: f32) -> Self {
+    pub fn new(spectrum: Spectrum, incident: Vec3, pdf: f32, typ: BxDFType) -> Self {
         Self {
             spectrum,
             incident,
             pdf,
+            typ
         }
     }
 
     pub fn black_nan_0() -> Self {
-        Self::new(0.0.into(), Vec3::broadcast(f32::NAN), 0.0)
+        Self::new(0.0.into(), Vec3::broadcast(f32::NAN), 0.0, BxDFType::NONE)
     }
 }
 
@@ -238,7 +240,7 @@ pub trait BxDF: Debug + Send + Sync {
         let spectrum = self.evaluate(&incident, outgoing);
         let pdf = self.pdf(&incident, outgoing);
 
-        BxDFSample::new(spectrum, incident, pdf)
+        BxDFSample::new(spectrum, incident, pdf, self.get_type())
     }
 
     /// # Summary

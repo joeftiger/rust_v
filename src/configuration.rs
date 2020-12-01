@@ -78,6 +78,7 @@ impl Configuration {
             sampler,
             integrator,
             self.block_size,
+            self.passes
         )
     }
 
@@ -104,8 +105,8 @@ impl Configuration {
         if cfg!(not(feature = "live-window")) || !self.live {
             let start = Instant::now();
 
-            let job = renderer.render_all_par(self.passes);
-            job.wait_for_finish().expect("Could not join render threads");
+            let job = renderer.render_all();
+            job.join().expect("Could not join render threads");
 
             if self.verbose {
                 println!("Took {} seconds", start.elapsed().as_secs());

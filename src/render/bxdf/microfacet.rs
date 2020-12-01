@@ -6,7 +6,7 @@ use color::Color;
 use geometry::spherical_direction;
 use util::{floats, math};
 
-use crate::render::bxdf::fresnel::{Dielectric, Fresnel};
+use crate::render::bxdf::fresnel::Fresnel;
 use crate::render::bxdf::*;
 use crate::Spectrum;
 
@@ -373,7 +373,7 @@ impl BxDF for MicrofacetReflection {
         let spectrum = self.evaluate(&incident, outgoing);
         let pdf = self.distribution.pdf(outgoing, &wh) / (4.0 * cos_o);
 
-        BxDFSample::new(spectrum, incident, pdf)
+        BxDFSample::new(spectrum, incident, pdf, self.get_type())
     }
 
     fn pdf(&self, incident: &Vec3, outgoing: &Vec3) -> f32 {
@@ -387,120 +387,120 @@ impl BxDF for MicrofacetReflection {
     }
 }
 
-#[derive(Debug)]
-pub struct MicrofacetTransmission {
-    t: Spectrum,
-    distribution: Box<dyn MicrofacetDistribution>,
-    fresnel: Dielectric,
-}
-
-impl MicrofacetTransmission {
-    pub fn new(
-        t: Spectrum,
-        distribution: Box<dyn MicrofacetDistribution>,
-        fresnel: Dielectric,
-    ) -> Self {
-        Self {
-            t,
-            distribution,
-            fresnel,
-        }
-    }
-}
-
-impl BxDF for MicrofacetTransmission {
-    fn get_type(&self) -> BxDFType {
-        BxDFType::TRANSMISSION | BxDFType::GLOSSY
-    }
-
-    fn evaluate(&self, incident: &Vec3, outgoing: &Vec3) -> Spectrum {
-        if same_hemisphere(incident, outgoing) {
-            return Spectrum::black();
-        }
-
-        let cos_theta_i = cos_theta(incident);
-        let cos_theta_o = cos_theta(outgoing);
-        if cos_theta_i == 0.0 || cos_theta_o == 0.0 {
-            return Spectrum::black();
-        }
-
-        // Compute $\wh$ from $\wo$ and $\wi$ for microfacet transmission
-        let (eta, wh) = {
-            let eta = if cos_theta_o > 0.0 {
-                self.fresnel.eta_t / self.fresnel.eta_i
-            } else {
-                self.fresnel.eta_i / self.fresnel.eta_t
-            };
-            let wh = flip_if_neg(*outgoing + *incident * eta);
-            (eta, wh)
-        };
-
-        // Same side?
-        let cos_i = outgoing.dot(wh);
-        let cos_t = incident.dot(wh);
-        if cos_i * cos_t > 0.0 {
-            return Spectrum::black();
-        }
-
-        let f = self.fresnel.evaluate(cos_i);
-
-        let sqrt_denom = cos_i + eta * cos_t;
-
-        let t = (Spectrum::new_const(1.0) - f) * self.t;
-        let dist = self.distribution.d(&wh) * self.distribution.g(incident, outgoing);
-        let factor =
-            cos_i.abs() * cos_t.abs() / (cos_theta_i * cos_theta_i * sqrt_denom * sqrt_denom);
-
-        t * (dist * factor).abs()
-    }
-
-    fn sample(&self, outgoing: &Vec3, sample: &Vec2) -> BxDFSample {
-        if bxdf_is_parallel(outgoing) {
-            return BxDFSample::black_nan_0();
-        }
-
-        let wh = self.distribution.sample_wh(outgoing, sample);
-        // Should be rare
-        if outgoing.dot(wh) < 0.0 {
-            return BxDFSample::black_nan_0();
-        }
-
-        let eta = if cos_theta(outgoing) > 0.0 {
-            self.fresnel.eta_i / self.fresnel.eta_t
-        } else {
-            self.fresnel.eta_t / self.fresnel.eta_i
-        };
-
-        let incident = outgoing.refracted(wh, eta);
-        let spectrum = self.evaluate(&incident, outgoing);
-        let pdf = self.pdf(&incident, outgoing);
-
-        BxDFSample::new(spectrum, incident, pdf)
-    }
-
-    fn pdf(&self, incident: &Vec3, outgoing: &Vec3) -> f32 {
-        if same_hemisphere(incident, outgoing) {
-            return 0.0;
-        }
-
-        // Compute $\wh$ from $\wo$ and $\wi$ for microfacet transmission
-        let eta = if cos_theta(outgoing) > 0.0 {
-            self.fresnel.eta_i / self.fresnel.eta_t
-        } else {
-            self.fresnel.eta_t / self.fresnel.eta_i
-        };
-
-        let wh = (*outgoing + *incident * eta).normalized();
-
-        let cos_i = incident.dot(wh);
-        let cos_o = outgoing.dot(wh);
-        if cos_i * cos_o > 0.0 {
-            return 0.0;
-        }
-
-        let sqrt_denom = cos_o + eta * cos_i;
-        let dwh_dwi = eta * eta * cos_i.abs() / (sqrt_denom * sqrt_denom);
-
-        self.distribution.pdf(outgoing, &wh) * dwh_dwi
-    }
-}
+// #[derive(Debug)]
+// pub struct MicrofacetTransmission {
+//     t: Spectrum,
+//     distribution: Box<dyn MicrofacetDistribution>,
+//     fresnel: Dielectric,
+// }
+//
+// impl MicrofacetTransmission {
+//     pub fn new(
+//         t: Spectrum,
+//         distribution: Box<dyn MicrofacetDistribution>,
+//         fresnel: Dielectric,
+//     ) -> Self {
+//         Self {
+//             t,
+//             distribution,
+//             fresnel,
+//         }
+//     }
+// }
+//
+// impl BxDF for MicrofacetTransmission {
+//     fn get_type(&self) -> BxDFType {
+//         BxDFType::TRANSMISSION | BxDFType::GLOSSY
+//     }
+//
+//     fn evaluate(&self, incident: &Vec3, outgoing: &Vec3) -> Spectrum {
+//         if same_hemisphere(incident, outgoing) {
+//             return Spectrum::black();
+//         }
+//
+//         let cos_theta_i = cos_theta(incident);
+//         let cos_theta_o = cos_theta(outgoing);
+//         if cos_theta_i == 0.0 || cos_theta_o == 0.0 {
+//             return Spectrum::black();
+//         }
+//
+//         // Compute $\wh$ from $\wo$ and $\wi$ for microfacet transmission
+//         let (eta, wh) = {
+//             let eta = if cos_theta_o > 0.0 {
+//                 self.fresnel.eta_t / self.fresnel.eta_i
+//             } else {
+//                 self.fresnel.eta_i / self.fresnel.eta_t
+//             };
+//             let wh = flip_if_neg(*outgoing + *incident * eta);
+//             (eta, wh)
+//         };
+//
+//         // Same side?
+//         let cos_i = outgoing.dot(wh);
+//         let cos_t = incident.dot(wh);
+//         if cos_i * cos_t > 0.0 {
+//             return Spectrum::black();
+//         }
+//
+//         let f = self.fresnel.evaluate(cos_i);
+//
+//         let sqrt_denom = cos_i + eta * cos_t;
+//
+//         let t = (Spectrum::new_const(1.0) - f) * self.t;
+//         let dist = self.distribution.d(&wh) * self.distribution.g(incident, outgoing);
+//         let factor =
+//             cos_i.abs() * cos_t.abs() / (cos_theta_i * cos_theta_i * sqrt_denom * sqrt_denom);
+//
+//         t * (dist * factor).abs()
+//     }
+//
+//     fn sample(&self, outgoing: &Vec3, sample: &Vec2) -> BxDFSample {
+//         if bxdf_is_parallel(outgoing) {
+//             return BxDFSample::black_nan_0();
+//         }
+//
+//         let wh = self.distribution.sample_wh(outgoing, sample);
+//         // Should be rare
+//         if outgoing.dot(wh) < 0.0 {
+//             return BxDFSample::black_nan_0();
+//         }
+//
+//         let eta = if cos_theta(outgoing) > 0.0 {
+//             self.fresnel.eta_i / self.fresnel.eta_t
+//         } else {
+//             self.fresnel.eta_t / self.fresnel.eta_i
+//         };
+//
+//         let incident = outgoing.refracted(wh, eta);
+//         let spectrum = self.evaluate(&incident, outgoing);
+//         let pdf = self.pdf(&incident, outgoing);
+//
+//         BxDFSample::new(spectrum, incident, pdf, self.get_type())
+//     }
+//
+//     fn pdf(&self, incident: &Vec3, outgoing: &Vec3) -> f32 {
+//         if same_hemisphere(incident, outgoing) {
+//             return 0.0;
+//         }
+//
+//         // Compute $\wh$ from $\wo$ and $\wi$ for microfacet transmission
+//         let eta = if cos_theta(outgoing) > 0.0 {
+//             self.fresnel.eta_i / self.fresnel.eta_t
+//         } else {
+//             self.fresnel.eta_t / self.fresnel.eta_i
+//         };
+//
+//         let wh = (*outgoing + *incident * eta).normalized();
+//
+//         let cos_i = incident.dot(wh);
+//         let cos_o = outgoing.dot(wh);
+//         if cos_i * cos_o > 0.0 {
+//             return 0.0;
+//         }
+//
+//         let sqrt_denom = cos_o + eta * cos_i;
+//         let dwh_dwi = eta * eta * cos_i.abs() / (sqrt_denom * sqrt_denom);
+//
+//         self.distribution.pdf(outgoing, &wh) * dwh_dwi
+//     }
+// }

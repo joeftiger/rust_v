@@ -30,9 +30,18 @@ impl FastWindow {
 
     pub fn start_rendering(&mut self) {
         let wait_key = Duration::from_millis(100);
-        let render_job = self.renderer.render_all_par(self.config.passes);
+        let render_job = self.renderer.render_all();
 
-        while self.window.wait_key(wait_key).is_ok() {
+        while let Ok(event) = self.window.wait_key(wait_key) {
+            if let Some(event) = event {
+                if event.key == KeyCode::Escape {
+                    if self.config.verbose {
+                        println!("Stopping render threads");
+                    }
+                    render_job.stop().expect("Could not stop render threads");
+                    return;
+                }
+            }
             if self.renderer.is_done() {
                 break;
             }
@@ -43,7 +52,7 @@ impl FastWindow {
             }
         }
 
-        render_job.wait_for_finish().expect("Could not join render threads");
+        render_job.join().expect("Could not join render threads");
 
         let image = self.renderer.get_image_u8();
         self.window.set_image(image, "Rendering").expect("Could not set last image");

@@ -36,7 +36,7 @@ impl Integrator for Whitted {
     ) -> Spectrum {
         let outgoing = -intersection.info.ray.direction;
 
-        let bsdf = &intersection.obj.bsdf;
+        let bsdf = &intersection.obj.material.bsdf;
         let point = &intersection.info.point;
         let normal = &intersection.info.normal;
 

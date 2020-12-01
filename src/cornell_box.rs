@@ -18,6 +18,7 @@ use geometry::sphere::Sphere;
 use geometry::tube::Tube;
 use std::sync::Arc;
 use ultraviolet::{Vec3, Bivec3, Rotor3};
+use crate::render::material::Material;
 
 pub const LEFT_WALL: f32 = -3.0;
 pub const RIGHT_WALL: f32 = 3.0;
@@ -25,7 +26,7 @@ pub const BACK_WALL: f32 = -6.0;
 pub const FLOOR: f32 = 0.0;
 pub const CEILING: f32 = 7.0;
 pub const FRONT: f32 = 0.0;
-pub const THICKNESS: f32 = 1.0;
+pub const THICKNESS: f32 = 0.1;
 pub const RADIUS: f32 = 1.0;
 pub const FOVY: f32 = 70.0;
 
@@ -51,11 +52,12 @@ pub fn create_box() -> Scene {
     scene.push_obj(ceiling());
 
     // objects
-    // scene.push_obj(sphere());
-    // scene.push_obj(capsule());
-    // scene.push_obj(tube());
-    scene.push_obj(bunny());
+    scene.push_obj(sphere());
+    scene.push_obj(capsule());
+    scene.push_obj(tube());
+    // scene.push_obj(bunny());
     // scene.push_obj(dragon());
+    scene.push_obj(emitter());
 
     // light
     scene.push_light(light());
@@ -86,13 +88,31 @@ pub fn create_camera(width: u32, height: u32) -> Camera {
 fn light() -> Arc<dyn Light> {
     let point = Vec3::new(
         X_CENTER,
-        Y_CENTER,
+        Y_CENTER + RADIUS,
         Z_CENTER,
     );
 
     let color = Spectrum::white() * 20.0;
 
     Arc::new(PointLight::new(point, color))
+}
+
+fn emitter() -> SceneObject {
+    let center = Vec3::new(
+        X_CENTER,
+        CEILING + RADIUS,
+        Z_CENTER,
+    );
+
+    let sphere = Sphere::new(center, RADIUS * 1.1);
+
+    let color = Spectrum::white();
+    let oren_nayar = OrenNayar::new(color, SIGMA);
+    let bsdf = BSDF::new(vec![Box::new(oren_nayar)]);
+    let material = Material::new(color * 20.0, bsdf);
+
+    SceneObject::new(Box::new(sphere), material)
+
 }
 
 fn bunny() -> SceneObject {
@@ -108,18 +128,17 @@ fn bunny() -> SceneObject {
     let dielectric = Arc::new(Dielectric::new(1.0, 1.3));
     let transmission = Box::new(SpecularTransmission::new(color, dielectric.clone()));
     let reflection = Box::new(SpecularReflection::new(color, dielectric));
-    // let oren_nayar = Box::new(OrenNayar::new(color, SIGMA));
     let bsdf = BSDF::new(vec![
         reflection,
         transmission,
-        // oren_nayar,
     ]);
+    let material = Material::from(bsdf);
 
-    SceneObject::new(Box::new(bunny), bsdf)
+    SceneObject::new(Box::new(bunny), material)
 }
 
 fn dragon() -> SceneObject {
-    let file_name = "./resources/meshes/dragon.obj";
+    let file_name = "./resources/meshes/dragon_4.obj";
     let (model, _) = tobj::load_obj(file_name, true).expect("Could not load dragon file");
     let scale = Vec3::one() * 25.0;
     let floor = Vec3::new(X_CENTER, FLOOR, Z_CENTER * 0.75);
@@ -131,14 +150,13 @@ fn dragon() -> SceneObject {
     let dielectric = Arc::new(Dielectric::new(1.0, 1.3));
     let transmission = Box::new(SpecularTransmission::new(color, dielectric.clone()));
     let reflection = Box::new(SpecularReflection::new(color, dielectric));
-    // let oren_nayar = Box::new(OrenNayar::new(color, SIGMA));
     let bsdf = BSDF::new(vec![
         reflection,
         transmission,
-        // oren_nayar,
     ]);
+    let material = Material::from(bsdf);
 
-    SceneObject::new(Box::new(dragon), bsdf)
+    SceneObject::new(Box::new(dragon), material)
 }
 
 fn sphere() -> SceneObject {
@@ -153,14 +171,13 @@ fn sphere() -> SceneObject {
 
     let color = Spectrum::white();
     let fresnel = Arc::new(Dielectric::new(1.0, 2.0));
-    // let spec_refl = SpecularReflection::new(color, fresnel.clone());
     let spec_trans = SpecularTransmission::new(color, fresnel);
     let bsdf = BSDF::new(vec![
-        // Box::new(spec_refl),
         Box::new(spec_trans),
     ]);
+    let material = Material::from(bsdf);
 
-    SceneObject::new(Box::new(sphere), bsdf)
+    SceneObject::new(Box::new(sphere), material)
 }
 
 fn capsule() -> SceneObject {
@@ -180,8 +197,9 @@ fn capsule() -> SceneObject {
     let color = Spectrum::white();
     let oren_nayar = OrenNayar::new(color, SIGMA);
     let bsdf = BSDF::new(vec![Box::new(oren_nayar)]);
+    let material = Material::from(bsdf);
 
-    SceneObject::new(Box::new(capsule), bsdf)
+    SceneObject::new(Box::new(capsule), material)
 }
 
 fn tube() -> SceneObject {
@@ -204,8 +222,9 @@ fn tube() -> SceneObject {
     // let microfacet =
     //     MicrofacetReflection::new(color, Box::new(distribution), Box::new(FresnelNoOp));
     // let bsdf = BSDF::new(vec![Box::new(microfacet)]);
+    let material = Material::from(bsdf);
 
-    SceneObject::new(Box::new(tube), bsdf)
+    SceneObject::new(Box::new(tube), material)
 }
 
 fn left_wall() -> SceneObject {
@@ -221,8 +240,9 @@ fn left_wall() -> SceneObject {
     let color = Spectrum::red();
     let oren_nayar = OrenNayar::new(color, SIGMA);
     let bsdf = BSDF::new(vec![Box::new(oren_nayar)]);
+    let material = Material::from(bsdf);
 
-    SceneObject::new(Box::new(aabb), bsdf)
+    SceneObject::new(Box::new(aabb), material)
 }
 
 fn right_wall() -> SceneObject {
@@ -234,8 +254,9 @@ fn right_wall() -> SceneObject {
     let color = Spectrum::green();
     let oren_nayar = OrenNayar::new(color, SIGMA);
     let bsdf = BSDF::new(vec![Box::new(oren_nayar)]);
+    let material = Material::from(bsdf);
 
-    SceneObject::new(Box::new(aabb), bsdf)
+    SceneObject::new(Box::new(aabb), material)
 }
 
 fn back_wall() -> SceneObject {
@@ -253,8 +274,9 @@ fn back_wall() -> SceneObject {
     // let bsdf = BSDF::new(vec![Box::new(spec_refl)]);
     let oren_nayar = OrenNayar::new(color, SIGMA);
     let bsdf = BSDF::new(vec![Box::new(oren_nayar)]);
+    let material = Material::from(bsdf);
 
-    SceneObject::new(Box::new(aabb), bsdf)
+    SceneObject::new(Box::new(aabb), material)
 }
 
 fn floor() -> SceneObject {
@@ -270,8 +292,9 @@ fn floor() -> SceneObject {
     let color = Spectrum::white();
     let oren_nayar = OrenNayar::new(color, SIGMA);
     let bsdf = BSDF::new(vec![Box::new(oren_nayar)]);
+    let material = Material::from(bsdf);
 
-    SceneObject::new(Box::new(aabb), bsdf)
+    SceneObject::new(Box::new(aabb), material)
 }
 
 fn ceiling() -> SceneObject {
@@ -283,6 +306,7 @@ fn ceiling() -> SceneObject {
     let color = Spectrum::white();
     let oren_nayar = OrenNayar::new(color, SIGMA);
     let bsdf = BSDF::new(vec![Box::new(oren_nayar)]);
+    let material = Material::from(bsdf);
 
-    SceneObject::new(Box::new(aabb), bsdf)
+    SceneObject::new(Box::new(aabb), material)
 }

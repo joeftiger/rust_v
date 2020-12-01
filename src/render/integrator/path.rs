@@ -44,39 +44,49 @@ impl Integrator for Path {
         let mut throughput = Spectrum::new_const(1.0);
 
         let mut hit = intersection.clone();
+        let mut specular = false;
 
-        for _ in 0..self.max_depth {
-            let outgoing = -hit.info.ray.direction;
+        for bounce in 0..self.max_depth {
+            let outgoing = &-hit.info.ray.direction;
 
-            let bsdf = &hit.obj.bsdf;
+            let material = &hit.obj.material;
+            let bsdf = &material.bsdf;
             let normal = &hit.info.normal;
 
-            let mut li = Spectrum::black();
+            let mut illumination = Spectrum::black();
+
+            if (bounce == 0 || specular) && material.emissive() {
+                illumination += throughput * material.radiance(&outgoing, normal);
+            }
 
             for light in &scene.lights {
                 let light_sample = light.sample(&hit);
 
                 if light_sample.pdf > 0.0 && !light_sample.spectrum.is_black() {
-                    let c = bsdf.evaluate(normal, &light_sample.incident, &outgoing, BxDFType::ALL);
+                    let c = bsdf.evaluate(normal, &light_sample.incident, outgoing, BxDFType::ALL);
 
                     if !c.is_black() {
                         let u = light_sample.occlusion_tester.unoccluded(scene);
                         if u {
-                            let cos = light_sample.incident.dot(*normal).abs();
+                            let cos = if specular {
+                                1.0
+                            } else {
+                                light_sample.incident.dot(*normal).abs()
+                            };
 
                             if cos != 0.0 {
-                                li += light_sample.spectrum * c * (cos / light_sample.pdf);
+                                illumination += light_sample.spectrum * c * (cos / light_sample.pdf);
                             }
                         }
                     }
                 }
             }
 
-            color += throughput * li;
+            color += throughput * illumination;
 
             let sample = sampler.get_sample();
 
-            let bxdf_sample = bsdf.sample(normal, &outgoing, BxDFType::ALL, &sample);
+            let bxdf_sample = bsdf.sample(normal, outgoing, BxDFType::ALL, &sample);
             if let Some(bxdf_sample) = bxdf_sample {
                 if bxdf_sample.pdf == 0.0 || bxdf_sample.spectrum.is_black() {
                     break;
@@ -87,14 +97,14 @@ impl Integrator for Path {
 
                 throughput *= bxdf_sample.spectrum * (dot / bxdf_sample.pdf);
 
-                /* if bounce > self.min_depth {
+                if bounce > self.min_depth {
                     let const_prob = 0.5;
                     if fastrand::f32() > const_prob {
                         break;
                     }
 
                     throughput *= const_prob;
-                }*/
+                }
 
                 let ray = hit.info.create_ray(bxdf_sample.incident);
 
@@ -102,6 +112,8 @@ impl Integrator for Path {
                     Some(i) => hit = i,
                     None => return color,
                 }
+
+                specular = bxdf_sample.typ.is_specular();
             } else {
                 return color;
             }

@@ -1,26 +1,24 @@
-use crate::render::bxdf::bsdf::BSDF;
 use geometry::aabb::Aabb;
 use geometry::ray::Ray;
 use geometry::{DefaultGeometry, Geometry, GeometryInfo};
+use crate::render::material::Material;
 
 pub struct SceneObject {
     shape: Box<dyn Geometry>,
-    pub bsdf: BSDF,
-    pub id: usize,
+    pub material: Material,
 }
 
 impl Default for SceneObject {
     fn default() -> Self {
-        Self::new(Box::new(DefaultGeometry), BSDF::empty())
+        Self::new(Box::new(DefaultGeometry), Material::default())
     }
 }
 
 impl SceneObject {
-    pub fn new(shape: Box<dyn Geometry>, bsdf: BSDF) -> Self {
+    pub fn new(shape: Box<dyn Geometry>, material: Material) -> Self {
         Self {
             shape,
-            bsdf,
-            id: usize::MAX,
+            material
         }
     }
 }

@@ -1,6 +1,6 @@
 use util::floats;
 use crate::ray::Ray;
-use crate::{ComparableExt, Container, Geometry, GeometryInfo};
+use crate::{ComparableExt, Container, Geometry, GeometryInfo, DistanceExt};
 use ultraviolet::Vec3;
 
 #[derive(Clone, Debug, PartialEq)]
@@ -151,5 +151,11 @@ impl Default for Aabb {
         let max = Vec3::one();
 
         Self::new(min, max)
+    }
+}
+
+impl DistanceExt for Aabb {
+    fn distance(&self, other: &Self) -> f32 {
+        self.center().distance(&other.center())
     }
 }

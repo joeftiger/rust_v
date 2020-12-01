@@ -4,6 +4,7 @@ use crate::render::camera::Camera;
 use crate::render::light::{Light, PointLight};
 use crate::render::scene::Scene;
 use crate::render::scene_objects::SceneObject;
+use crate::render::material::Material;
 use crate::Spectrum;
 use color::Color;
 use geometry::aabb::Aabb;
@@ -91,8 +92,9 @@ fn sphere() -> SceneObject {
     let color = Spectrum::white();
     let diffuse = OrenNayar::new(color, SIGMA);
     let bsdf = BSDF::new(vec![Box::new(diffuse)]);
+    let material = Material::from(bsdf);
 
-    SceneObject::new(Box::new(sphere), bsdf)
+    SceneObject::new(Box::new(sphere), material)
 }
 
 fn left_wall() -> SceneObject {
@@ -108,8 +110,9 @@ fn left_wall() -> SceneObject {
     let color = Spectrum::red();
     let oren_nayar = OrenNayar::new(color, SIGMA);
     let bsdf = BSDF::new(vec![Box::new(oren_nayar)]);
+    let material = Material::from(bsdf);
 
-    SceneObject::new(Box::new(aabb), bsdf)
+    SceneObject::new(Box::new(aabb), material)
 }
 
 fn right_wall() -> SceneObject {
@@ -121,8 +124,9 @@ fn right_wall() -> SceneObject {
     let color = Spectrum::green();
     let oren_nayar = OrenNayar::new(color, SIGMA);
     let bsdf = BSDF::new(vec![Box::new(oren_nayar)]);
+    let material = Material::from(bsdf);
 
-    SceneObject::new(Box::new(aabb), bsdf)
+    SceneObject::new(Box::new(aabb), material)
 }
 
 fn back_wall() -> SceneObject {
@@ -138,8 +142,9 @@ fn back_wall() -> SceneObject {
     let color = Spectrum::white();
     let oren_nayar = OrenNayar::new(color, SIGMA);
     let bsdf = BSDF::new(vec![Box::new(oren_nayar)]);
+    let material = Material::from(bsdf);
 
-    SceneObject::new(Box::new(aabb), bsdf)
+    SceneObject::new(Box::new(aabb), material)
 }
 
 fn floor() -> SceneObject {
@@ -155,8 +160,9 @@ fn floor() -> SceneObject {
     let color = Spectrum::white();
     let oren_nayar = OrenNayar::new(color, SIGMA);
     let bsdf = BSDF::new(vec![Box::new(oren_nayar)]);
+    let material = Material::from(bsdf);
 
-    SceneObject::new(Box::new(aabb), bsdf)
+    SceneObject::new(Box::new(aabb), material)
 }
 
 fn ceiling() -> SceneObject {
@@ -168,6 +174,7 @@ fn ceiling() -> SceneObject {
     let color = Spectrum::white();
     let oren_nayar = OrenNayar::new(color, SIGMA);
     let bsdf = BSDF::new(vec![Box::new(oren_nayar)]);
+    let material = Material::from(bsdf);
 
-    SceneObject::new(Box::new(aabb), bsdf)
+    SceneObject::new(Box::new(aabb), material)
 }

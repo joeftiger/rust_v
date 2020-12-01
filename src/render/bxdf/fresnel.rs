@@ -174,22 +174,21 @@ impl BxDF for FresnelSpecular {
             let pdf = f;
             let spectrum = self.r * (f / bxdf::cos_theta(&incident).abs());
 
-            BxDFSample::new(spectrum, incident, pdf)
+            BxDFSample::new(spectrum, incident, pdf, self.get_type())
         } else {
             let entering = bxdf::cos_theta(outgoing) > 0.0;
 
-            let (eta_i, eta_t, n) = if entering {
-                (self.fresnel.eta_i, self.fresnel.eta_t, Vec3::unit_y())
+            let (eta_i, eta_t, n, typ) = if entering {
+                (self.fresnel.eta_i, self.fresnel.eta_t, Vec3::unit_y(), self.get_type() & !BxDFType::REFLECTION)
             } else {
-                (self.fresnel.eta_t, self.fresnel.eta_i, -Vec3::unit_y())
+                (self.fresnel.eta_t, self.fresnel.eta_i, -Vec3::unit_y(), self.get_type() & !BxDFType::TRANSMISSION)
             };
 
             let incident = outgoing.refracted(n, eta_i / eta_t);
-            let cos_i = bxdf::cos_theta(&incident);
             let pdf = 1.0 - f;
-            let spectrum = self.t * (pdf / cos_i.abs());
+            let spectrum = self.t * pdf;
 
-            BxDFSample::new(spectrum, incident, pdf)
+            BxDFSample::new(spectrum, incident, pdf, typ)
         }
     }
 }
