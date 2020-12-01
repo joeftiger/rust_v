@@ -56,7 +56,7 @@ impl Integrator for Path {
             let mut illumination = Spectrum::black();
 
             if (bounce == 0 || specular) && material.emissive() {
-                illumination += throughput * material.radiance(&outgoing, normal);
+                illumination += throughput * material.radiance(outgoing, normal);
             }
 
             for light in &scene.lights {

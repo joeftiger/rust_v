@@ -33,6 +33,8 @@ pub const FOVY: f32 = 70.0;
 pub const SIGMA: f32 = 20.0;
 pub const ANGLE: f32 = std::f32::consts::FRAC_PI_8;
 
+pub const Y_HALF: f32 = (CEILING - FLOOR) / 2.0;
+
 pub const X_CENTER: f32 = (RIGHT_WALL + LEFT_WALL) / 2.0;
 pub const Y_CENTER: f32 = (CEILING + FLOOR) / 2.0;
 pub const Z_CENTER: f32 = (BACK_WALL + FRONT) / 2.0;
@@ -88,7 +90,7 @@ pub fn create_camera(width: u32, height: u32) -> Camera {
 fn light() -> Arc<dyn Light> {
     let point = Vec3::new(
         X_CENTER,
-        Y_CENTER + RADIUS,
+        Y_CENTER,
         Z_CENTER,
     );
 
@@ -109,7 +111,7 @@ fn emitter() -> SceneObject {
     let color = Spectrum::white();
     let oren_nayar = OrenNayar::new(color, SIGMA);
     let bsdf = BSDF::new(vec![Box::new(oren_nayar)]);
-    let material = Material::new(color * 20.0, bsdf);
+    let material = Material::new(color, bsdf);
 
     SceneObject::new(Box::new(sphere), material)
 
