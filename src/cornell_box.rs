@@ -63,6 +63,8 @@ pub fn create_box() -> Scene {
     // light
     scene.push_light(light());
 
+    scene.build_bvh();
+
     scene
 }
 
@@ -93,7 +95,7 @@ fn light() -> Arc<dyn Light> {
         Z_CENTER,
     );
 
-    let color = Spectrum::white() * 10.0;
+    let color = Spectrum::white() * 20.0;
 
     Arc::new(PointLight::new(point, color))
 }
@@ -110,7 +112,7 @@ fn emitter() -> SceneObject {
     let color = Spectrum::white();
     let oren_nayar = OrenNayar::new(color, SIGMA);
     let bsdf = BSDF::new(vec![Box::new(oren_nayar)]);
-    let material = Material::new(color, bsdf);
+    let material = Material::new(color * 10.0, bsdf);
 
     SceneObject::new(Box::new(sphere), material)
 

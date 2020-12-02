@@ -9,3 +9,4 @@ pub mod scene_objects;
 #[cfg(feature = "live-window")]
 pub mod fast_window;
 pub mod material;
+pub mod bvh;

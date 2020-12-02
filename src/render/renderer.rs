@@ -222,7 +222,7 @@ impl Renderer {
 
                     let mut lock = this.render_blocks[index].lock().expect("Block is poisoned");
                     lock.stats.iter_mut().for_each(|stats| {
-                        let pixel = this.render(stats.x, stats.y);
+                        let pixel = this.render(stats.x, stats.y); //.clamp(0.0, 1.0);
                         stats.spectrum += pixel;
                         stats.samples += 1;
 

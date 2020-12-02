@@ -2,10 +2,11 @@ use crate::render::light::Light;
 use crate::render::scene_objects::SceneObject;
 use geometry::aabb::Aabb;
 use geometry::ray::Ray;
-use geometry::{Container, Geometry, GeometryInfo, bvh};
+use geometry::{Container, Geometry, GeometryInfo};
 use std::sync::Arc;
 use ultraviolet::Vec3;
-use geometry::bvh::BvhNode;
+use crate::render::bvh::BvhNode;
+use crate::render::bvh;
 
 #[derive(Clone)]
 pub struct SceneIntersection {
@@ -47,34 +48,11 @@ impl Scene {
     /// Checks if the given ray intersects any object before reaching it's own maximum t lifespan.
     pub fn is_occluded(&self, ray: &Ray) -> bool {
         self.bvh.intersects(ray)
+        // self.objects.iter().any(|o| o.bounding_box().intersects(ray) && o.intersects(ray))
     }
 
     pub fn intersect(&self, ray: &Ray) -> Option<SceneIntersection> {
-        let mut ray = *ray;
-        let mut obj = None;
-        let mut info: Option<GeometryInfo> = None;
-
-        // self.bvh.intersect(&ray);
-
-        self.objects.iter().for_each(|so| {
-            if !so.bounding_box().intersects(&ray) {
-                return;
-            }
-
-            let new_info_op = so.intersect(&ray);
-            if let Some(new_info) = new_info_op {
-                obj = Some(so);
-                info = new_info_op;
-                ray.t_end = new_info.t;
-            }
-        });
-
-        if let Some(obj) = obj {
-            let info = info.unwrap();
-            Some(SceneIntersection::new(info, obj.clone()))
-        } else {
-            None
-        }
+        self.bvh.intersect(ray)
     }
 
     pub fn reflect_from(&self, intersection: SceneIntersection) -> Option<SceneIntersection> {

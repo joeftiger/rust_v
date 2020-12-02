@@ -94,12 +94,12 @@ impl Integrator for Path {
                 throughput *= bxdf_sample.spectrum * (dot / bxdf_sample.pdf);
 
                 // if bounce > self.min_depth {
-                //     let const_prob = 0.5;
+                //     let const_prob = 0.75;
                 //     if fastrand::f32() > const_prob {
                 //         break;
                 //     }
                 //
-                //     throughput *= const_prob;
+                //     throughput /= const_prob;
                 // }
 
                 let ray = hit.info.create_ray(bxdf_sample.incident);
