@@ -11,7 +11,7 @@ use util::floats;
 use crate::render::bxdf::sampling::cos_sample_hemisphere;
 use crate::Spectrum;
 use bitflags::_core::fmt::Debug;
-use std::f32::consts::FRAC_1_PI;
+use std::f32::consts::{PI, FRAC_1_PI};
 use ultraviolet::{Rotor3, Vec2, Vec3};
 
 #[inline(always)]
@@ -119,10 +119,12 @@ pub fn same_hemisphere(a: &Vec3, b: &Vec3) -> bool {
 
 #[inline(always)]
 pub fn world_to_bxdf(v: &Vec3) -> Rotor3 {
-    if *v != Vec3::unit_y() && *v != -Vec3::unit_y() {
-        Rotor3::from_rotation_between(*v, Vec3::unit_y())
-    } else {
+    if *v == Vec3::unit_y() {
         Rotor3::default()
+    } else if *v == -Vec3::unit_y() {
+        Rotor3::from_rotation_xy(PI)
+    } else {
+        Rotor3::from_rotation_between(*v, Vec3::unit_y())
     }
 }
 
