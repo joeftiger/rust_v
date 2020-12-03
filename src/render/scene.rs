@@ -1,3 +1,4 @@
+use crate::render::bvh::{SceneBvh, SceneGeometry};
 use crate::render::light::Light;
 use crate::render::scene_objects::SceneObject;
 use geometry::aabb::Aabb;
@@ -5,8 +6,6 @@ use geometry::ray::Ray;
 use geometry::{Container, Geometry, GeometryInfo};
 use std::sync::Arc;
 use ultraviolet::Vec3;
-use crate::render::bvh::BvhNode;
-use crate::render::bvh;
 
 #[derive(Clone)]
 pub struct SceneIntersection {
@@ -24,7 +23,7 @@ pub struct Scene {
     pub aabb: Aabb,
     pub lights: Vec<Arc<dyn Light>>,
     pub objects: Vec<Arc<SceneObject>>,
-    bvh: Arc<BvhNode>,
+    bvh: Arc<SceneBvh>,
 }
 
 impl Scene {
@@ -42,7 +41,7 @@ impl Scene {
     }
 
     pub fn build_bvh(&mut self) {
-        bvh::build_tree(self.objects.clone());
+        self.bvh = SceneBvh::build_tree_vec(self.objects.clone());
     }
 
     /// Checks if the given ray intersects any object before reaching it's own maximum t lifespan.
@@ -52,7 +51,7 @@ impl Scene {
     }
 
     pub fn intersect(&self, ray: &Ray) -> Option<SceneIntersection> {
-        self.bvh.intersect(ray)
+        self.bvh.intersect_detailed(ray)
     }
 
     pub fn reflect_from(&self, intersection: SceneIntersection) -> Option<SceneIntersection> {
@@ -73,7 +72,7 @@ impl Default for Scene {
             aabb: Aabb::inverted_infinite(),
             lights: Vec::default(),
             objects: Vec::default(),
-            bvh: Arc::new(BvhNode::new_empty()),
+            bvh: Arc::new(SceneBvh::default()),
         }
     }
 }

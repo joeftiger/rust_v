@@ -13,18 +13,19 @@ use crate::render::integrator::Integrator;
 use crate::render::sampler::Sampler;
 use crate::render::scene::Scene;
 use crate::Spectrum;
+use bitflags::_core::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 use std::thread;
 use std::thread::JoinHandle;
-use bitflags::_core::sync::atomic::{AtomicBool, Ordering, AtomicUsize};
 
-lazy_static!{
-    pub static ref PROGRESS_BAR: Mutex<ProgressBar> = {
-        let bar = ProgressBar::new(0);
-        bar.set_style(ProgressStyle::default_bar().template(
-            "[{elapsed} elapsed] {wide_bar:.cyan/white} {percent}% [{eta} remaining]",
-        ));
-        Mutex::new(bar)
-    };
+lazy_static! {
+    pub static ref PROGRESS_BAR: Mutex<ProgressBar> =
+        {
+            let bar = ProgressBar::new(0);
+            bar.set_style(ProgressStyle::default_bar().template(
+                "[{elapsed} elapsed] {wide_bar:.cyan/white} {percent}% [{eta} remaining]",
+            ));
+            Mutex::new(bar)
+        };
 }
 
 pub struct RenderJob<T> {
@@ -34,7 +35,10 @@ pub struct RenderJob<T> {
 
 impl<T: Default> RenderJob<T> {
     pub fn new(should_stop: Arc<AtomicBool>, handles: Vec<JoinHandle<T>>) -> Self {
-        Self { should_stop, handles }
+        Self {
+            should_stop,
+            handles,
+        }
     }
 
     pub fn stop(self) -> thread::Result<T> {
@@ -199,7 +203,6 @@ impl Renderer {
             bar.reset();
         }
 
-
         let num_threads = num_cpus::get();
         let mut handles = Vec::with_capacity(num_threads);
 
@@ -208,33 +211,31 @@ impl Renderer {
             let this = self.clone();
             let this_should_stop = should_stop.clone();
 
-            let handle: JoinHandle<()> = thread::spawn(move || {
-                loop {
-                    if this_should_stop.load(Ordering::SeqCst) {
-                        break;
-                    }
-
-                    let index = this.progress.fetch_add(1, Ordering::Relaxed);
-                    if index >= this.num_blocks() * this.passes as usize {
-                        break;
-                    }
-                    let index = index % this.num_blocks();
-
-                    let mut lock = this.render_blocks[index].lock().expect("Block is poisoned");
-                    lock.stats.iter_mut().for_each(|stats| {
-                        let pixel = this.render(stats.x, stats.y); //.clamp(0.0, 1.0);
-                        stats.spectrum += pixel;
-                        stats.samples += 1;
-
-                        let avg = stats.average().into();
-                        this.rendering
-                            .write()
-                            .expect("Rendering poisoned")
-                            .put_pixel(stats.x, stats.y, avg);
-                    });
-
-                    PROGRESS_BAR.lock().expect("Progress bar poisoned").inc(1);
+            let handle: JoinHandle<()> = thread::spawn(move || loop {
+                if this_should_stop.load(Ordering::SeqCst) {
+                    break;
                 }
+
+                let index = this.progress.fetch_add(1, Ordering::Relaxed);
+                if index >= this.num_blocks() * this.passes as usize {
+                    break;
+                }
+                let index = index % this.num_blocks();
+
+                let mut lock = this.render_blocks[index].lock().expect("Block is poisoned");
+                lock.stats.iter_mut().for_each(|stats| {
+                    let pixel = this.render(stats.x, stats.y).clamp(0.0, 1.0);
+                    stats.spectrum += pixel;
+                    stats.samples += 1;
+
+                    let avg = stats.average().into();
+                    this.rendering
+                        .write()
+                        .expect("Rendering poisoned")
+                        .put_pixel(stats.x, stats.y, avg);
+                });
+
+                PROGRESS_BAR.lock().expect("Progress bar poisoned").inc(1);
             });
 
             handles.push(handle);
@@ -244,7 +245,10 @@ impl Renderer {
     }
 
     pub fn get_image_u8(&mut self) -> ImageBuffer<Rgb<u8>, Vec<u8>> {
-        self.rendering.read().expect("Rendering is poisoned").clone()
+        self.rendering
+            .read()
+            .expect("Rendering is poisoned")
+            .clone()
     }
 
     // TODO: Possible to make more efficient?

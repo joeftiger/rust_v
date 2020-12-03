@@ -67,6 +67,7 @@ pub trait Light: Send + Sync {
     fn sample(&self, intersection: &SceneIntersection) -> LightSample;
 }
 
+#[derive(Debug)]
 pub struct PointLight {
     pub position: Vec3,
     pub intensity: Spectrum,
@@ -111,6 +112,7 @@ impl Light for PointLight {
     }
 }
 
+#[derive(Debug)]
 pub struct Emitter {
     geometry: Arc<dyn Geometry>,
     pub emission: Spectrum,

@@ -1,8 +1,9 @@
-use crate::Spectrum;
 use crate::render::bxdf::bsdf::BSDF;
+use crate::Spectrum;
 use color::Color;
 use ultraviolet::Vec3;
 
+#[derive(Debug)]
 pub struct Material {
     pub emission: Spectrum,
     pub bsdf: BSDF,

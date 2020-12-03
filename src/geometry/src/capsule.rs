@@ -6,6 +6,7 @@ use crate::{Container, Geometry, GeometryInfo};
 use util::MinMaxExt;
 use ultraviolet::Vec3;
 
+#[derive(Debug, PartialEq)]
 pub struct Capsule {
     top: Sphere,
     bot: Sphere,

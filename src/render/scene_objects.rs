@@ -1,8 +1,9 @@
+use crate::render::material::Material;
 use geometry::aabb::Aabb;
 use geometry::ray::Ray;
 use geometry::{DefaultGeometry, Geometry, GeometryInfo};
-use crate::render::material::Material;
 
+#[derive(Debug)]
 pub struct SceneObject {
     shape: Box<dyn Geometry>,
     pub material: Material,
@@ -16,10 +17,7 @@ impl Default for SceneObject {
 
 impl SceneObject {
     pub fn new(shape: Box<dyn Geometry>, material: Material) -> Self {
-        Self {
-            shape,
-            material
-        }
+        Self { shape, material }
     }
 }
 

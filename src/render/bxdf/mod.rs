@@ -178,7 +178,7 @@ impl BxDFSample {
             spectrum,
             incident,
             pdf,
-            typ
+            typ,
         }
     }
 

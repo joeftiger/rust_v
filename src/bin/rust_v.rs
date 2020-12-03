@@ -3,9 +3,9 @@ extern crate clap;
 
 use clap::App;
 
+use lazy_static::lazy_static;
 use rust_v::configuration::{Configuration, IntegratorBackend, PixelFormat};
 use std::convert::TryInto;
-use lazy_static::lazy_static;
 
 const LIVE: &str = "LIVE_WINDOW";
 const DEMO: &str = "demo";
@@ -104,8 +104,6 @@ lazy_static! {
         }
     };
 }
-
-
 
 fn main() -> Result<(), String> {
     CONFIG.start_rendering()

@@ -1,4 +1,6 @@
 use crate::cornell_box;
+#[cfg(feature = "live-window")]
+use crate::render::fast_window::FastWindow;
 use crate::render::integrator::debug_normals::DebugNormals;
 use crate::render::integrator::path::Path;
 use crate::render::integrator::whitted::Whitted;
@@ -8,8 +10,6 @@ use crate::render::sampler::{NoopSampler, RandomSampler, Sampler};
 use std::convert::TryInto;
 use std::sync::Arc;
 use std::time::Instant;
-#[cfg(feature = "live-window")]
-use crate::render::fast_window::FastWindow;
 
 #[derive(Debug, Clone)]
 pub struct Configuration {
@@ -78,7 +78,7 @@ impl Configuration {
             sampler,
             integrator,
             self.block_size,
-            self.passes
+            self.passes,
         )
     }
 

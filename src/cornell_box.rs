@@ -7,19 +7,19 @@ use crate::render::bxdf::oren_nayar::OrenNayar;
 use crate::render::bxdf::specular::{SpecularReflection, SpecularTransmission};
 use crate::render::camera::Camera;
 use crate::render::light::{Light, PointLight};
+use crate::render::material::Material;
 use crate::render::scene::Scene;
 use crate::render::scene_objects::SceneObject;
 use crate::Spectrum;
 use color::Color;
 use geometry::aabb::Aabb;
 use geometry::capsule::Capsule;
+use geometry::cylinder::Cylinder;
 use geometry::mesh::Mesh;
 use geometry::sphere::Sphere;
 use geometry::tube::Tube;
 use std::sync::Arc;
-use ultraviolet::{Vec3, Bivec3, Rotor3};
-use crate::render::material::Material;
-use geometry::cylinder::Cylinder;
+use ultraviolet::{Bivec3, Rotor3, Vec3};
 
 pub const LEFT_WALL: f32 = -3.0;
 pub const RIGHT_WALL: f32 = 3.0;
@@ -53,10 +53,10 @@ pub fn create_box() -> Scene {
     scene.push_obj(ceiling());
 
     // objects
-    scene.push_obj(sphere());
-    scene.push_obj(capsule());
-    scene.push_obj(tube());
-    // scene.push_obj(bunny());
+    // scene.push_obj(sphere());
+    // scene.push_obj(capsule());
+    // scene.push_obj(tube());
+    scene.push_obj(bunny());
     // scene.push_obj(dragon());
     scene.push_obj(emitter());
 
@@ -89,11 +89,7 @@ pub fn create_camera(width: u32, height: u32) -> Camera {
 }
 
 fn light() -> Arc<dyn Light> {
-    let point = Vec3::new(
-        X_CENTER,
-        Y_CENTER + (CEILING - Y_CENTER) * 0.5,
-        Z_CENTER,
-    );
+    let point = Vec3::new(X_CENTER, Y_CENTER + (CEILING - Y_CENTER) * 0.5, Z_CENTER);
 
     let color = Spectrum::white() * 20.0;
 
@@ -101,11 +97,7 @@ fn light() -> Arc<dyn Light> {
 }
 
 fn emitter() -> SceneObject {
-    let center = Vec3::new(
-        X_CENTER,
-        CEILING + RADIUS * 2.0,
-        Z_CENTER,
-    );
+    let center = Vec3::new(X_CENTER, CEILING + RADIUS * 2.0, Z_CENTER);
 
     let sphere = Sphere::new(center, RADIUS * 2.1);
 
@@ -115,7 +107,6 @@ fn emitter() -> SceneObject {
     let material = Material::new(color * 10.0, bsdf);
 
     SceneObject::new(Box::new(sphere), material)
-
 }
 
 fn bunny() -> SceneObject {
@@ -131,10 +122,7 @@ fn bunny() -> SceneObject {
     let dielectric = Arc::new(Dielectric::new(1.0, 1.3));
     let transmission = Box::new(SpecularTransmission::new(color, dielectric.clone()));
     let reflection = Box::new(SpecularReflection::new(color, dielectric));
-    let bsdf = BSDF::new(vec![
-        reflection,
-        transmission,
-    ]);
+    let bsdf = BSDF::new(vec![reflection, transmission]);
     let material = Material::from(bsdf);
 
     SceneObject::new(Box::new(bunny), material)
@@ -153,10 +141,7 @@ fn dragon() -> SceneObject {
     let dielectric = Arc::new(Dielectric::new(1.0, 1.3));
     let transmission = Box::new(SpecularTransmission::new(color, dielectric.clone()));
     let reflection = Box::new(SpecularReflection::new(color, dielectric));
-    let bsdf = BSDF::new(vec![
-        reflection,
-        transmission,
-    ]);
+    let bsdf = BSDF::new(vec![reflection, transmission]);
     let material = Material::from(bsdf);
 
     SceneObject::new(Box::new(dragon), material)
@@ -175,9 +160,7 @@ fn sphere() -> SceneObject {
     let color = Spectrum::white();
     let fresnel = Arc::new(Dielectric::new(1.0, 2.0));
     let spec_trans = SpecularTransmission::new(color, fresnel);
-    let bsdf = BSDF::new(vec![
-        Box::new(spec_trans),
-    ]);
+    let bsdf = BSDF::new(vec![Box::new(spec_trans)]);
     let material = Material::from(bsdf);
 
     SceneObject::new(Box::new(sphere), material)

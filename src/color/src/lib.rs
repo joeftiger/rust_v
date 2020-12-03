@@ -32,6 +32,14 @@ macro_rules! colors {
 
                     Self::new(data)
                 }
+
+                /// Clamps the color values between min and max.
+                pub fn clamp(&self, min: f32, max: f32) -> Self {
+                    let mut data = self.data;
+                    floats::fast_clamp_ar(&mut data, min, max);
+
+                    Self::new(data)
+                }
             }
 
             impl Default for $name {
@@ -329,10 +337,7 @@ impl Color for Srgb {
     }
 
     fn clamp(&self, min: f32, max: f32) -> Self {
-        let mut data = self.data;
-        floats::fast_clamp_ar(&mut data, min, max);
-
-        Self::new(data)
+        self.clamp(min, max)
     }
 
     fn has_nans(&self) -> bool {

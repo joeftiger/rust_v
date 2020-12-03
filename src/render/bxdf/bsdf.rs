@@ -4,6 +4,7 @@ use crate::render::bxdf::{same_hemisphere, world_to_bxdf, BxDF, BxDFSample, BxDF
 use crate::render::sampler::Sample;
 use crate::Spectrum;
 
+#[derive(Debug)]
 pub struct BSDF {
     bxdfs: Vec<Box<dyn BxDF>>,
 }

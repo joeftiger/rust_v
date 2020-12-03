@@ -8,6 +8,7 @@ use crate::aabb::Aabb;
 use crate::ray::Ray;
 use crate::{Container, Geometry, GeometryInfo, InversibleExt};
 
+#[derive(Debug, PartialEq)]
 pub struct Cube {
     world_to_local: Mat4,
     local_to_world: Mat4,

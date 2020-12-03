@@ -6,6 +6,7 @@ use crate::{Container, Geometry, GeometryInfo};
 use util::MinMaxExt;
 use ultraviolet::Vec3;
 
+#[derive(Debug, PartialEq)]
 pub struct Tube {
     pub cylinders: Vec<Cylinder>,
     pub spheres: Vec<Sphere>,

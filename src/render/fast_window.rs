@@ -1,6 +1,6 @@
 use crate::configuration::Configuration;
 use crate::render::renderer::Renderer;
-use show_image::{WindowOptions, Window, make_window_full, KeyCode};
+use show_image::{make_window_full, KeyCode, Window, WindowOptions};
 use std::time::Duration;
 
 pub struct FastWindow {
@@ -55,7 +55,9 @@ impl FastWindow {
         render_job.join().expect("Could not join render threads");
 
         let image = self.renderer.get_image_u8();
-        self.window.set_image(image, "Rendering").expect("Could not set last image");
+        self.window
+            .set_image(image, "Rendering")
+            .expect("Could not set last image");
 
         // wait for user save or stop
         while let Ok(event) = self.window.wait_key(wait_key) {

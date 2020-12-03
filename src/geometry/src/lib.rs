@@ -10,11 +10,13 @@ pub mod ray;
 pub mod sphere;
 mod tests;
 pub mod tube;
+pub mod bvh;
 
 use crate::aabb::Aabb;
 use crate::ray::{Ray, Ray4};
 use ultraviolet::{f32x4, Vec3, Vec3x4};
 use util::{floats, MinMaxExt};
+use std::fmt::Debug;
 
 #[inline]
 pub fn spherical_direction(sin_theta: f32, cos_theta: f32, phi: f32) -> Vec3 {
@@ -102,7 +104,7 @@ pub trait Container {
     fn contains(&self, obj: Vec3) -> bool;
 }
 
-pub trait Geometry: Send + Sync {
+pub trait Geometry: Debug + Send + Sync {
     fn bounding_box(&self) -> Aabb;
 
     fn intersect(&self, ray: &Ray) -> Option<GeometryInfo>;
@@ -112,6 +114,7 @@ pub trait Geometry: Send + Sync {
     }
 }
 
+#[derive(Debug, PartialEq)]
 pub struct DefaultGeometry;
 
 impl Geometry for DefaultGeometry {

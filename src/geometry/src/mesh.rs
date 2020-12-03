@@ -2,11 +2,13 @@ use tobj::Mesh as TobjMesh;
 use crate::aabb::Aabb;
 use crate::ray::Ray;
 use crate::{Geometry, GeometryInfo};
-use std::ops::Deref;
 use ultraviolet::{Vec3, Rotor3};
 use util::floats;
 use std::sync::Arc;
+use crate::bvh::Bvh;
 
+
+#[derive(Debug, PartialEq)]
 pub struct Triangle {
     a: Arc<Vec3>,
     b: Arc<Vec3>,
@@ -100,27 +102,21 @@ impl Geometry for Triangle {
 }
 
 #[allow(dead_code)]
-#[derive(Default)]
+#[derive(Debug, Default, PartialEq)]
 pub struct Mesh {
     vertices: Vec<Arc<Vec3>>,
-    triangles: Vec<Triangle>,
-    pub aabb: Aabb,
+    triangles: Vec<Arc<Triangle>>,
+    bvh: Arc<Bvh<Triangle>>,
 }
 
 impl Mesh {
-    pub fn new(vertices: Vec<Arc<Vec3>>, triangles: Vec<Triangle>) -> Self {
-        let mut aabb = Aabb::inverted_infinite();
-        vertices.iter().for_each(|v| {
-            aabb.min = aabb.min.min_by_component(*v.deref());
-            aabb.max = aabb.max.max_by_component(*v.deref());
-        });
-
-        debug_assert!(aabb.is_valid());
+    pub fn new(vertices: Vec<Arc<Vec3>>, triangles: Vec<Arc<Triangle>>) -> Self {
+        let bvh = Bvh::build_tree_vec(triangles.clone());
 
         Self {
             vertices,
             triangles,
-            aabb,
+            bvh,
         }
     }
 
@@ -161,7 +157,7 @@ impl Mesh {
             let c = vertices[tobj_mesh.indices[i + 2] as usize].clone();
 
             let triangle = Triangle::new(a, b, c);
-            triangles.push(triangle);
+            triangles.push(Arc::new(triangle));
             i += 3;
         }
         triangles.shrink_to_fit();
@@ -172,20 +168,14 @@ impl Mesh {
 
 impl Geometry for Mesh {
     fn bounding_box(&self) -> Aabb {
-        self.aabb.clone()
+        self.bvh.bounding_box()
     }
 
     fn intersect(&self, ray: &Ray) -> Option<GeometryInfo> {
-        self.triangles.iter().filter_map(|t| {
-            if t.bounding_box().intersects(ray) {
-                t.intersect(ray)
-            } else {
-                None
-            }
-        }).min_by(|a, b| floats::fast_cmp(a.t, b.t))
+        self.bvh.intersect(ray)
     }
     
     fn intersects(&self, ray: &Ray) -> bool {
-        self.triangles.iter().any(|t| t.bounding_box().intersects(ray) && t.intersects(ray))
+        self.bvh.intersects(ray)
     }
 }

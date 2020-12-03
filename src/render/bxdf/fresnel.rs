@@ -179,9 +179,19 @@ impl BxDF for FresnelSpecular {
             let entering = bxdf::cos_theta(outgoing) > 0.0;
 
             let (eta_i, eta_t, n, typ) = if entering {
-                (self.fresnel.eta_i, self.fresnel.eta_t, Vec3::unit_y(), self.get_type() & !BxDFType::REFLECTION)
+                (
+                    self.fresnel.eta_i,
+                    self.fresnel.eta_t,
+                    Vec3::unit_y(),
+                    self.get_type() & !BxDFType::REFLECTION,
+                )
             } else {
-                (self.fresnel.eta_t, self.fresnel.eta_i, -Vec3::unit_y(), self.get_type() & !BxDFType::TRANSMISSION)
+                (
+                    self.fresnel.eta_t,
+                    self.fresnel.eta_i,
+                    -Vec3::unit_y(),
+                    self.get_type() & !BxDFType::TRANSMISSION,
+                )
             };
 
             let incident = outgoing.refracted(n, eta_i / eta_t);

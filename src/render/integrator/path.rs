@@ -71,7 +71,8 @@ impl Integrator for Path {
                             let cos = light_sample.incident.dot(*normal).abs();
 
                             if cos != 0.0 {
-                                illumination += light_sample.spectrum * c * (cos / light_sample.pdf);
+                                illumination +=
+                                    light_sample.spectrum * c * (cos / light_sample.pdf);
                             }
                         }
                     }
