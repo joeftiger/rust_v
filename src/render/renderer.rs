@@ -16,6 +16,7 @@ use crate::Spectrum;
 use bitflags::_core::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 use std::thread;
 use std::thread::JoinHandle;
+use crate::configuration::Configuration;
 
 lazy_static! {
     pub static ref PROGRESS_BAR: Mutex<ProgressBar> =
@@ -120,9 +121,7 @@ pub struct Renderer {
     render_blocks: Arc<Vec<Mutex<RenderBlock>>>,
     rendering: Arc<RwLock<ImageBuffer<Rgb<u8>, Vec<u8>>>>,
     progress: Arc<AtomicUsize>,
-    img_width: u32,
-    img_height: u32,
-    passes: u32,
+    config: Arc<Configuration>,
 }
 
 impl Renderer {
@@ -131,12 +130,11 @@ impl Renderer {
         camera: Arc<Camera>,
         sampler: Arc<dyn Sampler>,
         integrator: Arc<dyn Integrator>,
-        block_size: u32,
-        passes: u32,
+        config: Arc<Configuration>
     ) -> Self {
         let (img_width, img_height) = (camera.width, camera.height);
 
-        let range_block = RangeBlock::new(img_width, img_height, block_size);
+        let range_block = RangeBlock::new(img_width, img_height, config.block_size);
         let render_blocks = range_block
             .blocks
             .iter()
@@ -151,9 +149,7 @@ impl Renderer {
             progress: Arc::new(AtomicUsize::new(0)),
             render_blocks: Arc::new(render_blocks),
             rendering: Arc::new(RwLock::new(ImageBuffer::new(img_width, img_height))),
-            img_width,
-            img_height,
-            passes,
+            config,
         }
     }
 
@@ -162,7 +158,7 @@ impl Renderer {
     }
 
     pub fn num_pixels(&self) -> u32 {
-        self.img_width * self.img_height
+        self.config.width * self.config.height
     }
 
     pub fn get_progress(&self) -> usize {
@@ -170,7 +166,7 @@ impl Renderer {
     }
 
     pub fn is_done(&self) -> bool {
-        self.get_progress() >= self.num_blocks() * self.passes as usize
+        self.get_progress() >= self.num_blocks() * self.config.passes as usize
     }
 
     fn render(&self, x: u32, y: u32) -> Spectrum {
@@ -199,12 +195,12 @@ impl Renderer {
         // reset progress bar
         {
             let bar = PROGRESS_BAR.lock().expect("Progress bar poisoned");
-            bar.set_length(self.num_blocks() as u64 * self.passes as u64);
+            bar.set_length(self.num_blocks() as u64 * self.config.passes as u64);
             bar.reset();
         }
 
-        let num_threads = num_cpus::get();
-        let mut handles = Vec::with_capacity(num_threads);
+        let num_threads = self.config.threads;
+        let mut handles = Vec::with_capacity(num_threads as usize);
 
         let should_stop = Arc::new(AtomicBool::new(false));
         for _ in 0..num_threads {
@@ -212,12 +208,12 @@ impl Renderer {
             let this_should_stop = should_stop.clone();
 
             let handle: JoinHandle<()> = thread::spawn(move || loop {
-                if this_should_stop.load(Ordering::SeqCst) {
+                if this_should_stop.load(Ordering::Relaxed) {
                     break;
                 }
 
                 let index = this.progress.fetch_add(1, Ordering::Relaxed);
-                if index >= this.num_blocks() * this.passes as usize {
+                if index >= this.num_blocks() * this.config.passes as usize {
                     break;
                 }
                 let index = index % this.num_blocks();
@@ -253,7 +249,7 @@ impl Renderer {
 
     // TODO: Possible to make more efficient?
     pub fn get_image_u16(&mut self) -> ImageBuffer<Rgb<u16>, Vec<u16>> {
-        let mut buffer = ImageBuffer::new(self.img_width, self.img_height);
+        let mut buffer = ImageBuffer::new(self.config.width, self.config.height);
         self.render_blocks.iter().for_each(|block| {
             let lock = block.lock().expect("Block is poisoned");
 

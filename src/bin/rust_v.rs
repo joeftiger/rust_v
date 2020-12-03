@@ -20,7 +20,7 @@ const WIDTH: &str = "WIDTH";
 const HEIGHT: &str = "HEIGHT";
 const FORMAT: &str = "FORMAT";
 const INTEGRATOR_BACKEND: &str = "INTEGRATOR_BACKEND";
-const THREADED: &str = "THREADED";
+const THREADS: &str = "THREADS";
 
 lazy_static! {
     static ref CONFIG: Configuration = {
@@ -54,7 +54,10 @@ lazy_static! {
                 Err(err) => panic!("Cannot parse block size: {}", err),
             };
             let live = cfg!(feature = "live-window") && demo.is_present(LIVE);
-            let threaded = demo.is_present(THREADED);
+            let threads = match demo.value_of(THREADS).unwrap_or(&num_cpus::get().to_string()).parse() {
+                Ok(threads) => threads,
+                Err(err) => panic!("Cannot parse threads: {}", err),
+            };
             let pixel_format: PixelFormat = match demo.value_of(FORMAT).unwrap_or("U8").try_into() {
                 Ok(format) => format,
                 Err(err) => panic!("Cannot parse pixel format: {}", err),
@@ -94,7 +97,7 @@ lazy_static! {
                 passes,
                 block_size,
                 live,
-                threaded,
+                threads,
                 output,
                 pixel_format,
                 integrator_backend,

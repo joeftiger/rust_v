@@ -20,7 +20,7 @@ pub struct Configuration {
     pub passes: u32,
     pub block_size: u32,
     pub live: bool,
-    pub threaded: bool,
+    pub threads: u32,
     pub output: Option<String>,
     pub pixel_format: PixelFormat,
     pub integrator_backend: IntegratorBackend,
@@ -36,7 +36,7 @@ impl Configuration {
         passes: u32,
         block_size: u32,
         live: bool,
-        threaded: bool,
+        threads: u32,
         output: Option<String>,
         pixel_format: PixelFormat,
         integrator_backend: IntegratorBackend,
@@ -49,7 +49,7 @@ impl Configuration {
             passes,
             block_size,
             live,
-            threaded,
+            threads,
             output,
             pixel_format,
             integrator_backend,
@@ -59,7 +59,8 @@ impl Configuration {
     /// Creates a renderer instance from this configuration file.
     pub fn create_renderer(&self) -> Renderer {
         let (scene, camera) = cornell_box::create(self.width, self.height);
-        // let (scene, camera) = plain_scene::create(self.width, self.height);
+        let scene = Arc::new(scene);
+        let camera = Arc::new(camera);
 
         let integrator: Arc<dyn Integrator> = match self.integrator_backend {
             IntegratorBackend::Debug => Arc::new(DebugNormals),
@@ -72,13 +73,14 @@ impl Configuration {
             _ => Arc::new(RandomSampler::default()),
         };
 
+        let config = Arc::new(self.clone());
+
         Renderer::new(
-            Arc::new(scene),
-            Arc::new(camera),
+            scene,
+            camera,
             sampler,
             integrator,
-            self.block_size,
-            self.passes,
+            config,
         )
     }
 
