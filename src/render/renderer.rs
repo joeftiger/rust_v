@@ -8,6 +8,7 @@ use lazy_static::lazy_static;
 use color::Color;
 use util::range_block::{Block, RangeBlock};
 
+use crate::configuration::Configuration;
 use crate::render::camera::Camera;
 use crate::render::integrator::Integrator;
 use crate::render::sampler::Sampler;
@@ -16,7 +17,6 @@ use crate::Spectrum;
 use bitflags::_core::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 use std::thread;
 use std::thread::JoinHandle;
-use crate::configuration::Configuration;
 
 lazy_static! {
     pub static ref PROGRESS_BAR: Mutex<ProgressBar> =
@@ -130,7 +130,7 @@ impl Renderer {
         camera: Arc<Camera>,
         sampler: Arc<dyn Sampler>,
         integrator: Arc<dyn Integrator>,
-        config: Arc<Configuration>
+        config: Arc<Configuration>,
     ) -> Self {
         let (img_width, img_height) = (camera.width, camera.height);
 

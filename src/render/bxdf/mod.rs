@@ -11,7 +11,7 @@ use util::floats;
 use crate::render::bxdf::sampling::cos_sample_hemisphere;
 use crate::Spectrum;
 use bitflags::_core::fmt::Debug;
-use std::f32::consts::{PI, FRAC_1_PI};
+use std::f32::consts::{FRAC_1_PI, PI};
 use ultraviolet::{Rotor3, Vec2, Vec3};
 
 #[inline(always)]

@@ -54,7 +54,11 @@ lazy_static! {
                 Err(err) => panic!("Cannot parse block size: {}", err),
             };
             let live = cfg!(feature = "live-window") && demo.is_present(LIVE);
-            let threads = match demo.value_of(THREADS).unwrap_or(&num_cpus::get().to_string()).parse() {
+            let threads = match demo
+                .value_of(THREADS)
+                .unwrap_or(&num_cpus::get().to_string())
+                .parse()
+            {
                 Ok(threads) => threads,
                 Err(err) => panic!("Cannot parse threads: {}", err),
             };

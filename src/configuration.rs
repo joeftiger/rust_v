@@ -75,13 +75,7 @@ impl Configuration {
 
         let config = Arc::new(self.clone());
 
-        Renderer::new(
-            scene,
-            camera,
-            sampler,
-            integrator,
-            config,
-        )
+        Renderer::new(scene, camera, sampler, integrator, config)
     }
 
     pub fn start_rendering(&'static self) -> Result<(), String> {
