@@ -53,15 +53,15 @@ pub fn create_box() -> Scene {
     scene.push_obj(ceiling());
 
     // objects
-    scene.push_obj(sphere());
-    scene.push_obj(capsule());
-    scene.push_obj(tube());
-    // scene.push_obj(bunny());
+    // scene.push_obj(sphere());
+    // scene.push_obj(capsule());
+    // scene.push_obj(tube());
+    scene.push_obj(bunny());
     // scene.push_obj(dragon());
     scene.push_obj(emitter());
 
     // light
-    scene.push_light(light());
+    // scene.push_light(light());
 
     scene.build_bvh();
 

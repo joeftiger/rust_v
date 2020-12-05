@@ -65,15 +65,12 @@ impl Integrator for Path {
                 if light_sample.pdf > 0.0 && !light_sample.spectrum.is_black() {
                     let c = bsdf.evaluate(normal, &light_sample.incident, outgoing, BxDFType::ALL);
 
-                    if !c.is_black() {
-                        let u = light_sample.occlusion_tester.unoccluded(scene);
-                        if u {
-                            let cos = light_sample.incident.dot(*normal).abs();
+                    if !c.is_black() && light_sample.occlusion_tester.unoccluded(scene){
+                        let cos = light_sample.incident.dot(*normal).abs();
 
-                            if cos != 0.0 {
-                                illumination +=
-                                    light_sample.spectrum * c * (cos / light_sample.pdf);
-                            }
+                        if cos != 0.0 {
+                            illumination +=
+                                light_sample.spectrum * c * (cos / light_sample.pdf);
                         }
                     }
                 }
@@ -89,8 +86,17 @@ impl Integrator for Path {
                     break;
                 }
 
-                let dot = bxdf_sample.incident.dot(hit.info.normal).abs();
-                let dot = floats::fast_clamp(dot, 0.0, 1.0);
+                let dot = if bxdf_sample.typ.is_specular() {
+                    specular = true;
+                    1.0
+                } else {
+                    specular = false;
+                    floats::fast_clamp(
+                        bxdf_sample.incident.dot(hit.info.normal).abs(),
+                        0.0,
+                        1.0
+                    )
+                };
 
                 throughput *= bxdf_sample.spectrum * (dot / bxdf_sample.pdf);
 
@@ -109,8 +115,6 @@ impl Integrator for Path {
                     Some(i) => hit = i,
                     None => return color,
                 }
-
-                specular = bxdf_sample.typ.is_specular();
             } else {
                 return color;
             }
