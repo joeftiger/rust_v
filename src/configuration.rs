@@ -1,4 +1,3 @@
-use crate::cornell_box;
 #[cfg(feature = "live-window")]
 use crate::render::fast_window::FastWindow;
 use crate::render::integrator::debug_normals::DebugNormals;
@@ -10,6 +9,7 @@ use crate::render::sampler::{NoopSampler, RandomSampler, Sampler};
 use std::convert::TryInto;
 use std::sync::Arc;
 use std::time::Instant;
+use crate::demos::*;
 
 #[derive(Debug, Clone)]
 pub struct Configuration {
@@ -22,54 +22,29 @@ pub struct Configuration {
     pub live: bool,
     pub threads: u32,
     pub output: Option<String>,
-    pub pixel_format: PixelFormat,
-    pub integrator_backend: IntegratorBackend,
+    pub pixel_type: PixelType,
+    pub integrator_type: IntegratorType,
+    pub demo_type: DemoType,
 }
 
 impl Configuration {
-    #[allow(clippy::too_many_arguments)]
-    pub fn new(
-        verbose: bool,
-        width: u32,
-        height: u32,
-        depth: u32,
-        passes: u32,
-        block_size: u32,
-        live: bool,
-        threads: u32,
-        output: Option<String>,
-        pixel_format: PixelFormat,
-        integrator_backend: IntegratorBackend,
-    ) -> Self {
-        Self {
-            verbose,
-            width,
-            height,
-            depth,
-            passes,
-            block_size,
-            live,
-            threads,
-            output,
-            pixel_format,
-            integrator_backend,
-        }
-    }
-
     /// Creates a renderer instance from this configuration file.
     pub fn create_renderer(&self) -> Renderer {
-        let (scene, camera) = cornell_box::create(self.width, self.height);
+        let (scene, camera) = match self.demo_type {
+            DemoType::Spheres => Spheres::create(self.width, self.height),
+            DemoType::Cornell => CornellBox::create(self.width, self.height),
+        };
         let scene = Arc::new(scene);
         let camera = Arc::new(camera);
 
-        let integrator: Arc<dyn Integrator> = match self.integrator_backend {
-            IntegratorBackend::Debug => Arc::new(DebugNormals),
-            IntegratorBackend::Whitted => Arc::new(Whitted::new(self.depth)),
-            IntegratorBackend::Path => Arc::new(Path::new(3, self.depth)),
+        let integrator: Arc<dyn Integrator> = match self.integrator_type {
+            IntegratorType::Debug => Arc::new(DebugNormals),
+            IntegratorType::Whitted => Arc::new(Whitted::new(self.depth)),
+            IntegratorType::Path => Arc::new(Path::new(3, self.depth)),
         };
 
-        let sampler: Arc<dyn Sampler> = match self.integrator_backend {
-            IntegratorBackend::Debug => Arc::new(NoopSampler),
+        let sampler: Arc<dyn Sampler> = match self.integrator_type {
+            IntegratorType::Debug => Arc::new(NoopSampler),
             _ => Arc::new(RandomSampler::default()),
         };
 
@@ -113,12 +88,12 @@ impl Configuration {
             if self.verbose {
                 println!("Saving image");
             }
-            match self.pixel_format {
-                PixelFormat::U8 => renderer
+            match self.pixel_type {
+                PixelType::U8 => renderer
                     .get_image_u8()
                     .save(output)
                     .map_err(|e| format!("Unable to save image: {}", e))?,
-                PixelFormat::U16 => renderer
+                PixelType::U16 => renderer
                     .get_image_u16()
                     .save(output)
                     .map_err(|e| format!("Unable to save image: {}", e))?,
@@ -131,38 +106,56 @@ impl Configuration {
 }
 
 #[derive(Debug, Clone)]
-pub enum PixelFormat {
+pub enum PixelType {
     U8,
     U16,
 }
 
-impl TryInto<PixelFormat> for &str {
+impl TryInto<PixelType> for &str {
     type Error = String;
 
-    fn try_into(self) -> Result<PixelFormat, Self::Error> {
+    fn try_into(self) -> Result<PixelType, Self::Error> {
         match self {
-            "u8" | "U8" => Ok(PixelFormat::U8),
-            "u16" | "U16" => Ok(PixelFormat::U16),
+            "u8" | "U8" => Ok(PixelType::U8),
+            "u16" | "U16" => Ok(PixelType::U16),
             _ => Err(self.to_string()),
         }
     }
 }
 
 #[derive(Debug, Clone)]
-pub enum IntegratorBackend {
+pub enum IntegratorType {
     Debug,
     Whitted,
     Path,
 }
 
-impl TryInto<IntegratorBackend> for &str {
+impl TryInto<IntegratorType> for &str {
     type Error = String;
 
-    fn try_into(self) -> Result<IntegratorBackend, Self::Error> {
+    fn try_into(self) -> Result<IntegratorType, Self::Error> {
         match self {
-            "debug" | "Debug" | "DEBUG" => Ok(IntegratorBackend::Debug),
-            "whitted" | "Whitted" | "WHITTED" => Ok(IntegratorBackend::Whitted),
-            "path" | "Path" | "PATH" => Ok(IntegratorBackend::Path),
+            "debug" | "Debug" | "DEBUG" => Ok(IntegratorType::Debug),
+            "whitted" | "Whitted" | "WHITTED" => Ok(IntegratorType::Whitted),
+            "path" | "Path" | "PATH" => Ok(IntegratorType::Path),
+            _ => Err(self.to_string()),
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
+pub enum DemoType {
+    Spheres,
+    Cornell,
+}
+
+impl TryInto<DemoType> for &str {
+    type Error = String;
+
+    fn try_into(self) -> Result<DemoType, Self::Error> {
+        match self {
+            "spheres" | "Spheres" | "SPHERES" => Ok(DemoType::Spheres),
+            "cornell" | "Cornell" | "CORNELL" => Ok(DemoType::Cornell),
             _ => Err(self.to_string()),
         }
     }

@@ -1,12 +1,95 @@
 #![allow(dead_code)]
 
-use crate::{DistanceExt, Geometry, GeometryInfo};
-use crate::aabb::Aabb;
-use crate::ray::Ray;
 use std::collections::HashMap;
 use std::fmt::Debug;
 use std::sync::Arc;
+
+use rayon::prelude::*;
+
 use util::floats;
+use util::morton::encode_morton_3;
+
+use crate::{DistanceExt, Geometry, GeometryInfo};
+use crate::aabb::Aabb;
+use crate::ray::Ray;
+
+pub enum BVHNode {
+    Leaf {
+        parent: usize,
+        depth: u32,
+        shape: usize,
+    },
+    Node {
+        parent: usize,
+        depth: u32,
+        left_child: usize,
+        right_child: usize,
+        aabb: Aabb,
+    },
+}
+
+impl BVHNode {
+    pub fn dummy_leaf() -> BVHNode {
+        BVHNode::Leaf {
+            parent: 0,
+            depth: 0,
+            shape: 0
+        }
+    }
+
+    pub fn parent(&self) -> usize {
+        match *self {
+            BVHNode::Leaf { parent, .. } | BVHNode::Node { parent, .. } => parent,
+        }
+    }
+
+    pub fn depth(&self) -> u32 {
+        match *self {
+            BVHNode::Leaf { depth, .. } | BVHNode::Node { depth, .. } => depth,
+        }
+    }
+
+    pub fn shape(&self) -> usize {
+        match *self {
+            BVHNode::Leaf { shape, .. } => shape,
+            _ => panic!("Leaf has no children")
+        }
+    }
+
+    pub fn parent_mut(&mut self) -> &mut usize {
+        match *self {
+            BVHNode::Node {
+                ref mut parent,
+                ..
+            }
+            | BVHNode::Leaf {
+                ref mut parent,
+                ..
+            } => parent,
+        }
+    }
+
+    pub fn left_child(&self) -> usize {
+        match *self {
+            BVHNode::Node { left_child, .. } => left_child,
+            _ => panic!("Leaf has no children")
+        }
+    }
+
+    pub fn right_child(&self) -> usize {
+        match *self {
+            BVHNode::Node { right_child, .. } => right_child,
+            _ => panic!("Leaf has no children")
+        }
+    }
+
+    pub fn aabb(&self) -> &Aabb {
+        match self {
+            BVHNode::Node { aabb, .. } => aabb,
+            _ => panic!("Leaf has no aabb")
+        }
+    }
+}
 
 #[derive(Debug)]
 pub struct Bvh<T> {
@@ -54,6 +137,26 @@ impl<T: Geometry> Bvh<T> {
 
             return Arc::new(Self::new(aabb, vec![], vec![o1.1, o2.1]));
         }
+
+        let _morton_codes = {
+            let spanning_aabb = objects
+                .iter()
+                .fold(Aabb::inverted_infinite(), |acc, next| acc.outer_join(&next.1.bounding_box()));
+            let diff = spanning_aabb.min.component_max().ceil() as u32;
+
+            let mut codes: Vec<(&usize, u32)> = objects.par_iter().map(|o| {
+                let center = o.1.bounding_box().center();
+                let x = diff + center.x as u32;
+                let y = diff + center.y as u32;
+                let z = diff + center.z as u32;
+
+                (o.0, encode_morton_3(x, y, z))
+            }).collect();
+
+            codes.sort_unstable_by_key(|next| next.1);
+            codes
+        };
+
 
         let mut nodes: HashMap<usize, Arc<Self>> = HashMap::default();
         let mut node_counter = 0;
@@ -114,7 +217,7 @@ impl<T: Geometry> Bvh<T> {
 
                 (vec![n1, n2], vec![])
             } else {
-                unreachable!()
+                unreachable!("Unreachable. Is an aabb infinite?");
             };
 
             let aabb = children
@@ -168,10 +271,11 @@ impl<T: Debug + Geometry + Send + Sync> Geometry for Bvh<T> {
             }
 
             obj_intersection
-        } else {self.children
-            .iter()
-            .filter_map(|c| c.intersect(ray))
-            .min_by(|a, b| floats::fast_cmp(a.t, b.t))
+        } else {
+            self.children
+                .iter()
+                .filter_map(|c| c.intersect(ray))
+                .min_by(|a, b| floats::fast_cmp(a.t, b.t))
         }
     }
 
