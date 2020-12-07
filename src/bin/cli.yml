@@ -41,9 +41,11 @@ args:
       long: format
       value_name: "{u8, u16}"
       help: "The output pixel format. (Default = u8)"
-  - THREADED:
-      long: threaded
-      help: "Run in parallel using all cores/threads."
+  - THREADS:
+      short: t
+      long: threads
+      takes_value: true
+      help: "Number of threads to use. (Default: machine max)"
   - BLOCK_SIZE:
       long: block-size
       help: "The block size for to render in chunks. E.g. 64 for 64x64 blocks. (Default: 8)"
@@ -105,7 +107,7 @@ subcommands:
             value_name: "{Whitted, Path, Debug}"
         - THREADS:
             short: t
-            long: threaded
+            long: threads
             takes_value: true
             help: "Number of threads to use. (Default: machine max)"
         - BLOCK_SIZE:
@@ -162,9 +164,11 @@ subcommands:
             help: "The integrator backend to use. Debug renders surface normals. (Default = Whitted)"
             takes_value: true
             value_name: "{Whitted, Path, Debug}"
-        - THREADED:
-            long: threaded
-            help: "Run in parallel using all cores/threads."
+        - THREADS:
+            short: t
+            long: threads
+            takes_value: true
+            help: "Number of threads to use. (Default: machine max)"
         - BLOCK_SIZE:
             long: block-size
             help: "The block size for to render in chunks. E.g. 64 for 64x64 blocks. (Default: 8)"

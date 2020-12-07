@@ -47,7 +47,7 @@ args:
       help: "The output pixel format. (Default = u8)"
   - THREADS:
       short: t
-      long: threaded
+      long: threads
       takes_value: true
       help: "Number of threads to use. (Default: machine max)"
   - BLOCK_SIZE:
@@ -111,7 +111,7 @@ subcommands:
             value_name: "{Whitted, Path, Debug}"
         - THREADS:
             short: t
-            long: threaded
+            long: threads
             takes_value: true
             help: "Number of threads to use. (Default: machine max)"
         - BLOCK_SIZE:
@@ -174,7 +174,7 @@ subcommands:
             value_name: "{Whitted, Path, Debug}"
         - THREADS:
             short: t
-            long: threaded
+            long: threads
             takes_value: true
             help: "Number of threads to use. (Default: machine max)"
         - BLOCK_SIZE:

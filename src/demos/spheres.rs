@@ -119,7 +119,7 @@ impl Spheres {
 
         scene.push_obj(Self::ground());
         scene.push_obj(Self::big_emitter());
-        scene.push_light(Self::light());
+//        scene.push_light(Self::light());
 
         scene.build_bvh();
         scene
