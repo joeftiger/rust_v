@@ -53,12 +53,54 @@ impl Configuration {
         Renderer::new(scene, camera, sampler, integrator, config)
     }
 
+    #[cfg(feature = "hpc-signals")]
+    fn signal_watcher(&'static self, renderer: Renderer) {
+        unsafe {
+            signal_hook::register(signal_hook::SIGTERM, move || {
+                println!("Received SIGTERM. Saving current image...");
+
+                match self.save_image(&renderer) {
+                    Ok(()) => std::process::exit(0),
+                    Err(err) => {
+                        println!("{}", err);
+                        std::process::exit(-1);
+                    }
+                }
+            }).unwrap();
+        }
+    }
+
+    fn save_image(&self, renderer: &Renderer) -> Result<(), String> {
+        if let Some(output) = &self.output {
+            if self.verbose {
+                println!("Saving image");
+            }
+            match self.pixel_type {
+                PixelType::U8 => renderer
+                    .get_image_u8()
+                    .save(output)
+                    .map_err(|e| format!("Unable to save image: {}", e))?,
+                PixelType::U16 => renderer
+                    .get_image_u16()
+                    .save(output)
+                    .map_err(|e| format!("Unable to save image: {}", e))?,
+            };
+            println!("Successfully saved image");
+        }
+
+        Ok(())
+    }
+
     pub fn start_rendering(&'static self) -> Result<(), String> {
         if self.verbose {
             println!("{:#?}", self);
         }
 
         let mut renderer = self.create_renderer();
+        #[cfg(feature = "hpc-signals")]
+        {
+            self.signal_watcher(renderer.clone());
+        }
 
         #[cfg(feature = "live-window")]
         {
@@ -84,24 +126,7 @@ impl Configuration {
             }
         }
 
-        if let Some(output) = &self.output {
-            if self.verbose {
-                println!("Saving image");
-            }
-            match self.pixel_type {
-                PixelType::U8 => renderer
-                    .get_image_u8()
-                    .save(output)
-                    .map_err(|e| format!("Unable to save image: {}", e))?,
-                PixelType::U16 => renderer
-                    .get_image_u16()
-                    .save(output)
-                    .map_err(|e| format!("Unable to save image: {}", e))?,
-            };
-            println!("Successfully saved image");
-        }
-
-        Ok(())
+        self.save_image(&renderer)
     }
 }
 

@@ -23,6 +23,8 @@ lazy_static = ""
 num_cpus = ""
 # live image of rendering
 show-image = { version = "", features = ["image", "save"], optional = true }
+# Unix signal handling
+signal-hook = { version = "", optional = true }
 # thread pool allowing job handles
 slave-pool = ""
 # wavefront obj files
@@ -37,6 +39,7 @@ util = { path = "./src/util" }
 [features]
 default = []
 live-window = ["show-image"]
+hpc-signals = ["signal-hook"]
 
 [dev-dependencies]
 criterion= ""

@@ -240,7 +240,7 @@ impl Renderer {
         RenderJob::new(should_stop, handles)
     }
 
-    pub fn get_image_u8(&mut self) -> ImageBuffer<Rgb<u8>, Vec<u8>> {
+    pub fn get_image_u8(&self) -> ImageBuffer<Rgb<u8>, Vec<u8>> {
         self.rendering
             .read()
             .expect("Rendering is poisoned")
@@ -248,7 +248,7 @@ impl Renderer {
     }
 
     // TODO: Possible to make more efficient?
-    pub fn get_image_u16(&mut self) -> ImageBuffer<Rgb<u16>, Vec<u16>> {
+    pub fn get_image_u16(&self) -> ImageBuffer<Rgb<u16>, Vec<u16>> {
         let mut buffer = ImageBuffer::new(self.config.width, self.config.height);
         self.render_blocks.iter().for_each(|block| {
             let lock = block.lock().expect("Block is poisoned");
