@@ -114,7 +114,7 @@ subcommands:
             long: block-size
             help: "The block size for to render in chunks. E.g. 64 for 64x64 blocks. (Default: 8)"
             takes_value: true
-  - demo:
+  - cornell:
       version: "0.1"
       author: "Julius Oeftiger <julius.oeftiger@students.unibe.ch>"
       about: "The cornell box demo scene."
