@@ -1,6 +1,7 @@
 use crate::demos::{DemoScene, FOVY, SIGMA};
 use crate::render::bxdf::bsdf::BSDF;
 use crate::render::bxdf::fresnel::{Dielectric, FresnelNoOp};
+use crate::render::bxdf::lambertian::LambertianReflection;
 use crate::render::bxdf::oren_nayar::OrenNayar;
 use crate::render::bxdf::specular::{SpecularReflection, SpecularTransmission};
 use crate::render::camera::Camera;
@@ -10,11 +11,10 @@ use crate::render::scene::Scene;
 use crate::render::scene_objects::SceneObject;
 use crate::Spectrum;
 use color::Color;
+use geometry::aabb::Aabb;
 use geometry::sphere::Sphere;
 use std::sync::Arc;
 use ultraviolet::Vec3;
-use geometry::aabb::Aabb;
-use crate::render::bxdf::lambertian::LambertianReflection;
 
 const RADIUS: f32 = 0.5;
 
@@ -86,7 +86,6 @@ impl Spheres {
         let max = Vec3::new(100.0, 200.0, 100.0);
         let aabb = Box::new(Aabb::new(min, max));
 
-
         let lambertian = LambertianReflection::new(Spectrum::black());
         let bsdf = BSDF::new(vec![Box::new(lambertian)]);
         let material = Material::new(Spectrum::white() * 10.0, bsdf);
@@ -119,7 +118,7 @@ impl Spheres {
 
         scene.push_obj(Self::ground());
         scene.push_obj(Self::big_emitter());
-//        scene.push_light(Self::light());
+        //        scene.push_light(Self::light());
 
         scene.build_bvh();
         scene

@@ -4,7 +4,7 @@ extern crate clap;
 use clap::App;
 
 use lazy_static::lazy_static;
-use rust_v::configuration::{Configuration, IntegratorType, PixelType, DemoType};
+use rust_v::configuration::{Configuration, DemoType, IntegratorType, PixelType};
 use std::convert::TryInto;
 
 const LIVE: &str = "LIVE_WINDOW";

@@ -1,3 +1,4 @@
+use crate::demos::*;
 #[cfg(feature = "live-window")]
 use crate::render::fast_window::FastWindow;
 use crate::render::integrator::debug_normals::DebugNormals;
@@ -9,7 +10,6 @@ use crate::render::sampler::{NoopSampler, RandomSampler, Sampler};
 use std::convert::TryInto;
 use std::sync::Arc;
 use std::time::Instant;
-use crate::demos::*;
 
 #[derive(Debug, Clone)]
 pub struct Configuration {
@@ -66,7 +66,8 @@ impl Configuration {
                         std::process::exit(-1);
                     }
                 }
-            }).unwrap();
+            })
+            .unwrap();
         }
     }
 

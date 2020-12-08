@@ -1,6 +1,7 @@
 #![allow(dead_code)]
 #![allow(unused_imports)]
 
+use crate::demos::{DemoScene, FOVY, SIGMA};
 use crate::render::bxdf::bsdf::BSDF;
 use crate::render::bxdf::fresnel::{Dielectric, FresnelNoOp};
 use crate::render::bxdf::oren_nayar::OrenNayar;
@@ -20,7 +21,6 @@ use geometry::sphere::Sphere;
 use geometry::tube::Tube;
 use std::sync::Arc;
 use ultraviolet::{Bivec3, Rotor3, Vec3};
-use crate::demos::{FOVY, SIGMA, DemoScene};
 
 pub const LEFT_WALL: f32 = -3.0;
 pub const RIGHT_WALL: f32 = 3.0;
@@ -59,7 +59,7 @@ impl CornellBox {
         scene.push_obj(Self::emitter());
 
         // light
-        // scene.push_light(light());
+        scene.push_light(Self::light());
 
         scene.build_bvh();
 
@@ -118,9 +118,9 @@ impl CornellBox {
 
         let color = Spectrum::white();
         let dielectric = Arc::new(Dielectric::new(1.0, 1.3));
-        let transmission = Box::new(SpecularTransmission::new(color, dielectric.clone()));
-        let reflection = Box::new(SpecularReflection::new(color, dielectric));
-        let bsdf = BSDF::new(vec![reflection, transmission]);
+        let transmission = Box::new(SpecularTransmission::new(color, dielectric));
+        // let reflection = Box::new(SpecularReflection::new(color, dielectric));
+        let bsdf = BSDF::new(vec![transmission]);
         let material = Material::from(bsdf);
 
         SceneObject::new(Box::new(bunny), material)
@@ -300,5 +300,4 @@ impl DemoScene for CornellBox {
     fn create(width: u32, height: u32) -> (Scene, Camera) {
         (Self::create_box(), Self::create_camera(width, height))
     }
-
 }

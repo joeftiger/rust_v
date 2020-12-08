@@ -1,11 +1,11 @@
 use crate::render::camera::Camera;
 use crate::render::scene::Scene;
 
-pub mod spheres;
 pub mod cornell_box;
+pub mod spheres;
 
-pub use spheres::Spheres;
 pub use cornell_box::CornellBox;
+pub use spheres::Spheres;
 
 pub const SIGMA: f32 = 20.0;
 pub const FOVY: f32 = 70.0;
