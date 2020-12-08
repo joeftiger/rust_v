@@ -113,6 +113,7 @@ impl From<&Block> for RenderBlock {
 }
 
 #[derive(Clone)]
+#[allow(clippy::rc_buffer)]
 pub struct Renderer {
     scene: Arc<Scene>,
     camera: Arc<Camera>,
@@ -220,7 +221,7 @@ impl Renderer {
 
                 let mut lock = this.render_blocks[index].lock().expect("Block is poisoned");
                 lock.stats.iter_mut().for_each(|stats| {
-                    let pixel = this.render(stats.x, stats.y); //.clamp(0.0, 1.0);
+                    let pixel = this.render(stats.x, stats.y); //.clamp(0.0, 1.0); // FIXME
                     stats.spectrum += pixel;
                     stats.samples += 1;
 
