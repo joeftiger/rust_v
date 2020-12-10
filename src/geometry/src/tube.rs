@@ -3,8 +3,8 @@ use crate::cylinder::Cylinder;
 use crate::ray::Ray;
 use crate::sphere::Sphere;
 use crate::{Container, Geometry, GeometryInfo};
-use util::MinMaxExt;
 use ultraviolet::Vec3;
+use util::MinMaxExt;
 
 #[derive(Debug, PartialEq)]
 pub struct Tube {
@@ -63,6 +63,15 @@ impl Geometry for Tube {
         self.aabb.clone()
     }
 
+    fn sample_surface(&self, _sample: &Vec3) -> Vec3 {
+        let heights: Vec<f32> = self.cylinders.iter().map(|c| c.height()).collect();
+        let total_radiuses = self.radius * self.spheres.len() as f32;
+        let total_height: f32 = heights.iter().sum();
+        let _total = (total_radiuses + total_height) as usize;
+
+        unimplemented!()
+    }
+
     fn intersect(&self, ray: &Ray) -> Option<GeometryInfo> {
         let mut intersection = None;
 
@@ -78,6 +87,7 @@ impl Geometry for Tube {
     }
 
     fn intersects(&self, ray: &Ray) -> bool {
-        self.cylinders.iter().any(|c| c.intersects(ray)) || self.spheres.iter().any(|s| s.intersects(ray))
+        self.cylinders.iter().any(|c| c.intersects(ray))
+            || self.spheres.iter().any(|s| s.intersects(ray))
     }
 }

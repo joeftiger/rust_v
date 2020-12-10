@@ -129,6 +129,10 @@ impl Geometry for Emitter {
         self.geometry.bounding_box()
     }
 
+    fn sample_surface(&self, sample: &Vec3) -> Vec3 {
+        self.geometry.sample_surface(sample)
+    }
+
     fn intersect(&self, ray: &Ray) -> Option<GeometryInfo> {
         self.geometry.intersect(ray)
     }

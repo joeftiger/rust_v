@@ -1,7 +1,8 @@
-use util::floats;
-use crate::ray::Ray;
-use crate::{ComparableExt, Container, Geometry, GeometryInfo, DistanceExt};
 use ultraviolet::Vec3;
+use util::floats;
+
+use crate::ray::Ray;
+use crate::{ComparableExt, Container, DistanceExt, Geometry, GeometryInfo};
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Aabb {
@@ -95,6 +96,15 @@ impl Container for Aabb {
 impl Geometry for Aabb {
     fn bounding_box(&self) -> Aabb {
         self.clone()
+    }
+
+    #[rustfmt::skip]
+    fn sample_surface(&self, sample: &Vec3) -> Vec3 {
+        let x = if sample.x < 0.5 { self.min.x } else { self.max.x };
+        let y = if sample.y < 0.5 { self.min.y } else { self.max.y };
+        let z = if sample.z < 0.5 { self.min.z } else { self.max.z };
+
+        Vec3::new(x, y, z)
     }
 
     fn intersect(&self, ray: &Ray) -> Option<GeometryInfo> {

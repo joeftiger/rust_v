@@ -4,91 +4,21 @@ use std::collections::HashMap;
 use std::fmt::Debug;
 use std::sync::Arc;
 
-use rayon::prelude::*;
-
 use util::floats;
-use util::morton::encode_morton_3;
 
-use crate::{DistanceExt, Geometry, GeometryInfo};
 use crate::aabb::Aabb;
 use crate::ray::Ray;
+use crate::{DistanceExt, Geometry, GeometryInfo};
+use ultraviolet::Vec3;
 
-pub enum BVHNode {
-    Leaf {
-        parent: usize,
-        depth: u32,
-        shape: usize,
-    },
+#[derive(Debug)]
+pub enum BVHNode<T> {
+    Leaf(Arc<T>),
     Node {
-        parent: usize,
-        depth: u32,
-        left_child: usize,
-        right_child: usize,
+        left_child: Arc<BVHNode<T>>,
+        right_child: Arc<BVHNode<T>>,
         aabb: Aabb,
     },
-}
-
-impl BVHNode {
-    pub fn dummy_leaf() -> BVHNode {
-        BVHNode::Leaf {
-            parent: 0,
-            depth: 0,
-            shape: 0
-        }
-    }
-
-    pub fn parent(&self) -> usize {
-        match *self {
-            BVHNode::Leaf { parent, .. } | BVHNode::Node { parent, .. } => parent,
-        }
-    }
-
-    pub fn depth(&self) -> u32 {
-        match *self {
-            BVHNode::Leaf { depth, .. } | BVHNode::Node { depth, .. } => depth,
-        }
-    }
-
-    pub fn shape(&self) -> usize {
-        match *self {
-            BVHNode::Leaf { shape, .. } => shape,
-            _ => panic!("Leaf has no children")
-        }
-    }
-
-    pub fn parent_mut(&mut self) -> &mut usize {
-        match *self {
-            BVHNode::Node {
-                ref mut parent,
-                ..
-            }
-            | BVHNode::Leaf {
-                ref mut parent,
-                ..
-            } => parent,
-        }
-    }
-
-    pub fn left_child(&self) -> usize {
-        match *self {
-            BVHNode::Node { left_child, .. } => left_child,
-            _ => panic!("Leaf has no children")
-        }
-    }
-
-    pub fn right_child(&self) -> usize {
-        match *self {
-            BVHNode::Node { right_child, .. } => right_child,
-            _ => panic!("Leaf has no children")
-        }
-    }
-
-    pub fn aabb(&self) -> &Aabb {
-        match self {
-            BVHNode::Node { aabb, .. } => aabb,
-            _ => panic!("Leaf has no aabb")
-        }
-    }
 }
 
 #[derive(Debug)]
@@ -112,16 +42,108 @@ impl<T: PartialEq> PartialEq for Bvh<T> {
 
 impl<T> Bvh<T> {
     pub fn new(aabb: Aabb, children: Vec<Arc<Bvh<T>>>, objects: Vec<Arc<T>>) -> Self {
-        Self { aabb, children, objects }
+        Self {
+            aabb,
+            children,
+            objects,
+        }
     }
 }
 
 impl<T: Geometry> Bvh<T> {
-    pub fn build_tree_vec(objects: Vec<Arc<T>>) -> Arc<Self> {
-        Self::build_tree(objects.into_iter().enumerate().collect())
+    pub fn aac_vec(objects: Vec<Arc<T>>) -> Arc<Self> {
+        // println!("# Objects: {}\n", objects.len());
+        //
+        // let mut distances = Vec::with_capacity(objects.len() * objects.len() / 2);
+        //
+        // for i in 0..objects.len() {
+        //     for j in (i + 1)..objects.len() {
+        //         let aabb_0 = objects[i].bounding_box();
+        //         let aabb_1 = objects[j].bounding_box();
+        //         let distance = aabb_0.distance(&aabb_1);
+        //
+        //         distances.push(((i, j), distance));
+        //     }
+        // }
+        // println!("Created distance matrix\n");
+        //
+        // let mut clusters = Vec::with_capacity((distances.len() + 1) / 2);
+        //
+        // distances.sort_by(|a, b| floats::fast_cmp(a.1, b.1));
+        //
+        // while !distances.is_empty() {
+        //     let ((i, j), _) = distances[0];
+        //     let aabb_0 = objects[i].bounding_box();
+        //     let aabb_1 = objects[j].bounding_box();
+        //     let aabb = aabb_0.outer_join(&aabb_1);
+        //
+        //     let leaf_0 = BVHNode::Leaf(objects[i].clone());
+        //     let leaf_1 = BVHNode::Leaf(objects[j].clone());
+        //
+        //     let node = BVHNode::Node {
+        //         left_child: Arc::new(leaf_0),
+        //         right_child: Arc::new(leaf_1),
+        //         aabb
+        //     };
+        //     clusters.push(node);
+        //
+        //     distances.retain(|(index, _)| index.0 != i && index.0 != j && index.1 != i && index.1 != j);
+        // }
+        //
+        // println!("Created initial clusters\n");
+        //
+        // let mut distances = Vec::with_capacity(clusters.len() * clusters.len() / 2);
+        //
+        // while clusters.len() > 1 {
+        //     println!("{} clusters left\n", clusters.len());
+        //
+        //     for i in 0..clusters.len() {
+        //         for j in (i + 1)..clusters.len() {
+        //             let aabb_0 = match &clusters[i] {
+        //                 BVHNode::Node { aabb, .. } => aabb,
+        //                 _ => unreachable!(),
+        //             };
+        //             let aabb_1 = match &clusters[j] {
+        //                 BVHNode::Node { aabb, .. } => aabb,
+        //                 _ => unreachable!(),
+        //             };
+        //             let distance = aabb_0.distance(aabb_1);
+        //
+        //             distances.push(((i, j), distance));
+        //         }
+        //     }
+        //     distances.sort_by(|a, b| floats::fast_cmp(a.1, b.1));
+        //
+        //     let ((i, j), _) = distances[0];
+        //
+        //     let aabb_0 = match &clusters[i] {
+        //         BVHNode::Node { aabb, .. } => aabb,
+        //         _ => unreachable!(),
+        //     };
+        //     let aabb_1 = match &clusters[j] {
+        //         BVHNode::Node { aabb, .. } => aabb,
+        //         _ => unreachable!(),
+        //     };
+        //     let aabb = aabb_0.outer_join(aabb_1);
+        //
+        //     // j > i is guaranteed
+        //     let node = BVHNode::Node {
+        //         left_child: Arc::new(clusters.swap_remove(j)),
+        //         right_child: Arc::new(clusters.swap_remove(i)),
+        //         aabb
+        //     };
+        //
+        //     clusters.push(node);
+        //
+        //     distances.retain(|(index, _)| index.0 != i && index.0 != j && index.1 != i && index.1 != j);
+        // }
+        //
+        // println!("{:#?}\n", clusters[0]);
+
+        Self::aac(objects.into_iter().enumerate().collect())
     }
 
-    pub fn build_tree(mut objects: HashMap<usize, Arc<T>>) -> Arc<Self> {
+    pub fn aac(mut objects: HashMap<usize, Arc<T>>) -> Arc<Self> {
         if objects.is_empty() {
             return Arc::new(Self::default());
         } else if objects.len() == 1 {
@@ -138,26 +160,6 @@ impl<T: Geometry> Bvh<T> {
             return Arc::new(Self::new(aabb, vec![], vec![o1.1, o2.1]));
         }
 
-        let _morton_codes = {
-            let spanning_aabb = objects
-                .iter()
-                .fold(Aabb::inverted_infinite(), |acc, next| acc.outer_join(&next.1.bounding_box()));
-            let diff = spanning_aabb.min.component_max().ceil() as u32;
-
-            let mut codes: Vec<(&usize, u32)> = objects.par_iter().map(|o| {
-                let center = o.1.bounding_box().center();
-                let x = diff + center.x as u32;
-                let y = diff + center.y as u32;
-                let z = diff + center.z as u32;
-
-                (o.0, encode_morton_3(x, y, z))
-            }).collect();
-
-            codes.sort_unstable_by_key(|next| next.1);
-            codes
-        };
-
-
         let mut nodes: HashMap<usize, Arc<Self>> = HashMap::default();
         let mut node_counter = 0;
 
@@ -170,13 +172,15 @@ impl<T: Geometry> Bvh<T> {
             let mut distance = f32::INFINITY;
 
             objects.iter().for_each(|first| {
-                objects.iter().for_each(|second| if first.0 != second.0 {
-                    let d = first.1.bounding_box().distance(&second.1.bounding_box());
-                    if d < distance {
-                        distance = d;
-                        oo = Some((*first.0, *second.0));
-                        on = None;
-                        nn = None;
+                objects.iter().for_each(|second| {
+                    if first.0 != second.0 {
+                        let d = first.1.bounding_box().distance(&second.1.bounding_box());
+                        if d < distance {
+                            distance = d;
+                            oo = Some((*first.0, *second.0));
+                            on = None;
+                            nn = None;
+                        }
                     }
                 });
 
@@ -191,29 +195,45 @@ impl<T: Geometry> Bvh<T> {
                 })
             });
 
-            nodes.iter().for_each(|first| nodes.iter().for_each(|second| if first.0 != second.0 {
-                let d = first.1.bounding_box().distance(&second.1.bounding_box());
-                if d < distance {
-                    distance = d;
-                    oo = None;
-                    on = None;
-                    nn = Some((*first.0, *second.0));
-                }
-            }));
+            nodes.iter().for_each(|first| {
+                nodes.iter().for_each(|second| {
+                    if first.0 != second.0 {
+                        let d = first.1.bounding_box().distance(&second.1.bounding_box());
+                        if d < distance {
+                            distance = d;
+                            oo = None;
+                            on = None;
+                            nn = Some((*first.0, *second.0));
+                        }
+                    }
+                })
+            });
 
             let (children, objects) = if let Some(oo) = oo {
-                let o1 = objects.remove(&oo.0).expect("Key was not in objects map anymore");
-                let o2 = objects.remove(&oo.1).expect("Key was not in objects map anymore");
+                let o1 = objects
+                    .remove(&oo.0)
+                    .expect("Key was not in objects map anymore");
+                let o2 = objects
+                    .remove(&oo.1)
+                    .expect("Key was not in objects map anymore");
 
                 (vec![], vec![o1, o2])
             } else if let Some(on) = on {
-                let o = objects.remove(&on.0).expect("Key was not in objects map anymore");
-                let n = nodes.remove(&on.1).expect("Key was not in nodes map anymore");
+                let o = objects
+                    .remove(&on.0)
+                    .expect("Key was not in objects map anymore");
+                let n = nodes
+                    .remove(&on.1)
+                    .expect("Key was not in nodes map anymore");
 
                 (vec![n], vec![o])
             } else if let Some(nn) = nn {
-                let n1 = nodes.remove(&nn.0).expect("Key was not in nodes map anymore");
-                let n2 = nodes.remove(&nn.1).expect("Key was not in nodes map anymore");
+                let n1 = nodes
+                    .remove(&nn.0)
+                    .expect("Key was not in nodes map anymore");
+                let n2 = nodes
+                    .remove(&nn.1)
+                    .expect("Key was not in nodes map anymore");
 
                 (vec![n1, n2], vec![])
             } else {
@@ -238,6 +258,10 @@ impl<T: Geometry> Bvh<T> {
         let super_node = nodes.drain().next().unwrap();
         super_node.1
     }
+
+    fn build_tree() {}
+
+    fn combine_clusters() {}
 }
 
 impl<T: Debug + Geometry + Send + Sync> Geometry for Bvh<T> {
@@ -245,12 +269,17 @@ impl<T: Debug + Geometry + Send + Sync> Geometry for Bvh<T> {
         self.aabb.clone()
     }
 
+    fn sample_surface(&self, _: &Vec3) -> Vec3 {
+        unimplemented!()
+    }
+
     fn intersect(&self, ray: &Ray) -> Option<GeometryInfo> {
         if !self.bounding_box().intersects(ray) {
             return None;
         }
 
-        let obj_intersection = self.objects
+        let obj_intersection = self
+            .objects
             .iter()
             .filter_map(|o| o.intersect(ray))
             .min_by(|a, b| floats::fast_cmp(a.t, b.t));
@@ -259,7 +288,8 @@ impl<T: Debug + Geometry + Send + Sync> Geometry for Bvh<T> {
             let mut new_ray = *ray;
             new_ray.t_end = obj.t;
 
-            let child_intersection = self.children
+            let child_intersection = self
+                .children
                 .iter()
                 .filter_map(|c| c.intersect(ray))
                 .min_by(|a, b| floats::fast_cmp(a.t, b.t));
@@ -280,6 +310,7 @@ impl<T: Debug + Geometry + Send + Sync> Geometry for Bvh<T> {
     }
 
     fn intersects(&self, ray: &Ray) -> bool {
-        self.objects.iter().any(|o| o.intersects(ray)) || self.children.iter().any(|c| c.intersects(ray))
+        self.objects.iter().any(|o| o.intersects(ray))
+            || self.children.iter().any(|c| c.intersects(ray))
     }
 }

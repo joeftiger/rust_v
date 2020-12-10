@@ -19,6 +19,10 @@ impl Geometry for Point {
         Aabb::new(self.position, self.position)
     }
 
+    fn sample_surface(&self, _: &Vec3) -> Vec3 {
+        self.position
+    }
+
     #[inline(always)]
     fn intersect(&self, _: &Ray) -> Option<GeometryInfo> {
         None

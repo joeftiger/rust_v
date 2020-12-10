@@ -1,4 +1,5 @@
 pub mod aabb;
+pub mod bvh;
 pub mod capsule;
 pub mod cube;
 pub mod cylinder;
@@ -10,21 +11,16 @@ pub mod ray;
 pub mod sphere;
 mod tests;
 pub mod tube;
-pub mod bvh;
 
 use crate::aabb::Aabb;
 use crate::ray::{Ray, Ray4};
+use std::fmt::Debug;
 use ultraviolet::{f32x4, Vec3, Vec3x4};
 use util::{floats, MinMaxExt};
-use std::fmt::Debug;
 
 #[inline]
 pub fn spherical_direction(sin_theta: f32, cos_theta: f32, phi: f32) -> Vec3 {
-    Vec3::new(
-        sin_theta * phi.cos(),
-        sin_theta * phi.sin(),
-        cos_theta,
-    )
+    Vec3::new(sin_theta * phi.cos(), sin_theta * phi.sin(), cos_theta)
 }
 
 macro_rules! geometry_info {
@@ -107,8 +103,10 @@ pub trait Container {
 pub trait Geometry: Debug + Send + Sync {
     fn bounding_box(&self) -> Aabb;
 
+    fn sample_surface(&self, sample: &Vec3) -> Vec3;
+
     fn intersect(&self, ray: &Ray) -> Option<GeometryInfo>;
-    
+
     fn intersects(&self, ray: &Ray) -> bool {
         self.intersect(ray).is_some()
     }
@@ -120,6 +118,10 @@ pub struct DefaultGeometry;
 impl Geometry for DefaultGeometry {
     fn bounding_box(&self) -> Aabb {
         Aabb::inverted_infinite()
+    }
+
+    fn sample_surface(&self, _: &Vec3) -> Vec3 {
+        Vec3::broadcast(f32::NAN)
     }
 
     fn intersect(&self, _: &Ray) -> Option<GeometryInfo> {

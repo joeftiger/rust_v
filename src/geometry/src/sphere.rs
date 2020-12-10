@@ -33,6 +33,21 @@ impl Geometry for Sphere {
         Aabb::new(self.center - offset, self.center + offset)
     }
 
+    fn sample_surface(&self, sample: &Vec3) -> Vec3 {
+        let theta = sample.x * 2.0;
+        let phi = sample.y * 2.0;
+
+        let phi_sin = phi.sin();
+
+        let v = Vec3::new(
+            self.radius * phi_sin * theta.cos(),
+            self.radius * phi_sin * theta.sin(),
+            self.radius * phi.cos(),
+        );
+
+        self.center + v
+    }
+
     fn intersect(&self, ray: &Ray) -> Option<GeometryInfo> {
         let dir = ray.direction;
         let oc = ray.origin - self.center;

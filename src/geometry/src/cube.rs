@@ -83,6 +83,10 @@ impl Geometry for Cube {
         // Aabb::new(min, max)
     }
 
+    fn sample_surface(&self, sample: &Vec3) -> Vec3 {
+        unimplemented!()
+    }
+
     fn intersect(&self, ray: &Ray) -> Option<GeometryInfo> {
         unimplemented!();
         // Aabb::default().intersect(&ray)

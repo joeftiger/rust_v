@@ -1,9 +1,9 @@
-use ultraviolet::Vec3;
+use ultraviolet::{Rotor3, Vec3};
+use util::math::solve_quadratic;
 
 use crate::aabb::Aabb;
 use crate::ray::Ray;
 use crate::{Container, Geometry, GeometryInfo};
-use util::math::solve_quadratic;
 
 /// A geometrical cylinder.
 #[derive(Debug, PartialEq)]
@@ -82,6 +82,20 @@ impl Geometry for Cylinder {
         let max = max.max_by_component(min_original);
 
         Aabb::new(min - offset, max + offset)
+    }
+
+    fn sample_surface(&self, sample: &Vec3) -> Vec3 {
+        let rot = Rotor3::from_rotation_between(Vec3::unit_y(), self.axis());
+
+        let theta = sample.x * 2.0;
+
+        let v = Vec3::new(
+            self.radius * theta.cos(),
+            self.height() * sample.y,
+            self.radius * theta.sin(),
+        );
+
+        self.bot + rot * v
     }
 
     fn intersect(&self, ray: &Ray) -> Option<GeometryInfo> {

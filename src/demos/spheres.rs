@@ -63,7 +63,7 @@ impl Spheres {
             if rand < 0.6 {
                 let oren_nayar = OrenNayar::new(color, SIGMA);
                 let bsdf = BSDF::new(vec![Box::new(oren_nayar)]);
-                Material::new(color * 1000.0, bsdf)
+                Material::new(color, bsdf)
             } else if rand < 0.8 {
                 let reflection = SpecularReflection::new(color, Arc::new(FresnelNoOp));
                 let bsdf = BSDF::new(vec![Box::new(reflection)]);
@@ -117,8 +117,8 @@ impl Spheres {
         }
 
         scene.push_obj(Self::ground());
-        scene.push_obj(Self::big_emitter());
-        //        scene.push_light(Self::light());
+        // scene.push_obj(Self::big_emitter());
+        scene.push_light(Self::light());
 
         scene.build_bvh();
         scene

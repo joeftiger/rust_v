@@ -1,12 +1,11 @@
-use tobj::Mesh as TobjMesh;
 use crate::aabb::Aabb;
+use crate::bvh::Bvh;
 use crate::ray::Ray;
 use crate::{Geometry, GeometryInfo};
-use ultraviolet::{Vec3, Rotor3};
-use util::floats;
 use std::sync::Arc;
-use crate::bvh::Bvh;
-
+use tobj::Mesh as TobjMesh;
+use ultraviolet::{Rotor3, Vec3};
+use util::floats;
 
 #[derive(Debug, PartialEq)]
 pub struct Triangle {
@@ -27,6 +26,15 @@ impl Geometry for Triangle {
         let max = self.a.max_by_component(self.b.max_by_component(*self.c));
 
         Aabb::new(min, max)
+    }
+
+    fn sample_surface(&self, sample: &Vec3) -> Vec3 {
+        let x_sqrt = sample.x.sqrt();
+        let a = *self.a * (1.0 - x_sqrt);
+        let b = *self.b * (x_sqrt * (1.0 - sample.y));
+        let c = *self.c * (sample.y * x_sqrt);
+
+        a + b + c
     }
 
     #[allow(clippy::many_single_char_names)]
@@ -96,7 +104,7 @@ impl Geometry for Triangle {
         }
 
         let t = ac.dot(q) / det;
-        
+
         ray.is_in_range(t)
     }
 }
@@ -111,7 +119,7 @@ pub struct Mesh {
 
 impl Mesh {
     pub fn new(vertices: Vec<Arc<Vec3>>, triangles: Vec<Arc<Triangle>>) -> Self {
-        let bvh = Bvh::build_tree_vec(triangles.clone());
+        let bvh = Bvh::aac_vec(triangles.clone());
 
         Self {
             vertices,
@@ -120,7 +128,9 @@ impl Mesh {
         }
     }
 
-    pub fn load_scale_floor_rot((tobj_mesh, scale, center_floor, rotation): (&TobjMesh, Vec3, Vec3, Rotor3)) -> Self {
+    pub fn load_scale_floor_rot(
+        (tobj_mesh, scale, center_floor, rotation): (&TobjMesh, Vec3, Vec3, Rotor3),
+    ) -> Self {
         let mut vertices = Vec::with_capacity(tobj_mesh.positions.len());
         let mut v_center = Vec3::zero();
         let mut minimum_y = f32::INFINITY;
@@ -137,17 +147,19 @@ impl Mesh {
             minimum_y = minimum_y.min(vertex.y);
             i += 3;
         }
-        let vertices: Vec<Arc<Vec3>> = vertices.iter().map(|v| {
-            let mut v = *v + center_floor;
-            v.y -= minimum_y;
+        let vertices: Vec<Arc<Vec3>> = vertices
+            .iter()
+            .map(|v| {
+                let mut v = *v + center_floor;
+                v.y -= minimum_y;
 
-            let mut v_tmp = v - center_floor;
-            v_tmp = rotation * v_tmp;
-            v = v_tmp + center_floor;
+                let mut v_tmp = v - center_floor;
+                v_tmp = rotation * v_tmp;
+                v = v_tmp + center_floor;
 
-            Arc::new(v)
-        }).collect();
-
+                Arc::new(v)
+            })
+            .collect();
 
         let mut triangles = Vec::with_capacity(tobj_mesh.indices.len() / 3);
         let mut i = 0;
@@ -171,10 +183,17 @@ impl Geometry for Mesh {
         self.bvh.bounding_box()
     }
 
+    fn sample_surface(&self, sample: &Vec3) -> Vec3 {
+        // triangle sampling uses only sample.xy, z is the remaining random variable
+        let index = (sample.z * self.triangles.len() as f32) as usize;
+
+        self.triangles[index].sample_surface(sample)
+    }
+
     fn intersect(&self, ray: &Ray) -> Option<GeometryInfo> {
         self.bvh.intersect(ray)
     }
-    
+
     fn intersects(&self, ray: &Ray) -> bool {
         self.bvh.intersects(ray)
     }

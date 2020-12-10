@@ -34,6 +34,10 @@ macro_rules! colors {
                     Self::new([data; $size])
                 }
 
+                pub fn len(&self) -> usize {
+                    self.data.len()
+                }
+
                 pub fn sqrt(&self) -> Self {
                     let mut data = self.data;
                     data.iter_mut().for_each(|f| *f = f.sqrt());

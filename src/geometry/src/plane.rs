@@ -1,9 +1,10 @@
-use crate::floats;
+use ultraviolet::{Rotor3, Vec3};
+use util::MinMaxExt;
+
 use crate::aabb::Aabb;
+use crate::floats;
 use crate::ray::Ray;
 use crate::{AngularExt, Container, Geometry, GeometryInfo};
-use util::MinMaxExt;
-use ultraviolet::Vec3;
 
 #[derive(Debug, PartialEq)]
 pub struct Plane {
@@ -129,6 +130,20 @@ impl Container for Plane2 {
 impl Geometry for Plane2 {
     fn bounding_box(&self) -> Aabb {
         Aabb::infinite()
+    }
+
+    fn sample_surface(&self, sample: &Vec3) -> Vec3 {
+        let rot = Rotor3::from_rotation_between(Vec3::unit_y(), self.normal);
+
+        let y = if sample.y < 0.5 { self.d0 } else { self.d1 };
+
+        let v = Vec3::new(
+            f32::MAX * (sample.x * 2.0 - 1.0),
+            y,
+            f32::MAX * (sample.z * 2.0 - 1.0),
+        );
+
+        self.normal * self.d0 + rot * v
     }
 
     fn intersect(&self, ray: &Ray) -> Option<GeometryInfo> {

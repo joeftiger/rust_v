@@ -34,6 +34,11 @@ impl Geometry for BiconvexLens {
         Aabb::new(center - offset, center + offset)
     }
 
+    fn sample_surface(&self, _sample: &Vec3) -> Vec3 {
+        // TODO: Implement
+        unimplemented!()
+    }
+
     fn intersect(&self, ray: &Ray) -> Option<GeometryInfo> {
         let ray_start = ray.at(ray.t_start);
 
@@ -41,11 +46,7 @@ impl Geometry for BiconvexLens {
             if let Some(i1) = self.sphere1.intersect(ray) {
                 // inside lens return min
                 if self.contains(ray_start) {
-                    return if i0.t < i1.t {
-                        Some(i0)
-                    } else {
-                        Some(i1)
-                    }
+                    return if i0.t < i1.t { Some(i0) } else { Some(i1) };
                 }
 
                 // inside sphere0 return sphere1
@@ -59,11 +60,7 @@ impl Geometry for BiconvexLens {
                 }
 
                 // outside lens return max
-                return if i0.t > i1.t {
-                    Some(i0)
-                } else {
-                    Some(i1)
-                }
+                return if i0.t > i1.t { Some(i0) } else { Some(i1) };
             }
         }
 

@@ -28,12 +28,12 @@ pub struct Scene {
 
 impl Scene {
     pub fn push_obj(&mut self, obj: SceneObject) {
-        let aabb = &mut self.aabb;
-        let bo = obj.bounding_box();
-        aabb.min = aabb.min.min_by_component(bo.min);
-        aabb.max = aabb.max.min_by_component(bo.min);
+        let obj = Arc::new(obj);
 
-        self.objects.push(Arc::new(obj));
+        self.objects.push(obj.clone());
+        if obj.material.emissive() {
+            self.push_light(obj)
+        }
     }
 
     pub fn push_light(&mut self, light: Arc<dyn Light>) {
@@ -41,7 +41,7 @@ impl Scene {
     }
 
     pub fn build_bvh(&mut self) {
-        self.bvh = SceneBvh::build_tree_vec(self.objects.clone());
+        self.bvh = SceneBvh::aac_vec(self.objects.clone());
     }
 
     /// Checks if the given ray intersects any object before reaching it's own maximum t lifespan.

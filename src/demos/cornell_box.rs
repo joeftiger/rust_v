@@ -51,12 +51,12 @@ impl CornellBox {
         scene.push_obj(Self::ceiling());
 
         // objects
-        // scene.push_obj(Self::sphere());
-        // scene.push_obj(Self::capsule());
-        // scene.push_obj(Self::tube());
-        scene.push_obj(Self::bunny());
-        // scene.push_obj(dragon());
-        scene.push_obj(Self::emitter());
+        scene.push_obj(Self::sphere());
+        scene.push_obj(Self::capsule());
+        scene.push_obj(Self::tube());
+        // scene.push_obj(Self::bunny());
+        // scene.push_obj(Self::dragon());
+        // scene.push_obj(Self::emitter());
 
         // light
         scene.push_light(Self::light());
@@ -138,7 +138,7 @@ impl CornellBox {
         let color = Spectrum::white();
         let dielectric = Arc::new(Dielectric::new(1.0, 1.3));
         let transmission = Box::new(SpecularTransmission::new(color, dielectric.clone()));
-        let reflection = Box::new(SpecularReflection::new(color, dielectric));
+        let reflection = Box::new(SpecularReflection::new(color * 0.25, dielectric));
         let bsdf = BSDF::new(vec![reflection, transmission]);
         let material = Material::from(bsdf);
 

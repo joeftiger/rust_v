@@ -3,8 +3,8 @@ use crate::cylinder::Cylinder;
 use crate::ray::Ray;
 use crate::sphere::Sphere;
 use crate::{Container, Geometry, GeometryInfo};
-use util::MinMaxExt;
 use ultraviolet::Vec3;
+use util::MinMaxExt;
 
 #[derive(Debug, PartialEq)]
 pub struct Capsule {
@@ -34,6 +34,21 @@ impl Geometry for Capsule {
         self.bot.bounding_box().outer_join(&self.top.bounding_box())
     }
 
+    fn sample_surface(&self, sample: &Vec3) -> Vec3 {
+        let radius = self.bot.radius;
+        let height = self.cylinder.height();
+        let total = radius + radius + height;
+
+        let max = sample.component_max();
+        if max < radius / total {
+            self.bot.sample_surface(sample)
+        } else if max < (radius + radius) / total {
+            self.top.sample_surface(sample)
+        } else {
+            self.cylinder.sample_surface(sample)
+        }
+    }
+
     fn intersect(&self, ray: &Ray) -> Option<GeometryInfo> {
         // FIXME: Intersections from the inside are not handled correctly!
         let bot = self.bot.intersect(ray);
@@ -42,7 +57,7 @@ impl Geometry for Capsule {
 
         GeometryInfo::mmin_op2(bot, GeometryInfo::mmin_op2(top, cylinder))
     }
-    
+
     fn intersects(&self, ray: &Ray) -> bool {
         self.cylinder.intersects(ray) || self.bot.intersects(ray) || self.top.intersects(ray)
     }
