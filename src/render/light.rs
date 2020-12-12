@@ -4,12 +4,11 @@
 use ultraviolet::Vec3;
 
 use crate::render::scene::{Scene, SceneIntersection};
-use crate::Spectrum;
-use geometry::aabb::Aabb;
+use crate::{Spectrum, LIGHT_SAMPLES_1D, LIGHT_SAMPLES_3D};
 use geometry::ray::Ray;
-use geometry::{Geometry, GeometryInfo};
-use std::sync::Arc;
 use util::floats;
+
+pub const LIGHT_SAMPLE_DELTA: f32 = 1.0 / LIGHT_SAMPLES_1D as f32;
 
 bitflags! {
     pub struct LightType: u8 {
@@ -20,29 +19,49 @@ bitflags! {
     }
 }
 
-pub struct OcclusionTester {
+pub trait OcclusionTester {
+    fn unoccluded(&self, scene: &Scene) -> bool;
+}
+
+pub struct SimpleOcclusionTester {
     ray: Ray,
 }
 
-impl OcclusionTester {
+impl SimpleOcclusionTester {
     pub fn new(from: Vec3, to: Vec3) -> Self {
         let mut ray = Ray::in_range(&from, &to);
         ray.t_start = floats::BIG_EPSILON;
         Self { ray }
     }
+}
 
-    pub fn unoccluded(&self, scene: &Scene) -> bool {
+impl OcclusionTester for SimpleOcclusionTester {
+    fn unoccluded(&self, scene: &Scene) -> bool {
         !scene.is_occluded(&self.ray)
     }
+}
 
-    // fn transmittance(&self, scene: &Scene, sampler: &Sampler) -> Spectrum;
+pub struct SampledOcclusionTester {
+    rays: [Ray; LIGHT_SAMPLES_3D],
+}
+
+impl SampledOcclusionTester {
+    pub fn new(rays: [Ray; LIGHT_SAMPLES_3D]) -> Self {
+        Self { rays }
+    }
+}
+
+impl OcclusionTester for SampledOcclusionTester {
+    fn unoccluded(&self, scene: &Scene) -> bool {
+        self.rays.iter().any(|ray| !scene.is_occluded(ray))
+    }
 }
 
 pub struct LightSample {
     pub spectrum: Spectrum,
     pub incident: Vec3,
     pub pdf: f32,
-    pub occlusion_tester: OcclusionTester,
+    pub occlusion_tester: Box<dyn OcclusionTester>,
 }
 
 impl LightSample {
@@ -50,13 +69,13 @@ impl LightSample {
         spectrum: Spectrum,
         incident: Vec3,
         pdf: f32,
-        visibility_tester: OcclusionTester,
+        occlusion_tester: Box<dyn OcclusionTester>,
     ) -> Self {
         Self {
             spectrum,
             incident,
             pdf,
-            occlusion_tester: visibility_tester,
+            occlusion_tester,
         }
     }
 }
@@ -64,7 +83,7 @@ impl LightSample {
 pub trait Light: Send + Sync {
     fn is_delta_light(&self) -> bool;
 
-    fn sample(&self, intersection: &SceneIntersection) -> LightSample;
+    fn sample(&self, intersection: &SceneIntersection, sample: &Vec3) -> LightSample;
 }
 
 #[derive(Debug)]
@@ -99,55 +118,18 @@ impl Light for PointLight {
         true
     }
 
-    fn sample(&self, intersection: &SceneIntersection) -> LightSample {
+    fn sample(&self, intersection: &SceneIntersection, _: &Vec3) -> LightSample {
         let dir = self.position - intersection.info.point;
 
         let incident = dir.normalized();
         let pdf = 1.0;
-        let occlusion_tester = OcclusionTester::new(intersection.info.point, self.position);
+        let occlusion_tester = Box::new(SimpleOcclusionTester::new(
+            intersection.info.point,
+            self.position,
+        ));
 
         let intensity = self.intensity / dir.mag_sq();
 
         LightSample::new(intensity, incident, pdf, occlusion_tester)
-    }
-}
-
-#[derive(Debug)]
-pub struct Emitter {
-    geometry: Arc<dyn Geometry>,
-    pub emission: Spectrum,
-}
-
-impl Emitter {
-    pub fn new(geometry: Arc<dyn Geometry>, emission: Spectrum) -> Self {
-        Self { geometry, emission }
-    }
-}
-
-impl Geometry for Emitter {
-    fn bounding_box(&self) -> Aabb {
-        self.geometry.bounding_box()
-    }
-
-    fn sample_surface(&self, sample: &Vec3) -> Vec3 {
-        self.geometry.sample_surface(sample)
-    }
-
-    fn intersect(&self, ray: &Ray) -> Option<GeometryInfo> {
-        self.geometry.intersect(ray)
-    }
-
-    fn intersects(&self, ray: &Ray) -> bool {
-        self.geometry.intersects(ray)
-    }
-}
-
-impl Light for Emitter {
-    fn is_delta_light(&self) -> bool {
-        false
-    }
-
-    fn sample(&self, intersection: &SceneIntersection) -> LightSample {
-        unimplemented!()
     }
 }

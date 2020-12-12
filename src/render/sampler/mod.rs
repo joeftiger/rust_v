@@ -1,4 +1,4 @@
-use ultraviolet::Vec2;
+use ultraviolet::{Vec2, Vec3};
 
 /// A sample consisting of a 1D and 2D sample.
 #[derive(Debug)]
@@ -16,10 +16,17 @@ impl Sample {
 pub trait Sampler: Send + Sync {
     fn get_1d(&self) -> f32;
 
+    #[inline]
     fn get_2d(&self) -> Vec2 {
         Vec2::new(self.get_1d(), self.get_1d())
     }
 
+    #[inline]
+    fn get_3d(&self) -> Vec3 {
+        Vec3::new(self.get_1d(), self.get_1d(), self.get_1d())
+    }
+
+    #[inline]
     fn get_sample(&self) -> Sample {
         Sample::new(self.get_1d(), self.get_2d())
     }
@@ -36,6 +43,7 @@ impl Default for RandomSampler {
 }
 
 impl Sampler for RandomSampler {
+    #[inline]
     fn get_1d(&self) -> f32 {
         let rand = fastrand::f32();
         debug_assert_ne!(rand, 1.0);

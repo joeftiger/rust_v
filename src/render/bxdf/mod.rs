@@ -255,6 +255,7 @@ pub trait BxDF: Debug + Send + Sync {
     ///
     /// # Results
     /// * `f32` - The evaluated pdf
+    #[inline]
     fn pdf(&self, incident: &Vec3, outgoing: &Vec3) -> f32 {
         if same_hemisphere(incident, outgoing) {
             cos_theta(incident).abs() * FRAC_1_PI

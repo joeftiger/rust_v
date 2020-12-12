@@ -10,6 +10,7 @@ use ultraviolet::Vec3;
 pub struct DebugNormals;
 
 impl Integrator for DebugNormals {
+    #[inline(always)]
     fn integrate(&self, scene: &Scene, primary_ray: &Ray, _: Arc<dyn Sampler>) -> Spectrum {
         if let Some(si) = scene.intersect(primary_ray) {
             let color = (si.info.normal + Vec3::one()) / 2.0;

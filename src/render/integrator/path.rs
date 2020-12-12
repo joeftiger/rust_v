@@ -60,7 +60,7 @@ impl Integrator for Path {
             }
 
             for light in &scene.lights {
-                let light_sample = light.sample(&hit);
+                let light_sample = light.sample(&hit, &sampler.get_3d());
 
                 if light_sample.pdf > 0.0 && !light_sample.spectrum.is_black() {
                     let c = bsdf.evaluate(normal, &light_sample.incident, outgoing, BxDFType::ALL);

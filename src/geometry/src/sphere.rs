@@ -27,12 +27,14 @@ impl Container for Sphere {
 }
 
 impl Geometry for Sphere {
+    #[inline]
     fn bounding_box(&self) -> Aabb {
         let offset = Vec3::one() * self.radius;
 
         Aabb::new(self.center - offset, self.center + offset)
     }
 
+    #[inline]
     fn sample_surface(&self, sample: &Vec3) -> Vec3 {
         let theta = sample.x * 2.0;
         let phi = sample.y * 2.0;
@@ -72,6 +74,7 @@ impl Geometry for Sphere {
         Some(GeometryInfo::new(*ray, t_min, point, normal))
     }
 
+    #[inline]
     fn intersects(&self, ray: &Ray) -> bool {
         let dir = ray.direction;
         let oc = ray.origin - self.center;

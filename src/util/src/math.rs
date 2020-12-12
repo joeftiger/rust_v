@@ -8,6 +8,8 @@ use crate::floats;
 ///
 /// # Returns
 /// * `Option<(f32, f32)>` - The solutions in ascending order (if any)
+#[inline(always)]
+#[must_use]
 pub fn solve_quadratic(a: f32, b: f32, c: f32) -> Option<(f32, f32)> {
     debug_assert!(!a.is_nan());
     debug_assert!(!b.is_nan());
@@ -41,7 +43,8 @@ pub fn solve_quadratic(a: f32, b: f32, c: f32) -> Option<(f32, f32)> {
 }
 
 #[allow(clippy::excessive_precision)]
-#[inline]
+#[inline(always)]
+#[must_use]
 pub fn erf(x: f32) -> f32 {
     // constants
     let a1 = 0.254829592;
@@ -66,7 +69,7 @@ pub fn erf(x: f32) -> f32 {
 #[inline]
 pub fn erf_inv(x: f32) -> f32 {
     let x = floats::fast_clamp(x, -1.0 + floats::BIG_EPSILON, 1.0 - floats::BIG_EPSILON);
-    
+
     let mut w = -f32::ln((1.0 - x) * (1.0 + x));
     let mut p: f32;
     if w < 5.0 {

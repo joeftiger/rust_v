@@ -43,7 +43,7 @@ impl Integrator for Whitted {
         let mut color = Spectrum::black();
 
         for light in &scene.lights {
-            let light_sample = light.sample(intersection);
+            let light_sample = light.sample(intersection, &sampler.get_3d());
 
             if light_sample.pdf > 0.0 && !light_sample.spectrum.is_black() {
                 let c = bsdf.evaluate(normal, &light_sample.incident, &outgoing, BxDFType::ALL);

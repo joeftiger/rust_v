@@ -60,6 +60,7 @@ impl Camera {
         }
     }
 
+    #[inline]
     pub fn primary_ray(&self, x: u32, y: u32, sample: &Vec2) -> Ray {
         let origin = self.position;
         let direction = self.lower_left
