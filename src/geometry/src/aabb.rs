@@ -121,9 +121,9 @@ impl Geometry for Aabb {
 
     #[rustfmt::skip]
     fn sample_surface(&self, sample: &Vec3) -> Vec3 {
-        let mut x;
-        let mut y;
-        let mut z;
+        let x;
+        let y;
+        let z;
         if sample.x < sample.y && sample.x < sample.z {
             x = if sample.y < sample.z { self.min.x } else { self.max.x };
             y = self.min.y.lerp(self.max.y, sample.y);
