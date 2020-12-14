@@ -221,6 +221,10 @@ impl Renderer {
 
                 let mut lock = this.render_blocks[index].lock().expect("Block is poisoned");
                 lock.stats.iter_mut().for_each(|stats| {
+                    if stats.x == this.config.width / 2 && stats.y == this.config.height / 2 {
+                        debug_assert_eq!(1, 1);
+                    }
+
                     let pixel = this.render(stats.x, stats.y); //.clamp(0.0, 1.0); // FIXME
                     stats.spectrum += pixel;
                     stats.samples += 1;

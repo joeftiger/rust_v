@@ -47,7 +47,7 @@ impl Integrator for Path {
         let mut specular = false;
 
         for bounce in 0..self.max_depth {
-            let outgoing = &-hit.info.ray.direction;
+            let outgoing = -hit.info.ray.direction;
 
             let material = &hit.obj.material;
             let bsdf = &material.bsdf;
@@ -56,20 +56,22 @@ impl Integrator for Path {
             let mut illumination = Spectrum::black();
 
             if (bounce == 0 || specular) && material.emissive() {
-                illumination += throughput * material.radiance(outgoing, normal);
+                illumination += throughput * material.radiance(&outgoing, normal);
             }
 
             for light in &scene.lights {
                 let light_sample = light.sample(&hit, &sampler.get_3d());
 
-                if light_sample.pdf > 0.0 && !light_sample.spectrum.is_black() {
-                    let c = bsdf.evaluate(normal, &light_sample.incident, outgoing, BxDFType::ALL);
+                if light_sample.pdf > 0.0 {
+                    if let Some((intensity, incident)) = light_sample.light_tester.test(scene) {
+                        let c = bsdf.evaluate(normal, &incident, &outgoing, BxDFType::ALL);
 
-                    if !c.is_black() && light_sample.occlusion_tester.unoccluded(scene) {
-                        let cos = light_sample.incident.dot(*normal).abs();
+                        if !c.is_black() {
+                            let cos = incident.dot(*normal).abs();
 
-                        if cos != 0.0 {
-                            illumination += light_sample.spectrum * c * (cos / light_sample.pdf);
+                            if cos != 0.0 {
+                                illumination += light.spectrum() * c * (intensity * cos / light_sample.pdf);
+                            }
                         }
                     }
                 }
@@ -79,7 +81,7 @@ impl Integrator for Path {
 
             let sample = sampler.get_sample();
 
-            let bxdf_sample = bsdf.sample(normal, outgoing, BxDFType::ALL, &sample);
+            let bxdf_sample = bsdf.sample(normal, &outgoing, BxDFType::ALL, &sample);
             if let Some(bxdf_sample) = bxdf_sample {
                 if bxdf_sample.pdf == 0.0 || bxdf_sample.spectrum.is_black() {
                     break;

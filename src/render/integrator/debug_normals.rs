@@ -28,6 +28,6 @@ impl Integrator for DebugNormals {
         _: Arc<dyn Sampler>,
         _: u32,
     ) -> Spectrum {
-        Spectrum::black()
+        unreachable!()
     }
 }

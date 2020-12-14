@@ -19,69 +19,80 @@ bitflags! {
     }
 }
 
-pub trait OcclusionTester {
-    fn unoccluded(&self, scene: &Scene) -> bool;
+pub trait LightTester {
+    fn test(&self, scene: &Scene) -> Option<(f32, Vec3)>;
 }
 
 pub struct SimpleOcclusionTester {
+    intensity: f32,
     ray: Ray,
 }
 
 impl SimpleOcclusionTester {
     pub fn new(from: Vec3, to: Vec3) -> Self {
+        let intensity = 1.0 / (to - from).mag_sq();
+
         let mut ray = Ray::in_range(&from, &to);
         ray.t_start = floats::BIG_EPSILON;
-        Self { ray }
+        ray.t_end -= floats::BIG_EPSILON;
+
+        Self { intensity, ray }
     }
 }
 
-impl OcclusionTester for SimpleOcclusionTester {
-    fn unoccluded(&self, scene: &Scene) -> bool {
-        !scene.is_occluded(&self.ray)
+impl LightTester for SimpleOcclusionTester {
+    fn test(&self, scene: &Scene) -> Option<(f32, Vec3)> {
+        if scene.is_occluded(&self.ray) {
+            None
+        } else {
+            Some((self.intensity, self.ray.direction))
+        }
     }
 }
 
-pub struct SampledOcclusionTester {
+pub struct SampledLightTester {
+    intensities: [f32; LIGHT_SAMPLES_3D],
     rays: [Ray; LIGHT_SAMPLES_3D],
 }
 
-impl SampledOcclusionTester {
-    pub fn new(rays: [Ray; LIGHT_SAMPLES_3D]) -> Self {
-        Self { rays }
+impl SampledLightTester {
+    pub fn new(intensities: [f32; LIGHT_SAMPLES_3D], rays: [Ray; LIGHT_SAMPLES_3D]) -> Self {
+        Self { intensities, rays }
     }
 }
 
-impl OcclusionTester for SampledOcclusionTester {
-    fn unoccluded(&self, scene: &Scene) -> bool {
-        self.rays.iter().any(|ray| !scene.is_occluded(ray))
+impl LightTester for SampledLightTester {
+    fn test(&self, scene: &Scene) -> Option<(f32, Vec3)> {
+        self.intensities.iter().zip(self.rays.iter())
+            .filter_map(|(i, ray)| if scene.is_occluded(ray) {
+            None
+        } else {
+            Some((*i, ray.direction))
+        }).next()
     }
 }
 
 pub struct LightSample {
-    pub spectrum: Spectrum,
-    pub incident: Vec3,
     pub pdf: f32,
-    pub occlusion_tester: Box<dyn OcclusionTester>,
+    pub light_tester: Box<dyn LightTester>,
 }
 
 impl LightSample {
     pub fn new(
-        spectrum: Spectrum,
-        incident: Vec3,
         pdf: f32,
-        occlusion_tester: Box<dyn OcclusionTester>,
+        light_tester: Box<dyn LightTester>,
     ) -> Self {
         Self {
-            spectrum,
-            incident,
             pdf,
-            occlusion_tester,
+            light_tester,
         }
     }
 }
 
 pub trait Light: Send + Sync {
     fn is_delta_light(&self) -> bool;
+
+    fn spectrum(&self) -> Spectrum;
 
     fn sample(&self, intersection: &SceneIntersection, sample: &Vec3) -> LightSample;
 }
@@ -118,18 +129,17 @@ impl Light for PointLight {
         true
     }
 
-    fn sample(&self, intersection: &SceneIntersection, _: &Vec3) -> LightSample {
-        let dir = self.position - intersection.info.point;
+    fn spectrum(&self) -> Spectrum {
+        self.intensity
+    }
 
-        let incident = dir.normalized();
+    fn sample(&self, intersection: &SceneIntersection, _: &Vec3) -> LightSample {
         let pdf = 1.0;
         let occlusion_tester = Box::new(SimpleOcclusionTester::new(
             intersection.info.point,
             self.position,
         ));
 
-        let intensity = self.intensity / dir.mag_sq();
-
-        LightSample::new(intensity, incident, pdf, occlusion_tester)
+        LightSample::new(pdf, occlusion_tester)
     }
 }

@@ -40,19 +40,21 @@ impl Integrator for Whitted {
         let point = &intersection.info.point;
         let normal = &intersection.info.normal;
 
-        let mut color = Spectrum::black();
+        let mut illumination = Spectrum::black();
 
         for light in &scene.lights {
-            let light_sample = light.sample(intersection, &sampler.get_3d());
+            let light_sample = light.sample(&intersection, &sampler.get_3d());
 
-            if light_sample.pdf > 0.0 && !light_sample.spectrum.is_black() {
-                let c = bsdf.evaluate(normal, &light_sample.incident, &outgoing, BxDFType::ALL);
+            if light_sample.pdf > 0.0 {
+                if let Some((intensity, incident)) = light_sample.light_tester.test(scene) {
+                    let c = bsdf.evaluate(normal, &incident, &outgoing, BxDFType::ALL);
 
-                if !c.is_black() && light_sample.occlusion_tester.unoccluded(scene) {
-                    let cos = light_sample.incident.dot(*normal).abs();
+                    if !c.is_black() {
+                        let cos = incident.dot(*normal).abs();
 
-                    if cos != 0.0 {
-                        color += light_sample.spectrum * c * (cos / light_sample.pdf);
+                        if cos != 0.0 {
+                            illumination += light.spectrum() * c * (intensity * cos / light_sample.pdf);
+                        }
                     }
                 }
             }
@@ -61,10 +63,10 @@ impl Integrator for Whitted {
         let new_depth = depth - 1;
 
         if new_depth > 0 {
-            color += self.specular_reflection(scene, intersection, sampler.clone(), new_depth);
-            color += self.specular_transmission(scene, intersection, sampler, new_depth);
+            illumination += self.specular_reflection(scene, intersection, sampler.clone(), new_depth);
+            illumination += self.specular_transmission(scene, intersection, sampler, new_depth);
         }
 
-        color
+        illumination
     }
 }

@@ -10,12 +10,7 @@ pub struct Material {
 }
 
 impl Material {
-    pub fn new(emission: Spectrum, bsdf: BSDF) -> Self {
-        let emission = if emission.is_black() {
-            None
-        } else {
-            Some(emission)
-        };
+    pub fn new(emission: Option<Spectrum>, bsdf: BSDF) -> Self {
         Self { emission, bsdf }
     }
 
@@ -44,6 +39,6 @@ impl Default for Material {
 
 impl From<BSDF> for Material {
     fn from(bsdf: BSDF) -> Self {
-        Self::new(Spectrum::black(), bsdf)
+        Self::new(None, bsdf)
     }
 }
