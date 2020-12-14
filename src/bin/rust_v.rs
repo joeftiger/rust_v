@@ -51,7 +51,7 @@ lazy_static! {
             Ok(height) => height,
             Err(err) => panic!("Cannot parse height: {}", err),
         };
-        let depth = match matches.value_of(DEPTH).unwrap_or("20").parse() {
+        let depth = match matches.value_of(DEPTH).unwrap_or("6").parse() {
             Ok(depth) => depth,
             Err(err) => panic!("Cannot parse depth: {}", err),
         };
