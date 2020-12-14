@@ -1,4 +1,4 @@
-use crate::demos::*;
+use crate::demo_scenes::*;
 #[cfg(feature = "live-window")]
 use crate::render::fast_window::FastWindow;
 use crate::render::integrator::debug_normals::DebugNormals;
@@ -10,6 +10,7 @@ use crate::render::sampler::{NoopSampler, RandomSampler, Sampler};
 use std::convert::TryInto;
 use std::sync::Arc;
 use std::time::Instant;
+use crate::demo_scenes::debug::DebugScene;
 
 #[derive(Debug, Clone)]
 pub struct Configuration {
@@ -31,8 +32,9 @@ impl Configuration {
     /// Creates a renderer instance from this configuration file.
     pub fn create_renderer(&self) -> Renderer {
         let (scene, camera) = match self.demo_type {
-            DemoType::Spheres => Spheres::create(self.width, self.height),
-            DemoType::Cornell => CornellBox::create(self.width, self.height),
+            DemoType::SphereScene => SphereScene::create(self.width, self.height),
+            DemoType::CornellScene => CornellScene::create(self.width, self.height),
+            DemoType::DebugScene => DebugScene::create(self.width, self.height),
         };
         let scene = Arc::new(scene);
         let camera = Arc::new(camera);
@@ -171,8 +173,9 @@ impl TryInto<IntegratorType> for &str {
 
 #[derive(Debug, Clone)]
 pub enum DemoType {
-    Spheres,
-    Cornell,
+    SphereScene,
+    CornellScene,
+    DebugScene,
 }
 
 impl TryInto<DemoType> for &str {
@@ -180,8 +183,9 @@ impl TryInto<DemoType> for &str {
 
     fn try_into(self) -> Result<DemoType, Self::Error> {
         match self {
-            "spheres" | "Spheres" | "SPHERES" => Ok(DemoType::Spheres),
-            "cornell" | "Cornell" | "CORNELL" => Ok(DemoType::Cornell),
+            "spheres" | "Spheres" | "SPHERES" => Ok(DemoType::SphereScene),
+            "cornell" | "Cornell" | "CORNELL" => Ok(DemoType::CornellScene),
+            "debug" | "Debug" | "DEBUG" => Ok(DemoType::DebugScene),
             _ => Err(self.to_string()),
         }
     }

@@ -1,4 +1,4 @@
-use crate::demos::{DemoScene, FOVY, SIGMA};
+use crate::demo_scenes::{DemoScene, FOVY, SIGMA};
 use crate::render::bxdf::bsdf::BSDF;
 use crate::render::bxdf::fresnel::{Dielectric, FresnelNoOp};
 use crate::render::bxdf::lambertian::LambertianReflection;
@@ -18,9 +18,9 @@ use ultraviolet::Vec3;
 
 const RADIUS: f32 = 0.5;
 
-pub struct Spheres;
+pub struct SphereScene;
 
-impl Spheres {
+impl SphereScene {
     fn ground() -> SceneObject {
         let min = Vec3::new(-10000.0, -5.0, -10000.0);
         let max = Vec3::new(10000.0, 0.0, 10000.0);
@@ -63,7 +63,7 @@ impl Spheres {
             if rand < 0.6 {
                 let oren_nayar = OrenNayar::new(color, SIGMA);
                 let bsdf = BSDF::new(vec![Box::new(oren_nayar)]);
-                Material::new(color, bsdf)
+                Material::new(Some(color), bsdf)
             } else if rand < 0.8 {
                 let reflection = SpecularReflection::new(color, Arc::new(FresnelNoOp));
                 let bsdf = BSDF::new(vec![Box::new(reflection)]);
@@ -82,13 +82,13 @@ impl Spheres {
     }
 
     fn big_emitter() -> SceneObject {
-        let min = Vec3::new(-100.0, 100.0, -100.0);
-        let max = Vec3::new(100.0, 200.0, 100.0);
+        let min = Vec3::new(-10.0, 100.0, -100.0);
+        let max = Vec3::new(10.0, 200.0, 10.0);
         let aabb = Box::new(Aabb::new(min, max));
 
         let lambertian = LambertianReflection::new(Spectrum::black());
         let bsdf = BSDF::new(vec![Box::new(lambertian)]);
-        let material = Material::new(Spectrum::white() * 10.0, bsdf);
+        let material = Material::new(Some(Spectrum::white()), bsdf);
 
         SceneObject::new(aabb, material)
     }
@@ -117,7 +117,7 @@ impl Spheres {
         }
 
         scene.push_obj(Self::ground());
-        // scene.push_obj(Self::big_emitter());
+        scene.push_obj(Self::big_emitter());
         scene.push_light(Self::light());
 
         scene.build_bvh();
@@ -135,7 +135,7 @@ impl Spheres {
     }
 }
 
-impl DemoScene for Spheres {
+impl DemoScene for SphereScene {
     fn create(width: u32, height: u32) -> (Scene, Camera) {
         fastrand::seed(0);
         (Self::create_scene(), Self::create_camera(width, height))

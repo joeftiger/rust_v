@@ -3,9 +3,10 @@ use crate::render::scene::Scene;
 
 pub mod cornell_box;
 pub mod spheres;
+pub mod debug;
 
-pub use cornell_box::CornellBox;
-pub use spheres::Spheres;
+pub use cornell_box::CornellScene;
+pub use spheres::SphereScene;
 
 pub const SIGMA: f32 = 20.0;
 pub const FOVY: f32 = 70.0;

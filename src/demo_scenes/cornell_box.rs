@@ -1,7 +1,7 @@
 #![allow(dead_code)]
 #![allow(unused_imports)]
 
-use crate::demos::{DemoScene, FOVY, SIGMA};
+use crate::demo_scenes::{DemoScene, FOVY, SIGMA};
 use crate::render::bxdf::bsdf::BSDF;
 use crate::render::bxdf::fresnel::{Dielectric, FresnelNoOp};
 use crate::render::bxdf::oren_nayar::OrenNayar;
@@ -37,9 +37,9 @@ pub const X_CENTER: f32 = (RIGHT_WALL + LEFT_WALL) / 2.0;
 pub const Y_CENTER: f32 = (CEILING + FLOOR) / 2.0;
 pub const Z_CENTER: f32 = (BACK_WALL + FRONT) / 2.0;
 
-pub struct CornellBox;
+pub struct CornellScene;
 
-impl CornellBox {
+impl CornellScene {
     fn create_box() -> Scene {
         let mut scene = Scene::default();
 
@@ -102,7 +102,7 @@ impl CornellBox {
         let color = Spectrum::white();
         let oren_nayar = OrenNayar::new(color, SIGMA);
         let bsdf = BSDF::new(vec![Box::new(oren_nayar)]);
-        let material = Material::new(color * 10.0, bsdf);
+        let material = Material::new(Some(color * 10.0), bsdf);
 
         SceneObject::new(Box::new(sphere), material)
     }
@@ -296,7 +296,7 @@ impl CornellBox {
     }
 }
 
-impl DemoScene for CornellBox {
+impl DemoScene for CornellScene {
     fn create(width: u32, height: u32) -> (Scene, Camera) {
         (Self::create_box(), Self::create_camera(width, height))
     }

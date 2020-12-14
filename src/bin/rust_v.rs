@@ -8,8 +8,9 @@ use rust_v::configuration::{Configuration, DemoType, IntegratorType, PixelType};
 use std::convert::TryInto;
 
 const LIVE: &str = "LIVE_WINDOW";
-const SPHERES: &str = "spheres";
-const CORNELL: &str = "cornell";
+const SPHERE_SCENE: &str = "spheres";
+const CORNELL_SCENE: &str = "cornell";
+const DEBUG_SCENE: &str = "debug";
 const VERBOSE: &str = "VERBOSE";
 #[allow(dead_code)]
 const INPUT: &str = "INPUT";
@@ -32,12 +33,14 @@ lazy_static! {
 
         let app_matches = App::from_yaml(yaml).get_matches();
 
-        let demo = if let Some(spheres) = app_matches.subcommand_matches(SPHERES) {
-            (spheres, DemoType::Spheres)
-        } else if let Some(cornell) = app_matches.subcommand_matches(CORNELL) {
-            (cornell, DemoType::Cornell)
+        let demo = if let Some(spheres) = app_matches.subcommand_matches(SPHERE_SCENE) {
+            (spheres, DemoType::SphereScene)
+        } else if let Some(cornell) = app_matches.subcommand_matches(CORNELL_SCENE) {
+            (cornell, DemoType::CornellScene)
+        } else if let Some(debug) = app_matches.subcommand_matches(DEBUG_SCENE) {
+            (debug, DemoType::DebugScene)
         } else {
-            panic!("Currently we only support the subcommands (spheres, cornell)!");
+            panic!("Currently we only support the subcommands (spheres, cornell, debug)!");
         };
 
         let matches = demo.0;
