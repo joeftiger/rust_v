@@ -23,12 +23,13 @@ pub trait LightTester {
     fn test(&self, scene: &Scene) -> Option<(f32, Vec3)>;
 }
 
-pub struct SimpleOcclusionTester {
+#[derive(Copy, Clone, Default)]
+pub struct SimpleLightTester {
     intensity: f32,
     ray: Ray,
 }
 
-impl SimpleOcclusionTester {
+impl SimpleLightTester {
     pub fn new(from: Vec3, to: Vec3) -> Self {
         let intensity = 1.0 / (to - from).mag_sq();
 
@@ -40,7 +41,7 @@ impl SimpleOcclusionTester {
     }
 }
 
-impl LightTester for SimpleOcclusionTester {
+impl LightTester for SimpleLightTester {
     fn test(&self, scene: &Scene) -> Option<(f32, Vec3)> {
         if scene.is_occluded(&self.ray) {
             None
@@ -51,24 +52,18 @@ impl LightTester for SimpleOcclusionTester {
 }
 
 pub struct SampledLightTester {
-    intensities: [f32; LIGHT_SAMPLES_3D],
-    rays: [Ray; LIGHT_SAMPLES_3D],
+    light_testers: [SimpleLightTester; LIGHT_SAMPLES_3D],
 }
 
 impl SampledLightTester {
-    pub fn new(intensities: [f32; LIGHT_SAMPLES_3D], rays: [Ray; LIGHT_SAMPLES_3D]) -> Self {
-        Self { intensities, rays }
+    pub fn new(light_testers: [SimpleLightTester; LIGHT_SAMPLES_3D]) -> Self {
+        Self { light_testers }
     }
 }
 
 impl LightTester for SampledLightTester {
     fn test(&self, scene: &Scene) -> Option<(f32, Vec3)> {
-        self.intensities.iter().zip(self.rays.iter())
-            .filter_map(|(i, ray)| if scene.is_occluded(ray) {
-            None
-        } else {
-            Some((*i, ray.direction))
-        }).next()
+        self.light_testers.iter().filter_map(|t| t.test(scene)).next()
     }
 }
 
@@ -110,18 +105,6 @@ impl PointLight {
             intensity,
         }
     }
-
-    pub fn direction_from(&self, point: &Vec3) -> Vec3 {
-        (self.position - *point).normalized()
-    }
-
-    pub fn direction_to(&self, point: &Vec3) -> Vec3 {
-        (*point - self.position).normalized()
-    }
-
-    pub fn distance(&self, point: &Vec3) -> f32 {
-        (self.position - *point).mag()
-    }
 }
 
 impl Light for PointLight {
@@ -135,7 +118,7 @@ impl Light for PointLight {
 
     fn sample(&self, intersection: &SceneIntersection, _: &Vec3) -> LightSample {
         let pdf = 1.0;
-        let occlusion_tester = Box::new(SimpleOcclusionTester::new(
+        let occlusion_tester = Box::new(SimpleLightTester::new(
             intersection.info.point,
             self.position,
         ));

@@ -1,4 +1,4 @@
-use crate::render::light::{Light, LightSample, SampledLightTester, LIGHT_SAMPLE_DELTA};
+use crate::render::light::{Light, LightSample, SampledLightTester, LIGHT_SAMPLE_DELTA, SimpleLightTester};
 use crate::render::material::Material;
 use crate::render::scene::SceneIntersection;
 use crate::{LIGHT_SAMPLES_1D, LIGHT_SAMPLES_3D, Spectrum};
@@ -6,7 +6,6 @@ use geometry::aabb::Aabb;
 use geometry::ray::Ray;
 use geometry::{DefaultGeometry, Geometry, GeometryInfo};
 use ultraviolet::Vec3;
-use util::floats;
 use color::Color;
 
 #[derive(Debug)]
@@ -51,10 +50,7 @@ impl Light for SceneObject {
     }
 
     fn sample(&self, intersection: &SceneIntersection, sample: &Vec3) -> LightSample {
-        let mut direction = Vec3::zero();
-
-        let mut intensities = [0.0; LIGHT_SAMPLES_3D];
-        let mut rays = [Ray::default(); LIGHT_SAMPLES_3D];
+        let mut light_testers = [SimpleLightTester::default(); LIGHT_SAMPLES_3D];
         let mut i = 0;
         for x in 0..LIGHT_SAMPLES_1D {
             for y in 0..LIGHT_SAMPLES_1D {
@@ -69,29 +65,16 @@ impl Light for SceneObject {
                     );
 
                     let position = self.shape.sample_surface(&new_sample);
-                    let dir = position - intersection.info.point;
-                    direction += dir;
 
-                    let ray = Ray::with(
-                        intersection.info.point,
-                        dir.normalized(),
-                        floats::BIG_EPSILON,
-                        dir.mag() - floats::BIG_EPSILON
-                    );
-
-                    intensities[i] = 1.0 / dir.mag_sq();
-                    rays[i] = ray;
-
+                    light_testers[i] = SimpleLightTester::new(intersection.info.point, position);
                     i += 1;
                 }
             }
         }
         debug_assert_eq!(i, LIGHT_SAMPLES_3D);
 
-        direction /= LIGHT_SAMPLES_3D as f32;
-
         let pdf = 1.0;
-        let light_tester = Box::new(SampledLightTester::new(intensities, rays));
+        let light_tester = Box::new(SampledLightTester::new(light_testers));
 
 
         LightSample::new(pdf, light_tester)
