@@ -59,7 +59,11 @@ impl Integrator for Path {
                 illumination += throughput * material.radiance(&outgoing, normal);
             }
 
+
             for light in &scene.lights {
+            // for _ in 0..LIGHT_SAMPLES_1D.min(scene.lights.len()) {
+            //     let index = (sampler.get_1d() * scene.lights.len() as f32) as usize;
+            //     let light = &scene.lights[index];
                 let light_sample = light.sample(&hit, &sampler.get_3d());
 
                 if light_sample.pdf > 0.0 {
