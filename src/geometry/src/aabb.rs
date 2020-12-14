@@ -1,4 +1,4 @@
-use ultraviolet::Vec3;
+use ultraviolet::{Vec3, Lerp};
 use util::floats;
 
 use crate::ray::Ray;
@@ -83,6 +83,27 @@ impl Aabb {
     pub fn overlaps(&self, other: &Self) -> bool {
         self.min.lt(&other.max) && self.max.gt(&other.min)
     }
+
+    /// Returns the corners of this aabb from bottom to top in the order of:
+    /// * left back
+    /// * right back
+    /// * right front
+    /// * left front
+    pub fn corners(&self) -> [Vec3; 8] {
+        let min = self.min;
+        let max = self.max;
+
+        let a = min;
+        let b = Vec3::new(max.x, min.y, min.z);
+        let c = Vec3::new(max.x, min.y, max.z);
+        let d = Vec3::new(min.x, min.y, max.z);
+        let e = Vec3::new(min.x, max.y, min.z);
+        let f = Vec3::new(max.x, max.y, min.z);
+        let g = max;
+        let h = Vec3::new(min.x, max.y, max.z);
+
+        [a, b, c, d, e, f, g, h]
+    }
 }
 
 impl Container for Aabb {
@@ -100,9 +121,22 @@ impl Geometry for Aabb {
 
     #[rustfmt::skip]
     fn sample_surface(&self, sample: &Vec3) -> Vec3 {
-        let x = if sample.x < 0.5 { self.min.x } else { self.max.x };
-        let y = if sample.y < 0.5 { self.min.y } else { self.max.y };
-        let z = if sample.z < 0.5 { self.min.z } else { self.max.z };
+        let mut x;
+        let mut y;
+        let mut z;
+        if sample.x < sample.y && sample.x < sample.z {
+            x = if sample.y < sample.z { self.min.x } else { self.max.x };
+            y = self.min.y.lerp(self.max.y, sample.y);
+            z = self.min.z.lerp(self.max.z, sample.z);
+        } else if sample.y < sample.z && sample.y < sample.x {
+            x = self.min.x.lerp(self.max.x, sample.x);
+            y = if sample.z < sample.x { self.min.y } else { self.max.y };
+            z = self.min.z.lerp(self.max.z, sample.x);
+        } else {
+            x = self.min.x.lerp(self.max.x, sample.x);
+            y = self.min.y.lerp(self.max.y, sample.y);
+            z = if sample.x < sample.y { self.min.z } else { self.max.z };
+        }
 
         Vec3::new(x, y, z)
     }
