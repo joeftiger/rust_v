@@ -36,18 +36,7 @@ impl Geometry for Sphere {
 
     #[inline]
     fn sample_surface(&self, sample: &Vec3) -> Vec3 {
-        let theta = sample.x * 2.0;
-        let phi = sample.y * 2.0;
-
-        let phi_sin = phi.sin();
-
-        let v = Vec3::new(
-            self.radius * phi_sin * theta.cos(),
-            self.radius * phi_sin * theta.sin(),
-            self.radius * phi.cos(),
-        );
-
-        self.center + v
+        self.center + sample.normalized() * self.radius
     }
 
     fn intersect(&self, ray: &Ray) -> Option<GeometryInfo> {
