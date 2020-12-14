@@ -11,9 +11,12 @@ pub struct FastWindow {
 
 impl FastWindow {
     pub fn new(name: String, config: Configuration, renderer: Renderer) -> Result<Self, String> {
-        let div = f32::max(config.width as f32 / 900.0, config.height as f32 / 900.0).max(1.0);
-        let width = (config.width as f32 / div) as u32;
-        let height = (config.height as f32 / div) as u32;
+        // let div = f32::max(config.width as f32 / 900.0, config.height as f32 / 900.0).max(1.0);
+        // let width = (config.width as f32 / div) as u32;
+        // let height = (config.height as f32 / div) as u32;
+
+        let width = 900;
+        let height = 900;
 
         let options = WindowOptions::default()
             .set_name(name)
