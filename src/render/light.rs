@@ -31,6 +31,13 @@ pub struct SimpleLightTester {
 
 impl SimpleLightTester {
     pub fn new(from: Vec3, to: Vec3) -> Self {
+        debug_assert!(!from.x.is_nan());
+        debug_assert!(!from.y.is_nan());
+        debug_assert!(!from.z.is_nan());
+        debug_assert!(!to.x.is_nan());
+        debug_assert!(!to.y.is_nan());
+        debug_assert!(!to.z.is_nan());
+
         let intensity = 1.0 / (to - from).mag_sq();
 
         let mut ray = Ray::in_range(&from, &to);

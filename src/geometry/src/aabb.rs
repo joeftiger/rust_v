@@ -138,6 +138,10 @@ impl Geometry for Aabb {
             z = if sample.x < sample.y { self.min.z } else { self.max.z };
         }
 
+        debug_assert!(!x.is_nan());
+        debug_assert!(!y.is_nan());
+        debug_assert!(!z.is_nan());
+
         Vec3::new(x, y, z)
     }
 

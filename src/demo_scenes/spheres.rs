@@ -63,7 +63,7 @@ impl SphereScene {
             if rand < 0.6 {
                 let oren_nayar = OrenNayar::new(color, SIGMA);
                 let bsdf = BSDF::new(vec![Box::new(oren_nayar)]);
-                Material::new(Some(color), bsdf)
+                Material::new(Some(color * 0.5), bsdf)
             } else if rand < 0.8 {
                 let reflection = SpecularReflection::new(color, Arc::new(FresnelNoOp));
                 let bsdf = BSDF::new(vec![Box::new(reflection)]);

@@ -14,6 +14,10 @@ pub struct Sphere {
 
 impl Sphere {
     pub fn new(center: Vec3, radius: f32) -> Self {
+        debug_assert!(!center.x.is_nan());
+        debug_assert!(!center.y.is_nan());
+        debug_assert!(!center.z.is_nan());
+        debug_assert!(!radius.is_nan());
         debug_assert!(radius > 0.0);
 
         Self { center, radius }
@@ -36,7 +40,11 @@ impl Geometry for Sphere {
 
     #[inline]
     fn sample_surface(&self, sample: &Vec3) -> Vec3 {
-        self.center + sample.normalized() * self.radius
+        debug_assert!(!sample.x.is_nan());
+        debug_assert!(!sample.y.is_nan());
+        debug_assert!(!sample.z.is_nan());
+
+        self.center + (*sample - Vec3::one() / 2.0).normalized() * self.radius
     }
 
     fn intersect(&self, ray: &Ray) -> Option<GeometryInfo> {

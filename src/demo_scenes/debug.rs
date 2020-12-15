@@ -41,13 +41,18 @@ impl DebugScene {
     // }
 
     fn sphere() -> SceneObject {
-        let sphere = Box::new(Sphere::new(Vec3::unit_y(), 1.0));
+        let mut min = Vec3::zero();
+        let mut max = Vec3::one();
+        min += Vec3::unit_y() / 2.0;
+        max += Vec3::unit_y() / 2.0;
+
+        let sphere = Box::new(Aabb::new(min, max));
 
         let lambertian = LambertianReflection::new(Spectrum::white());
         let bsdf = BSDF::new(vec![Box::new(lambertian)]);
         let material = Material::new(
             // None,
-            Some(Spectrum::white() * 2.0),
+            Some(Spectrum::white()),
             bsdf);
 
         SceneObject::new(sphere, material)
@@ -73,8 +78,8 @@ impl DebugScene {
 
     fn create_camera(width: u32, height: u32) -> Camera {
         Camera::new(
-            Vec3::new(0.0, 2.0, -5.0),
-            Vec3::unit_y(),
+            Vec3::new(0.0, 2.0, -4.0),
+            -Vec3::unit_y() / 4.0,
             Vec3::unit_y(),
             FOVY,
             width,
@@ -90,7 +95,7 @@ impl DemoScene for DebugScene {
         scene.push_obj(Self::sphere());
 
         // scene.push_light(Self::top_left_light());
-        scene.push_light(Self::top_light());
+        // scene.push_light(Self::top_light());
         // scene.push_light(Self::top_right_light());
 
         scene.build_bvh();

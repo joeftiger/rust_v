@@ -10,3 +10,7 @@ pub mod renderer;
 pub mod sampler;
 pub mod scene;
 pub mod scene_objects;
+
+pub trait Named {
+    fn name(&self) -> String;
+}
