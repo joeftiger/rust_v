@@ -1,11 +1,13 @@
-use crate::aabb::Aabb;
-use crate::bvh::Bvh;
-use crate::ray::Ray;
-use crate::{Geometry, GeometryInfo};
 use std::sync::Arc;
+
 use tobj::Mesh as TobjMesh;
 use ultraviolet::{Rotor3, Vec3};
 use util::floats;
+
+use crate::aabb::Aabb;
+use crate::bvh::Bvh;
+use crate::ray::Ray;
+use crate::{IntersectionInfo, Boundable, Intersectable};
 
 #[derive(Debug, PartialEq)]
 pub struct Triangle {
@@ -20,25 +22,18 @@ impl Triangle {
     }
 }
 
-impl Geometry for Triangle {
-    fn bounding_box(&self) -> Aabb {
+impl Boundable for Triangle {
+    fn bounds(&self) -> Aabb {
         let min = self.a.min_by_component(self.b.min_by_component(*self.c));
         let max = self.a.max_by_component(self.b.max_by_component(*self.c));
 
         Aabb::new(min, max)
     }
+}
 
-    fn sample_surface(&self, sample: &Vec3) -> Vec3 {
-        let x_sqrt = sample.x.sqrt();
-        let a = *self.a * (1.0 - x_sqrt);
-        let b = *self.b * (x_sqrt * (1.0 - sample.y));
-        let c = *self.c * (sample.y * x_sqrt);
-
-        a + b + c
-    }
-
+impl Intersectable for Triangle {
     #[allow(clippy::many_single_char_names)]
-    fn intersect(&self, ray: &Ray) -> Option<GeometryInfo> {
+    fn intersect(&self, ray: &Ray) -> Option<IntersectionInfo> {
         let ab = *self.b - *self.a;
         let ac = *self.c - *self.a;
         let h = ray.direction.cross(ac);
@@ -77,7 +72,7 @@ impl Geometry for Triangle {
             normal = -normal;
         }
 
-        Some(GeometryInfo::new(*ray, t, point, normal))
+        Some(IntersectionInfo::new(*ray, t, point, normal))
     }
 
     #[allow(clippy::many_single_char_names)]
@@ -108,6 +103,25 @@ impl Geometry for Triangle {
         ray.is_in_range(t)
     }
 }
+
+// impl Geometry for Triangle {
+//     fn surface_area(&self) -> f32 {
+//         let b_vec = *self.a - *self.c;
+//         let c_vec = *self.b - *self.a;
+//         let alpha = b_vec.angle_to(&c_vec);
+//
+//         b_vec.mag() * c_vec.mag() * alpha.sin() / 2.0
+//     }
+//
+//     fn sample_surface(&self, sample: &Vec3) -> Vec3 {
+//         let x_sqrt = sample.x.sqrt();
+//         let a = *self.a * (1.0 - x_sqrt);
+//         let b = *self.b * (x_sqrt * (1.0 - sample.y));
+//         let c = *self.c * (sample.y * x_sqrt);
+//
+//         a + b + c
+//     }
+// }
 
 #[allow(dead_code)]
 #[derive(Debug, Default, PartialEq)]
@@ -178,19 +192,14 @@ impl Mesh {
     }
 }
 
-impl Geometry for Mesh {
-    fn bounding_box(&self) -> Aabb {
-        self.bvh.bounding_box()
+impl Boundable for Mesh {
+    fn bounds(&self) -> Aabb {
+        self.bvh.bounds()
     }
+}
 
-    fn sample_surface(&self, sample: &Vec3) -> Vec3 {
-        // triangle sampling uses only sample.xy, z is the remaining random variable
-        let index = (sample.z * self.triangles.len() as f32) as usize;
-
-        self.triangles[index].sample_surface(sample)
-    }
-
-    fn intersect(&self, ray: &Ray) -> Option<GeometryInfo> {
+impl Intersectable for Mesh {
+    fn intersect(&self, ray: &Ray) -> Option<IntersectionInfo> {
         self.bvh.intersect(ray)
     }
 
@@ -198,3 +207,17 @@ impl Geometry for Mesh {
         self.bvh.intersects(ray)
     }
 }
+
+// impl Geometry for Mesh {
+//
+//     fn surface_area(&self) -> f32 {
+//         0.0
+//     }
+//
+//     fn sample_surface(&self, sample: &Vec3) -> Vec3 {
+//         // triangle sampling uses only sample.xy, z is the remaining random variable
+//         let index = (sample.z * self.triangles.len() as f32) as usize;
+//
+//         self.triangles[index].sample_surface(sample)
+//     }
+// }

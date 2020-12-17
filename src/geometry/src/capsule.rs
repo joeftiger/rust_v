@@ -1,64 +1,115 @@
 use crate::aabb::Aabb;
-use crate::cylinder::Cylinder;
 use crate::ray::Ray;
 use crate::sphere::Sphere;
-use crate::{Container, Geometry, GeometryInfo};
+use crate::{Container, IntersectionInfo, Boundable, Intersectable};
 use ultraviolet::Vec3;
 use util::MinMaxExt;
+use util::math;
 
-#[derive(Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Capsule {
-    top: Sphere,
-    bot: Sphere,
-    cylinder: Cylinder,
+    pub a: Vec3,
+    pub b: Vec3,
+    pub radius: f32,
 }
 
 impl Capsule {
-    pub fn new(from: Vec3, to: Vec3, radius: f32) -> Self {
-        let cylinder = Cylinder::new(from, to, radius);
-        let top = Sphere::new(from, radius);
-        let bot = Sphere::new(to, radius);
+    pub fn new(a: Vec3, b: Vec3, radius: f32,) -> Self {
+        Self { a, b, radius }
+    }
+}
 
-        Self { top, bot, cylinder }
+impl Boundable for Capsule {
+    fn bounds(&self) -> Aabb {
+        let radius = Vec3::one() * self.radius;
+        let min = self.a.min_by_component(self.b) - radius;
+        let max = self.a.max_by_component(self.b) + radius;
+
+        Aabb::new(min, max)
     }
 }
 
 impl Container for Capsule {
-    fn contains(&self, obj: Vec3) -> bool {
-        self.top.contains(obj) || self.bot.contains(obj) || self.cylinder.contains(obj)
+    fn contains(&self, obj: &Vec3) -> bool {
+        self.bounds().contains(obj)
     }
 }
 
-impl Geometry for Capsule {
-    fn bounding_box(&self) -> Aabb {
-        self.bot.bounding_box().outer_join(&self.top.bounding_box())
-    }
+impl Intersectable for Capsule {
+    fn intersect(&self, ray: &Ray) -> Option<IntersectionInfo> {
+        let ab = self.b - self.a;
+        let ao = ray.origin - self.a;
 
-    fn sample_surface(&self, sample: &Vec3) -> Vec3 {
-        let radius = self.bot.radius;
-        let height = self.cylinder.height();
-        let total = radius + radius + height;
+        let ab_dot_d = ab.dot(ray.direction);
+        let ab_dot_ao = ab.dot(ao);
+        let ab_dot_ab = ab.dot(ab);
 
-        let max = sample.component_max();
-        if max < radius / total {
-            self.bot.sample_surface(sample)
-        } else if max < (radius + radius) / total {
-            self.top.sample_surface(sample)
+        let m = ab_dot_d / ab_dot_ab;
+        let n = ab_dot_ao / ab_dot_ab;
+
+        let q = ray.direction - (ab * m);
+        let r = ao - (ab * n);
+
+        let a = q.dot(q);
+        let b = 2.0 * q.dot(r);
+        let c = r.dot(r) - self.radius * self.radius;
+
+        let (t0, t1) = math::solve_quadratic(a, b, c)?;
+        let t_min = f32::mmin_op2(ray.is_in_range_op(t0), ray.is_in_range_op(t1))?;
+
+        // check against line segment of [self.a, self.b]
+        let axis_shift = t_min * m + n;
+        if axis_shift < 0.0 {
+            // on sphere A
+            Sphere::new(self.a, self.radius).intersect(ray)
+        } else if axis_shift > 1.0 {
+            // on sphere B
+            Sphere::new(self.b, self.radius).intersect(ray)
         } else {
-            self.cylinder.sample_surface(sample)
+            // on cylinder
+            let point = ray.at(t_min);
+            let on_axis = self.a + ab * axis_shift;
+            let normal = point - on_axis;
+
+            Some(IntersectionInfo::new(*ray, t_min, point, normal))
         }
     }
 
-    fn intersect(&self, ray: &Ray) -> Option<GeometryInfo> {
-        // FIXME: Intersections from the inside are not handled correctly!
-        let bot = self.bot.intersect(ray);
-        let top = self.top.intersect(ray);
-        let cylinder = self.cylinder.intersect(ray);
-
-        GeometryInfo::mmin_op2(bot, GeometryInfo::mmin_op2(top, cylinder))
-    }
-
     fn intersects(&self, ray: &Ray) -> bool {
-        self.cylinder.intersects(ray) || self.bot.intersects(ray) || self.top.intersects(ray)
+        let ab = self.b - self.a;
+        let ao = ray.origin - self.a;
+
+        let ab_dot_d = ab.dot(ray.direction);
+        let ab_dot_ao = ab.dot(ao);
+        let ab_dot_ab = ab.dot(ab);
+
+        let m = ab_dot_d / ab_dot_ab;
+        let n = ab_dot_ao / ab_dot_ab;
+
+        let q = ray.direction - (ab * m);
+        let r = ao - (ab * n);
+
+        let a = q.dot(q);
+        let b = 2.0 * q.dot(r);
+        let c = r.dot(r) - self.radius * self.radius;
+
+        if let Some((t0, t1)) = math::solve_quadratic(a, b, c) {
+            if let Some(t_min) = f32::mmin_op2(ray.is_in_range_op(t0), ray.is_in_range_op(t1)) {
+
+                // check against line segment of [self.a, self.b]
+                let axis_shift = t_min * m + n;
+                if axis_shift < 0.0 {
+                    // on sphere A
+                    return Sphere::new(self.a, self.radius).intersects(ray);
+                } else if axis_shift > 1.0 {
+                    // on sphere B
+                    return Sphere::new(self.b, self.radius).intersects(ray);
+                } else {
+                    return true;
+                }
+            }
+        }
+
+        false
     }
 }

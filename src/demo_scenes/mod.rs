@@ -2,8 +2,8 @@ use crate::render::camera::Camera;
 use crate::render::scene::Scene;
 
 pub mod cornell_box;
-pub mod spheres;
 pub mod debug;
+pub mod spheres;
 
 pub use cornell_box::CornellScene;
 pub use spheres::SphereScene;

@@ -214,7 +214,7 @@ mod aabb {
         let max = Vec3::one();
         let aabb = Aabb::new(min, max);
 
-        let bb = aabb.bounding_box();
+        let bb = aabb.bounds();
 
         assert_eq!(min, bb.min);
         assert_eq!(max, bb.max);
@@ -338,7 +338,7 @@ mod point {
     #[test]
     fn bounding_box() {
         let point = Point::default();
-        let bbox = point.bounding_box();
+        let bbox = point.bounds();
 
         assert!(bbox.is_valid());
         assert_eq!(Vec3::zero(), bbox.min);
@@ -420,7 +420,7 @@ mod sphere {
     fn bounding_box() {
         let sphere = Sphere::default();
 
-        assert_eq!(Aabb::default(), sphere.bounding_box());
+        assert_eq!(Aabb::default(), sphere.bounds());
     }
 
     #[test]

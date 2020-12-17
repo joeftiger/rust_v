@@ -1,11 +1,9 @@
 pub mod aabb;
 pub mod bvh;
 pub mod capsule;
-pub mod cube;
 pub mod cylinder;
 pub mod lens;
 pub mod mesh;
-pub mod plane;
 pub mod point;
 pub mod ray;
 pub mod sphere;
@@ -13,9 +11,9 @@ mod tests;
 pub mod tube;
 
 use crate::aabb::Aabb;
-use crate::ray::{Ray, Ray4};
+use crate::ray::Ray;
 use std::fmt::Debug;
-use ultraviolet::{f32x4, Vec3, Vec3x4};
+use ultraviolet::Vec3;
 use util::{floats, MinMaxExt};
 
 #[inline]
@@ -23,44 +21,28 @@ pub fn spherical_direction(sin_theta: f32, cos_theta: f32, phi: f32) -> Vec3 {
     Vec3::new(sin_theta * phi.cos(), sin_theta * phi.sin(), cos_theta)
 }
 
-macro_rules! geometry_info {
-    ($($name:ident => $ray:ident, $float:ident, $vec:ident), +) => {
-        $(
-            /// Consists of:
-            /// - ray: Ray
-            /// - t, offset_epsilon: f32
-            /// - point, normal: Vec3
-            #[derive(Copy, Clone)]
-            pub struct $name {
-                pub ray: $ray,
-                pub t: $float,
-                pub point: $vec,
-                pub normal: $vec,
-            }
-
-            impl $name {
-                pub fn new(ray: $ray, t: $float, point: $vec, normal: $vec) -> Self {
-                    Self { ray, t, point, normal }
-                }
-
-                /// Creates a ray from `self.point` into the given direction, offset by `floats::EPSILON`.
-                pub fn create_ray(&self, direction: $vec) -> $ray {
-                    let t_start = $float::from(floats::BIG_EPSILON);
-                    let t_end = f32::INFINITY.into();
-                    let origin = self.point;
-                    $ray::with(origin, direction, t_start, t_end)
-                }
-            }
-        )+
-    };
+#[derive(Copy, Clone, Debug)]
+pub struct IntersectionInfo {
+    pub ray: Ray,
+    pub t: f32,
+    pub point: Vec3,
+    pub normal: Vec3,
 }
 
-geometry_info!(
-    GeometryInfo => Ray, f32, Vec3,
-    GeometryInfox4 => Ray4, f32x4, Vec3x4
-);
+impl IntersectionInfo {
+    pub fn new(ray: Ray, t: f32, point: Vec3, normal: Vec3) -> Self {
+        Self { ray, t, point, normal }
+    }
 
-impl MinMaxExt for GeometryInfo {
+    pub fn create_ray(&self, dir: Vec3) -> Ray {
+        let t_start = floats::BIG_EPSILON;
+        let t_end = f32::INFINITY;
+
+        Ray::with(self.point, dir, t_start, t_end)
+    }
+}
+
+impl MinMaxExt for IntersectionInfo {
     fn mmin(&self, other: &Self) -> Self {
         if self.t <= other.t {
             return *self;
@@ -78,53 +60,57 @@ impl MinMaxExt for GeometryInfo {
     }
 }
 
-impl PartialEq for GeometryInfo {
+impl PartialEq for IntersectionInfo {
     fn eq(&self, other: &Self) -> bool {
         self.t == other.t && self.point == other.point && self.normal == other.normal
     }
 }
 
-impl PartialEq for GeometryInfox4 {
-    fn eq(&self, other: &Self) -> bool {
-        self.t == other.t
-            && self.point.x == other.point.x
-            && self.point.y == other.point.y
-            && self.point.z == other.point.z
-            && self.normal.x == other.normal.x
-            && self.normal.y == other.normal.y
-            && self.normal.z == other.normal.z
+pub struct GeometrySample {
+    pub point: Vec3,
+    pub normal: Vec3,
+}
+
+impl GeometrySample {
+    pub fn new(point: Vec3, normal: Vec3) -> Self {
+        Self { point, normal }
     }
 }
 
-pub trait Container {
-    fn contains(&self, obj: Vec3) -> bool;
+/// A trait for objects that can report an aabb as their bounding box.
+pub trait Boundable {
+    fn bounds(&self) -> Aabb;
 }
 
-pub trait Geometry: Debug + Send + Sync {
-    fn bounding_box(&self) -> Aabb;
+/// A trait for objects that can contain a point or position.
+pub trait Container<T = Vec3> {
+    fn contains(&self, obj: &T) -> bool;
+}
 
-    fn sample_surface(&self, sample: &Vec3) -> Vec3;
+/// A trait for objects that can be intersected by rays.
+pub trait Intersectable<T = Ray> {
+    fn intersect(&self, ray: &T) -> Option<IntersectionInfo>;
 
-    fn intersect(&self, ray: &Ray) -> Option<GeometryInfo>;
-
-    fn intersects(&self, ray: &Ray) -> bool {
+    fn intersects(&self, ray: &T) -> bool {
         self.intersect(ray).is_some()
     }
 }
 
+pub trait Geometry: Debug + Boundable + Intersectable + Send + Sync {}
+impl<T: ?Sized + Debug + Boundable + Intersectable + Send + Sync> Geometry for T {}
+
 #[derive(Debug, PartialEq)]
 pub struct DefaultGeometry;
 
-impl Geometry for DefaultGeometry {
-    fn bounding_box(&self) -> Aabb {
+impl Boundable for DefaultGeometry {
+    fn bounds(&self) -> Aabb {
         Aabb::inverted_infinite()
     }
+}
 
-    fn sample_surface(&self, _: &Vec3) -> Vec3 {
-        Vec3::broadcast(f32::NAN)
-    }
+impl Intersectable for DefaultGeometry {
 
-    fn intersect(&self, _: &Ray) -> Option<GeometryInfo> {
+    fn intersect(&self, _: &Ray) -> Option<IntersectionInfo> {
         None
     }
 

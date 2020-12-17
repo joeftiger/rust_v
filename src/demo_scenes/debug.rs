@@ -1,19 +1,19 @@
 #![allow(dead_code)]
 
 use crate::demo_scenes::{DemoScene, FOVY};
+use crate::render::bxdf::bsdf::BSDF;
+use crate::render::bxdf::lambertian::LambertianReflection;
 use crate::render::camera::Camera;
+use crate::render::light::{Light, PointLight};
+use crate::render::material::Material;
 use crate::render::scene::Scene;
 use crate::render::scene_objects::SceneObject;
-use geometry::aabb::Aabb;
-use crate::render::bxdf::lambertian::LambertianReflection;
-use ultraviolet::{Vec3, Rotor3};
-use crate::render::bxdf::bsdf::BSDF;
 use crate::Spectrum;
 use color::Color;
+use geometry::aabb::Aabb;
 use geometry::sphere::Sphere;
-use crate::render::material::Material;
-use crate::render::light::{Light, PointLight};
 use std::sync::Arc;
+use ultraviolet::{Rotor3, Vec3};
 
 pub struct DebugScene;
 
@@ -30,30 +30,16 @@ impl DebugScene {
         SceneObject::new(aabb, material)
     }
 
-    // fn sphere() -> SceneObject {
-    //     let sphere = Box::new(Sphere::new(Vec3::unit_y(), 1.0));
-    //
-    //     let lambertian = LambertianReflection::new(Spectrum::white());
-    //     let bsdf = BSDF::new(vec![Box::new(lambertian)]);
-    //     let material = Material::from(bsdf);
-    //
-    //     SceneObject::new(sphere, material)
-    // }
-
     fn sphere() -> SceneObject {
-        let mut min = Vec3::zero();
-        let mut max = Vec3::one();
-        min += Vec3::unit_y() / 2.0;
-        max += Vec3::unit_y() / 2.0;
-
-        let sphere = Box::new(Aabb::new(min, max));
+        let sphere = Box::new(Sphere::new(Vec3::unit_y(), 1.0));
 
         let lambertian = LambertianReflection::new(Spectrum::white());
         let bsdf = BSDF::new(vec![Box::new(lambertian)]);
         let material = Material::new(
             // None,
             Some(Spectrum::white()),
-            bsdf);
+            bsdf,
+        );
 
         SceneObject::new(sphere, material)
     }
@@ -61,19 +47,22 @@ impl DebugScene {
     fn top_light() -> Arc<dyn Light> {
         Arc::new(PointLight::new(
             Vec3::new(0.0, 5.0, 0.0),
-            Spectrum::white() * 10.0))
+            Spectrum::white() * 10.0,
+        ))
     }
 
     fn top_right_light() -> Arc<dyn Light> {
         Arc::new(PointLight::new(
             Vec3::new(0.0, 5.0, 0.0).rotated_by(Rotor3::from_rotation_xy(30.0)),
-            Spectrum::white() * 10.0))
+            Spectrum::white() * 10.0,
+        ))
     }
 
     fn top_left_light() -> Arc<dyn Light> {
         Arc::new(PointLight::new(
             Vec3::new(0.0, 5.0, 0.0).rotated_by(Rotor3::from_rotation_xy(-30.0)),
-            Spectrum::white() * 10.0))
+            Spectrum::white() * 10.0,
+        ))
     }
 
     fn create_camera(width: u32, height: u32) -> Camera {
@@ -83,7 +72,8 @@ impl DebugScene {
             Vec3::unit_y(),
             FOVY,
             width,
-            height)
+            height,
+        )
     }
 }
 

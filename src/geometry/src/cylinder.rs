@@ -1,21 +1,21 @@
-use ultraviolet::{Rotor3, Vec3};
+use ultraviolet::Vec3;
 use util::math::solve_quadratic;
 
 use crate::aabb::Aabb;
 use crate::ray::Ray;
-use crate::{Container, Geometry, GeometryInfo};
+use crate::{Boundable, Container, IntersectionInfo, Intersectable};
 
 /// A geometrical cylinder.
 #[derive(Debug, PartialEq)]
 pub struct Cylinder {
-    pub bot: Vec3,
-    pub top: Vec3,
+    pub a: Vec3,
+    pub b: Vec3,
     pub radius: f32,
 }
 
 impl Cylinder {
     pub fn new(bot: Vec3, top: Vec3, radius: f32) -> Self {
-        Self { bot, top, radius }
+        Self { a: bot, b: top, radius }
     }
 
     fn check_height(&self, ray: &Ray, t: f32) -> Option<(f32, Vec3)> {
@@ -41,19 +41,19 @@ impl Cylinder {
     #[inline]
     #[must_use]
     pub fn center(&self) -> Vec3 {
-        (self.top + self.bot) / 2.0
+        (self.b + self.a) / 2.0
     }
 
     #[inline]
     #[must_use]
     pub fn axis(&self) -> Vec3 {
-        (self.top - self.bot).normalized()
+        (self.b - self.a).normalized()
     }
 
     #[inline]
     #[must_use]
     pub fn height(&self) -> f32 {
-        (self.top - self.bot).mag()
+        (self.b - self.a).mag()
     }
 }
 
@@ -64,41 +64,25 @@ impl Default for Cylinder {
 }
 
 impl Container for Cylinder {
-    fn contains(&self, obj: Vec3) -> bool {
-        let z = self.axis().dot(obj - self.center());
+    fn contains(&self, obj: &Vec3) -> bool {
+        let z = self.axis().dot(*obj - self.center());
 
         z < self.radius && 2.0 * z.abs() <= self.height()
     }
 }
 
-impl Geometry for Cylinder {
-    fn bounding_box(&self) -> Aabb {
-        let offset = Vec3::one() * self.radius;
+impl Boundable for Cylinder {
+    fn bounds(&self) -> Aabb {
+        let radius = Vec3::one() * self.radius;
+        let min = self.a.min_by_component(self.b) - radius;
+        let max = self.a.max_by_component(self.b) + radius;
 
-        let min = (self.bot - offset).min_by_component(self.bot + offset);
-        let max = self.top + offset.max_by_component(self.top + offset);
-        let min_original = min;
-        let min = min.min_by_component(max);
-        let max = max.max_by_component(min_original);
-
-        Aabb::new(min - offset, max + offset)
+        Aabb::new(min, max)
     }
+}
 
-    fn sample_surface(&self, sample: &Vec3) -> Vec3 {
-        let rot = Rotor3::from_rotation_between(Vec3::unit_y(), self.axis());
-
-        let theta = sample.x * 2.0;
-
-        let v = Vec3::new(
-            self.radius * theta.cos(),
-            self.height() * sample.y,
-            self.radius * theta.sin(),
-        );
-
-        self.bot + rot * v
-    }
-
-    fn intersect(&self, ray: &Ray) -> Option<GeometryInfo> {
+impl Intersectable for Cylinder {
+    fn intersect(&self, ray: &Ray) -> Option<IntersectionInfo> {
         let dir = ray.direction;
         let oc = ray.origin - self.center();
 
@@ -123,7 +107,7 @@ impl Geometry for Cylinder {
 
         normal.normalize();
 
-        Some(GeometryInfo::new(*ray, t, point, normal))
+        Some(IntersectionInfo::new(*ray, t, point, normal))
     }
 
     fn intersects(&self, ray: &Ray) -> bool {

@@ -2,7 +2,7 @@ use crate::aabb::Aabb;
 use crate::cylinder::Cylinder;
 use crate::ray::Ray;
 use crate::sphere::Sphere;
-use crate::{Container, Geometry, GeometryInfo};
+use crate::{Container, IntersectionInfo, Boundable, Intersectable};
 use ultraviolet::Vec3;
 use util::MinMaxExt;
 
@@ -39,7 +39,7 @@ impl Tube {
 
         let mut aabb = Aabb::inverted_infinite();
         for s in &spheres {
-            aabb = aabb.outer_join(&s.bounding_box());
+            aabb = aabb.outer_join(&s.bounds());
         }
 
         Self {
@@ -51,36 +51,29 @@ impl Tube {
     }
 }
 
+impl Boundable for Tube {
+    fn bounds(&self) -> Aabb {
+        self.aabb.clone()
+    }
+}
+
 impl Container for Tube {
-    fn contains(&self, obj: Vec3) -> bool {
+    fn contains(&self, obj: &Vec3) -> bool {
         self.spheres.iter().any(|s| s.contains(obj))
             || self.cylinders.iter().any(|c| c.contains(obj))
     }
 }
 
-impl Geometry for Tube {
-    fn bounding_box(&self) -> Aabb {
-        self.aabb.clone()
-    }
-
-    fn sample_surface(&self, _sample: &Vec3) -> Vec3 {
-        let heights: Vec<f32> = self.cylinders.iter().map(|c| c.height()).collect();
-        let total_radiuses = self.radius * self.spheres.len() as f32;
-        let total_height: f32 = heights.iter().sum();
-        let _total = (total_radiuses + total_height) as usize;
-
-        unimplemented!()
-    }
-
-    fn intersect(&self, ray: &Ray) -> Option<GeometryInfo> {
+impl Intersectable for Tube {
+    fn intersect(&self, ray: &Ray) -> Option<IntersectionInfo> {
         let mut intersection = None;
 
         self.spheres.iter().for_each(|sphere| {
-            intersection = GeometryInfo::mmin_op2(intersection, sphere.intersect(ray))
+            intersection = IntersectionInfo::mmin_op2(intersection, sphere.intersect(ray))
         });
 
         self.cylinders.iter().for_each(|cylinder| {
-            intersection = GeometryInfo::mmin_op2(intersection, cylinder.intersect(ray))
+            intersection = IntersectionInfo::mmin_op2(intersection, cylinder.intersect(ray))
         });
 
         intersection

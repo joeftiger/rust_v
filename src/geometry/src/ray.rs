@@ -1,73 +1,36 @@
-use ultraviolet::{f32x4, Vec3, Vec3x4};
+use ultraviolet::Vec3;
 
-macro_rules! rays {
-    ($($name:ident => $vec:ident, $float:ident), +) => {
-        $(
-            #[derive(Clone, Copy, Debug, Default)]
-            pub struct $name {
-                pub origin: $vec,
-                pub direction: $vec,
-                pub t_start: $float,
-                pub t_end: $float
-            }
-
-            impl $name {
-                pub fn new(origin: $vec, direction: $vec) -> Self {
-                    let t_start = 0.0.into();
-                    let t_end = f32::INFINITY.into();
-                    Self { origin, direction, t_start, t_end }
-                }
-
-                pub fn with(origin: $vec, direction: $vec, t_start: $float, t_end: $float) -> Self {
-                    Self { origin, direction, t_start, t_end }
-                }
-
-                pub fn in_range(from: &$vec, to: &$vec) -> Self {
-                    let origin = *from;
-                    let mut direction = *to - *from;
-                    let t_start = 0.0.into();
-                    let t_end = direction.mag();
-                    direction.normalize();
-
-                    Self { origin, direction, t_start, t_end }
-                }
-
-                pub fn at(&self, t: $float) -> $vec {
-                    self.direction.mul_add($vec::new(t, t, t), self.origin)
-                }
-            }
-        )+
-    }
-}
-
-rays!(
-    Ray => Vec3, f32,
-    Ray4 => Vec3x4, f32x4
-);
-
-impl PartialEq for Ray {
-    fn eq(&self, other: &Self) -> bool {
-        self.origin == other.origin
-            && self.direction == other.direction
-            && self.t_start == other.t_start
-            && self.t_end == other.t_end
-    }
-}
-
-impl PartialEq for Ray4 {
-    fn eq(&self, other: &Self) -> bool {
-        self.origin.x == other.origin.x
-            && self.origin.y == other.origin.y
-            && self.origin.z == other.origin.z
-            && self.direction.x == other.direction.x
-            && self.direction.y == other.direction.y
-            && self.direction.z == other.direction.z
-            && self.t_start == other.t_start
-            && self.t_end == other.t_end
-    }
+#[derive(Clone, Copy, Debug, Default)]
+pub struct Ray {
+    pub origin: Vec3,
+    pub direction: Vec3,
+    pub t_start: f32,
+    pub t_end: f32,
 }
 
 impl Ray {
+    pub fn new(origin: Vec3, direction: Vec3) -> Self {
+        Self::with(origin, direction, 0.0, f32::INFINITY)
+    }
+
+    pub fn with(origin:Vec3, direction: Vec3, t_start: f32, t_end: f32) -> Self {
+        Self { origin, direction, t_start, t_end }
+    }
+
+    pub fn in_range(from: &Vec3, to: &Vec3) -> Self {
+        let origin = *from;
+        let mut direction = *to - *from;
+        let t_start = 0.0.into();
+        let t_end = direction.mag();
+        direction.normalize();
+
+        Self { origin, direction, t_start, t_end }
+    }
+
+    pub fn at(&self, t: f32) -> Vec3 {
+        self.direction.mul_add(Vec3::broadcast(t), self.origin)
+    }
+
     #[inline(always)]
     pub fn is_in_range(&self, t: f32) -> bool {
         t >= self.t_start && t <= self.t_end
@@ -80,5 +43,14 @@ impl Ray {
         } else {
             None
         }
+    }
+}
+
+impl PartialEq for Ray {
+    fn eq(&self, other: &Self) -> bool {
+        self.origin == other.origin
+            && self.direction == other.direction
+            && self.t_start == other.t_start
+            && self.t_end == other.t_end
     }
 }

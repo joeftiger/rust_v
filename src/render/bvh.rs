@@ -1,5 +1,5 @@
 use geometry::ray::Ray;
-use geometry::Geometry;
+use geometry::{Boundable, Intersectable};
 use util::floats;
 
 use crate::render::scene::SceneIntersection;
@@ -14,7 +14,7 @@ pub trait SceneGeometry {
 
 impl SceneGeometry for SceneBvh {
     fn intersect_detailed(&self, ray: &Ray) -> Option<SceneIntersection> {
-        if !self.bounding_box().intersects(ray) {
+        if !self.bounds().intersects(ray) {
             return None;
         }
 

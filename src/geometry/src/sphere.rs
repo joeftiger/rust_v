@@ -2,7 +2,7 @@ use ultraviolet::Vec3;
 
 use crate::aabb::Aabb;
 use crate::ray::Ray;
-use crate::{Container, Geometry, GeometryInfo};
+use crate::{Container, IntersectionInfo, Boundable, Intersectable};
 use util::math::solve_quadratic;
 use util::MinMaxExt;
 
@@ -24,30 +24,23 @@ impl Sphere {
     }
 }
 
-impl Container for Sphere {
-    fn contains(&self, obj: Vec3) -> bool {
-        (obj - self.center).mag() < self.radius
-    }
-}
-
-impl Geometry for Sphere {
+impl Boundable for Sphere {
     #[inline]
-    fn bounding_box(&self) -> Aabb {
+    fn bounds(&self) -> Aabb {
         let offset = Vec3::one() * self.radius;
 
         Aabb::new(self.center - offset, self.center + offset)
     }
+}
 
-    #[inline]
-    fn sample_surface(&self, sample: &Vec3) -> Vec3 {
-        debug_assert!(!sample.x.is_nan());
-        debug_assert!(!sample.y.is_nan());
-        debug_assert!(!sample.z.is_nan());
-
-        self.center + (*sample - Vec3::one() / 2.0).normalized() * self.radius
+impl Container for Sphere {
+    fn contains(&self, obj: &Vec3) -> bool {
+        (*obj - self.center).mag() < self.radius
     }
+}
 
-    fn intersect(&self, ray: &Ray) -> Option<GeometryInfo> {
+impl Intersectable for Sphere {
+    fn intersect(&self, ray: &Ray) -> Option<IntersectionInfo> {
         let dir = ray.direction;
         let oc = ray.origin - self.center;
 
@@ -68,7 +61,7 @@ impl Geometry for Sphere {
             normal = -normal;
         }
 
-        Some(GeometryInfo::new(*ray, t_min, point, normal))
+        Some(IntersectionInfo::new(*ray, t_min, point, normal))
     }
 
     #[inline]
@@ -87,6 +80,21 @@ impl Geometry for Sphere {
         }
     }
 }
+
+// impl Geometry for Sphere {
+//     fn surface_area(&self) -> f32 {
+//         4.0 * self.radius * self.radius * std::f32::consts::PI
+//     }
+//
+//     #[inline]
+//     fn sample_surface(&self, sample: &Vec3) -> Vec3 {
+//         debug_assert!(!sample.x.is_nan());
+//         debug_assert!(!sample.y.is_nan());
+//         debug_assert!(!sample.z.is_nan());
+//
+//         self.center + (*sample - Vec3::one() / 2.0).normalized() * self.radius
+//     }
+// }
 
 impl Default for Sphere {
     fn default() -> Self {

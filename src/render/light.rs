@@ -1,12 +1,12 @@
 #![allow(dead_code)]
 #![allow(unused_variables)]
 
+use geometry::ray::Ray;
 use ultraviolet::Vec3;
+use util::floats;
 
 use crate::render::scene::{Scene, SceneIntersection};
 use crate::{Spectrum, LIGHT_SAMPLES_1D, LIGHT_SAMPLES_3D};
-use geometry::ray::Ray;
-use util::floats;
 
 pub const LIGHT_SAMPLE_DELTA: f32 = 1.0 / LIGHT_SAMPLES_1D as f32;
 
@@ -20,17 +20,17 @@ bitflags! {
 }
 
 pub trait LightTester {
-    fn test(&self, scene: &Scene) -> Option<(f32, Vec3)>;
+    fn test(&self, scene: &Scene) -> Option<LightSample>;
 }
 
 #[derive(Copy, Clone, Default)]
 pub struct SimpleLightTester {
-    intensity: f32,
+    area: f32,
     ray: Ray,
 }
 
 impl SimpleLightTester {
-    pub fn new(from: Vec3, to: Vec3) -> Self {
+    pub fn new(area: f32, from: Vec3, to: Vec3) -> Self {
         debug_assert!(!from.x.is_nan());
         debug_assert!(!from.y.is_nan());
         debug_assert!(!from.z.is_nan());
@@ -38,22 +38,24 @@ impl SimpleLightTester {
         debug_assert!(!to.y.is_nan());
         debug_assert!(!to.z.is_nan());
 
-        let intensity = 1.0 / (to - from).mag_sq();
-
         let mut ray = Ray::in_range(&from, &to);
         ray.t_start = floats::BIG_EPSILON;
         ray.t_end -= floats::BIG_EPSILON;
 
-        Self { intensity, ray }
+        Self { area, ray }
     }
 }
 
 impl LightTester for SimpleLightTester {
-    fn test(&self, scene: &Scene) -> Option<(f32, Vec3)> {
-        if scene.is_occluded(&self.ray) {
-            None
+    fn test(&self, scene: &Scene) -> Option<LightSample> {
+        if let Some(i) = scene.intersect(&self.ray) {
+            let dist_sq = i.info.t * i.info.t;
+            let abs_dot = i.info.normal.dot(-self.ray.direction).abs();
+            let pdf = dist_sq / (abs_dot * self.area);
+
+            Some(LightSample::new(pdf, i.info.t, -self.ray.direction))
         } else {
-            Some((self.intensity, self.ray.direction))
+            None
         }
     }
 }
@@ -69,24 +71,26 @@ impl SampledLightTester {
 }
 
 impl LightTester for SampledLightTester {
-    fn test(&self, scene: &Scene) -> Option<(f32, Vec3)> {
-        self.light_testers.iter().filter_map(|t| t.test(scene)).next()
+    fn test(&self, scene: &Scene) -> Option<LightSample> {
+        self.light_testers
+            .iter()
+            .filter_map(|t| t.test(scene))
+            .next()
     }
 }
 
 pub struct LightSample {
     pub pdf: f32,
-    pub light_tester: Box<dyn LightTester>,
+    pub intensity: f32,
+    pub incident: Vec3,
 }
 
 impl LightSample {
-    pub fn new(
-        pdf: f32,
-        light_tester: Box<dyn LightTester>,
-    ) -> Self {
+    pub fn new(pdf: f32, intensity: f32, incident: Vec3) -> Self {
         Self {
             pdf,
-            light_tester,
+            intensity,
+            incident,
         }
     }
 }
@@ -96,7 +100,7 @@ pub trait Light: Send + Sync {
 
     fn spectrum(&self) -> Spectrum;
 
-    fn sample(&self, intersection: &SceneIntersection, sample: &Vec3) -> LightSample;
+    fn sample<'a>(&self, intersection: &SceneIntersection, sample: &Vec3) -> Box<dyn LightTester>;
 }
 
 #[derive(Debug)]
@@ -123,13 +127,13 @@ impl Light for PointLight {
         self.intensity
     }
 
-    fn sample(&self, intersection: &SceneIntersection, _: &Vec3) -> LightSample {
+    fn sample(&self, intersection: &SceneIntersection, _: &Vec3) -> Box<dyn LightTester> {
         let pdf = 1.0;
-        let occlusion_tester = Box::new(SimpleLightTester::new(
+
+        Box::new(SimpleLightTester::new(
+            1.0,
             intersection.info.point,
             self.position,
-        ));
-
-        LightSample::new(pdf, occlusion_tester)
+        ))
     }
 }

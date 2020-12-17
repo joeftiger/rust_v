@@ -8,8 +8,7 @@ use util::floats;
 
 use crate::aabb::Aabb;
 use crate::ray::Ray;
-use crate::{DistanceExt, Geometry, GeometryInfo};
-use ultraviolet::Vec3;
+use crate::{DistanceExt, Geometry, IntersectionInfo, Boundable, Intersectable};
 
 #[derive(Debug)]
 pub enum BVHNode<T> {
@@ -148,14 +147,14 @@ impl<T: Geometry> Bvh<T> {
             return Arc::new(Self::default());
         } else if objects.len() == 1 {
             let object = objects.drain().next().unwrap();
-            let aabb = object.1.bounding_box();
+            let aabb = object.1.bounds();
 
             return Arc::new(Self::new(aabb, vec![], vec![object.1]));
         } else if objects.len() == 2 {
             let mut drain = objects.drain();
             let o1 = drain.next().unwrap();
             let o2 = drain.next().unwrap();
-            let aabb = o1.1.bounding_box().outer_join(&o2.1.bounding_box());
+            let aabb = o1.1.bounds().outer_join(&o2.1.bounds());
 
             return Arc::new(Self::new(aabb, vec![], vec![o1.1, o2.1]));
         }
@@ -174,7 +173,7 @@ impl<T: Geometry> Bvh<T> {
             objects.iter().for_each(|first| {
                 objects.iter().for_each(|second| {
                     if first.0 != second.0 {
-                        let d = first.1.bounding_box().distance(&second.1.bounding_box());
+                        let d = first.1.bounds().distance(&second.1.bounds());
                         if d < distance {
                             distance = d;
                             oo = Some((*first.0, *second.0));
@@ -185,7 +184,7 @@ impl<T: Geometry> Bvh<T> {
                 });
 
                 nodes.iter_mut().for_each(|second| {
-                    let d = first.1.bounding_box().distance(&second.1.bounding_box());
+                    let d = first.1.bounds().distance(&second.1.bounds());
                     if d < distance {
                         distance = d;
                         oo = None;
@@ -198,7 +197,7 @@ impl<T: Geometry> Bvh<T> {
             nodes.iter().for_each(|first| {
                 nodes.iter().for_each(|second| {
                     if first.0 != second.0 {
-                        let d = first.1.bounding_box().distance(&second.1.bounding_box());
+                        let d = first.1.bounds().distance(&second.1.bounds());
                         if d < distance {
                             distance = d;
                             oo = None;
@@ -242,8 +241,8 @@ impl<T: Geometry> Bvh<T> {
 
             let aabb = children
                 .iter()
-                .map(|c| c.bounding_box())
-                .chain(objects.iter().map(|o| o.bounding_box()))
+                .map(|c| c.bounds())
+                .chain(objects.iter().map(|o| o.bounds()))
                 .fold(Aabb::inverted_infinite(), |acc, next| acc.outer_join(&next));
 
             let key = node_counter;
@@ -264,17 +263,15 @@ impl<T: Geometry> Bvh<T> {
     fn combine_clusters() {}
 }
 
-impl<T: Debug + Geometry + Send + Sync> Geometry for Bvh<T> {
-    fn bounding_box(&self) -> Aabb {
-        self.aabb.clone()
+impl<T: Geometry> Boundable for Bvh<T> {
+    fn bounds(&self) -> Aabb {
+        self.aabb
     }
+}
 
-    fn sample_surface(&self, _: &Vec3) -> Vec3 {
-        unimplemented!()
-    }
-
-    fn intersect(&self, ray: &Ray) -> Option<GeometryInfo> {
-        if !self.bounding_box().intersects(ray) {
+impl<T: Geometry> Intersectable for Bvh<T> {
+    fn intersect(&self, ray: &Ray) -> Option<IntersectionInfo> {
+        if !self.bounds().intersects(ray) {
             return None;
         }
 

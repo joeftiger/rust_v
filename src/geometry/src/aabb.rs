@@ -1,10 +1,10 @@
-use ultraviolet::{Vec3, Lerp};
+use ultraviolet::Vec3;
 use util::floats;
 
 use crate::ray::Ray;
-use crate::{ComparableExt, Container, DistanceExt, Geometry, GeometryInfo};
+use crate::{ComparableExt, Container, DistanceExt, IntersectionInfo, Boundable, Intersectable};
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Aabb {
     pub min: Vec3,
     pub max: Vec3,
@@ -106,46 +106,20 @@ impl Aabb {
     }
 }
 
-impl Container for Aabb {
-    fn contains(&self, obj: Vec3) -> bool {
-        let clamped = obj.clamped(self.min, self.max);
-
-        clamped == obj
+impl Boundable for Aabb {
+    fn bounds(&self) -> Aabb {
+        *self
     }
 }
 
-impl Geometry for Aabb {
-    fn bounding_box(&self) -> Aabb {
-        self.clone()
+impl Container for Aabb {
+    fn contains(&self, obj: &Vec3) -> bool {
+        *obj == obj.clamped(self.min, self.max)
     }
+}
 
-    #[rustfmt::skip]
-    fn sample_surface(&self, sample: &Vec3) -> Vec3 {
-        let x;
-        let y;
-        let z;
-        if sample.x < sample.y && sample.x < sample.z {
-            x = if sample.y < sample.z { self.min.x } else { self.max.x };
-            y = self.min.y.lerp(self.max.y, sample.y);
-            z = self.min.z.lerp(self.max.z, sample.z);
-        } else if sample.y < sample.z && sample.y < sample.x {
-            x = self.min.x.lerp(self.max.x, sample.x);
-            y = if sample.z < sample.x { self.min.y } else { self.max.y };
-            z = self.min.z.lerp(self.max.z, sample.x);
-        } else {
-            x = self.min.x.lerp(self.max.x, sample.x);
-            y = self.min.y.lerp(self.max.y, sample.y);
-            z = if sample.x < sample.y { self.min.z } else { self.max.z };
-        }
-
-        debug_assert!(!x.is_nan());
-        debug_assert!(!y.is_nan());
-        debug_assert!(!z.is_nan());
-
-        Vec3::new(x, y, z)
-    }
-
-    fn intersect(&self, ray: &Ray) -> Option<GeometryInfo> {
+impl Intersectable for Aabb {
+    fn intersect(&self, ray: &Ray) -> Option<IntersectionInfo> {
         let t1 = (self.min - ray.origin) / ray.direction;
         let t2 = (self.max - ray.origin) / ray.direction;
 
@@ -176,7 +150,7 @@ impl Geometry for Aabb {
         }
 
         // approximating epsilon is too small (unlikely) or the given hit was illegal
-        Some(GeometryInfo::new(*ray, t_min, hit, normal))
+        Some(IntersectionInfo::new(*ray, t_min, hit, normal))
     }
 
     fn intersects(&self, ray: &Ray) -> bool {
@@ -192,6 +166,39 @@ impl Geometry for Aabb {
         t_max >= ray.t_start && t_max >= t_min && t_min <= ray.t_end
     }
 }
+
+// impl Geometry for Aabb {
+//     fn surface_area(&self) -> f32 {
+//         let size = self.size();
+//         2.0 * (size.x * size.y + size.x * size.z + size.y * size.z)
+//     }
+//
+//     #[rustfmt::skip]
+//     fn sample_surface(&self, sample: &Vec3) -> Vec3 {
+//         let x;
+//         let y;
+//         let z;
+//         if sample.x < sample.y && sample.x < sample.z {
+//             x = if sample.y < sample.z { self.min.x } else { self.max.x };
+//             y = self.min.y.lerp(self.max.y, sample.y);
+//             z = self.min.z.lerp(self.max.z, sample.z);
+//         } else if sample.y < sample.z && sample.y < sample.x {
+//             x = self.min.x.lerp(self.max.x, sample.x);
+//             y = if sample.z < sample.x { self.min.y } else { self.max.y };
+//             z = self.min.z.lerp(self.max.z, sample.x);
+//         } else {
+//             x = self.min.x.lerp(self.max.x, sample.x);
+//             y = self.min.y.lerp(self.max.y, sample.y);
+//             z = if sample.x < sample.y { self.min.z } else { self.max.z };
+//         }
+//
+//         debug_assert!(!x.is_nan());
+//         debug_assert!(!y.is_nan());
+//         debug_assert!(!z.is_nan());
+//
+//         Vec3::new(x, y, z)
+//     }
+// }
 
 impl Default for Aabb {
     fn default() -> Self {

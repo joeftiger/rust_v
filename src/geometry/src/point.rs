@@ -1,6 +1,6 @@
 use crate::aabb::Aabb;
 use crate::ray::Ray;
-use crate::{Geometry, GeometryInfo};
+use crate::{IntersectionInfo, Boundable, Intersectable};
 use ultraviolet::Vec3;
 
 #[derive(Debug, PartialEq, Default)]
@@ -14,17 +14,15 @@ impl Point {
     }
 }
 
-impl Geometry for Point {
-    fn bounding_box(&self) -> Aabb {
+impl Boundable for Point {
+    fn bounds(&self) -> Aabb {
         Aabb::new(self.position, self.position)
     }
+}
 
-    fn sample_surface(&self, _: &Vec3) -> Vec3 {
-        self.position
-    }
-
+impl Intersectable for Point {
     #[inline(always)]
-    fn intersect(&self, _: &Ray) -> Option<GeometryInfo> {
+    fn intersect(&self, _: &Ray) -> Option<IntersectionInfo> {
         None
     }
 

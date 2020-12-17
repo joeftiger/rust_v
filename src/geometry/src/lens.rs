@@ -1,7 +1,7 @@
 use crate::aabb::Aabb;
 use crate::ray::Ray;
 use crate::sphere::Sphere;
-use crate::{Container, Geometry, GeometryInfo};
+use crate::{Container, IntersectionInfo, Boundable, Intersectable};
 use ultraviolet::Vec3;
 
 #[derive(Debug, PartialEq)]
@@ -18,14 +18,8 @@ impl BiconvexLens {
     }
 }
 
-impl Container for BiconvexLens {
-    fn contains(&self, obj: Vec3) -> bool {
-        self.sphere0.contains(obj) && self.sphere1.contains(obj)
-    }
-}
-
-impl Geometry for BiconvexLens {
-    fn bounding_box(&self) -> Aabb {
+impl Boundable for BiconvexLens {
+    fn bounds(&self) -> Aabb {
         // not tight fitting, but okay enough
         let max = self.sphere0.radius.max(self.sphere1.radius);
         let offset = Vec3::one() * max;
@@ -33,29 +27,32 @@ impl Geometry for BiconvexLens {
 
         Aabb::new(center - offset, center + offset)
     }
+}
 
-    fn sample_surface(&self, _sample: &Vec3) -> Vec3 {
-        // TODO: Implement
-        unimplemented!()
+impl Container for BiconvexLens {
+    fn contains(&self, obj: &Vec3) -> bool {
+        self.sphere0.contains(obj) && self.sphere1.contains(obj)
     }
+}
 
-    fn intersect(&self, ray: &Ray) -> Option<GeometryInfo> {
+impl Intersectable for BiconvexLens {
+    fn intersect(&self, ray: &Ray) -> Option<IntersectionInfo> {
         let ray_start = ray.at(ray.t_start);
 
         if let Some(i0) = self.sphere0.intersect(ray) {
             if let Some(i1) = self.sphere1.intersect(ray) {
                 // inside lens return min
-                if self.contains(ray_start) {
+                if self.contains(&ray_start) {
                     return if i0.t < i1.t { Some(i0) } else { Some(i1) };
                 }
 
                 // inside sphere0 return sphere1
-                if self.sphere0.contains(ray_start) {
+                if self.sphere0.contains(&ray_start) {
                     return Some(i1);
                 }
 
                 // inside sphere1 return sphere0
-                if self.sphere1.contains(ray_start) {
+                if self.sphere1.contains(&ray_start) {
                     return Some(i0);
                 }
 

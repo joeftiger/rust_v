@@ -1,3 +1,4 @@
+use crate::demo_scenes::debug::DebugScene;
 use crate::demo_scenes::*;
 #[cfg(feature = "live-window")]
 use crate::render::fast_window::FastWindow;
@@ -10,7 +11,6 @@ use crate::render::sampler::{NoopSampler, RandomSampler, Sampler};
 use std::convert::TryInto;
 use std::sync::Arc;
 use std::time::Instant;
-use crate::demo_scenes::debug::DebugScene;
 
 #[derive(Debug, Clone)]
 pub struct Configuration {

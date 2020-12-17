@@ -3,18 +3,18 @@ use crate::render::light::Light;
 use crate::render::scene_objects::SceneObject;
 use geometry::aabb::Aabb;
 use geometry::ray::Ray;
-use geometry::{Container, Geometry, GeometryInfo};
+use geometry::{Container, IntersectionInfo, Intersectable};
 use std::sync::Arc;
 use ultraviolet::Vec3;
 
 #[derive(Clone)]
 pub struct SceneIntersection {
-    pub info: GeometryInfo,
+    pub info: IntersectionInfo,
     pub obj: Arc<SceneObject>,
 }
 
 impl SceneIntersection {
-    pub fn new(info: GeometryInfo, obj: Arc<SceneObject>) -> Self {
+    pub fn new(info: IntersectionInfo, obj: Arc<SceneObject>) -> Self {
         Self { info, obj }
     }
 }
@@ -31,9 +31,9 @@ impl Scene {
         let obj = Arc::new(obj);
 
         self.objects.push(obj.clone());
-        if obj.material.emissive() {
-            self.push_light(obj)
-        }
+        // if obj.material.emissive() {
+        //     self.push_light(obj)
+        // }
     }
 
     pub fn push_light(&mut self, light: Arc<dyn Light>) {
@@ -78,7 +78,7 @@ impl Default for Scene {
 }
 
 impl Container for Scene {
-    fn contains(&self, obj: Vec3) -> bool {
+    fn contains(&self, obj: &Vec3) -> bool {
         self.aabb.contains(obj)
     }
 }
