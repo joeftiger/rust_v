@@ -81,21 +81,6 @@ impl Intersectable for Sphere {
     }
 }
 
-// impl Geometry for Sphere {
-//     fn surface_area(&self) -> f32 {
-//         4.0 * self.radius * self.radius * std::f32::consts::PI
-//     }
-//
-//     #[inline]
-//     fn sample_surface(&self, sample: &Vec3) -> Vec3 {
-//         debug_assert!(!sample.x.is_nan());
-//         debug_assert!(!sample.y.is_nan());
-//         debug_assert!(!sample.z.is_nan());
-//
-//         self.center + (*sample - Vec3::one() / 2.0).normalized() * self.radius
-//     }
-// }
-
 impl Default for Sphere {
     fn default() -> Self {
         Self::new(Vec3::zero(), 1.0)

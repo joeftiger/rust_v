@@ -77,27 +77,36 @@ impl GeometrySample {
     }
 }
 
-/// A trait for objects that can report an aabb as their bounding box.
+/// A trait for objects that can report an aabb as their bounds.
 pub trait Boundable {
+    /// The bounds of this object.
     fn bounds(&self) -> Aabb;
 }
 
 /// A trait for objects that can contain a point or position.
 pub trait Container<T = Vec3> {
+    /// Returns whether the given obj is inside this container.
     fn contains(&self, obj: &T) -> bool;
 }
 
 /// A trait for objects that can be intersected by rays.
 pub trait Intersectable<T = Ray> {
+    /// Intersects the given ray with this object.
     fn intersect(&self, ray: &T) -> Option<IntersectionInfo>;
 
+    /// Returns whether the given ray intersects with this object.
+    ///
+    /// This function should be overwritten to specialize instead of checking whether
+    /// `intersect(ray)` is `Some`.
     fn intersects(&self, ray: &T) -> bool {
         self.intersect(ray).is_some()
     }
 }
 
+/// A helper trait to combine both `Boundable` and `Intersectable` in a threadsafe way
+/// (`Send` + `Sync`), allowing `Debug` prints.
 pub trait Geometry: Debug + Boundable + Intersectable + Send + Sync {}
-impl<T: ?Sized + Debug + Boundable + Intersectable + Send + Sync> Geometry for T {}
+impl<T: ?Sized> Geometry for T where T: Debug + Boundable + Intersectable + Send + Sync {}
 
 #[derive(Debug, PartialEq)]
 pub struct DefaultGeometry;
@@ -278,5 +287,33 @@ pub trait DistanceExt {
 impl DistanceExt for Vec3 {
     fn distance(&self, other: &Self) -> f32 {
         (*other - *self).mag()
+    }
+}
+
+pub struct CoordinateSystem {
+    pub e1: Vec3,
+    pub e2: Vec3,
+    pub e3: Vec3,
+}
+
+impl CoordinateSystem {
+    pub fn new(e1: Vec3, e2: Vec3, e3: Vec3) -> Self {
+        Self { e1, e2, e3 }
+    }
+}
+
+impl From<&Vec3> for CoordinateSystem {
+    /// Creates a local ortho-normal coordinate system from the given vector.
+    fn from(e1: &Vec3) -> Self {
+        let e2 = if e1.x.abs() > e1.y.abs() {
+            let inv = 1.0 / f32::sqrt(e1.x * e1.x + e1.z * e1.z);
+            Vec3::new(-e1.z * inv, 0.0, e1.x * inv)
+        } else {
+            let inv = 1.0 / f32::sqrt(e1.y * e1.y + e1.z * e1.z);
+            Vec3::new(0.0, e1.z * inv, -e1.y * inv)
+        };
+        let e3 = e1.cross(e2);
+
+        Self::new(*e1, e2, e3)
     }
 }
