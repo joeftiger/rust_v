@@ -103,3 +103,16 @@ pub fn uniform_sample_cone_frame(sample: &Vec2, cos_theta_max: f32, frame: &Coor
 
     (phi.cos() * sin * frame.e1) + (cos * frame.e2) + (phi.sin() * sin * frame.e3)
 }
+
+
+/// # Summary
+/// Computes the pdf for uniformly sampling a code.
+///
+/// # Arguments
+/// * `cos_theta` - The cone angle
+///
+/// # Results
+/// * `f32` - The pdf
+pub fn uniform_cone_pdf(cos_theta: f32) -> f32 {
+    1.0 / (2.0 * PI * (1.0 - cos_theta))
+}

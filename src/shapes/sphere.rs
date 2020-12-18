@@ -3,8 +3,9 @@ use geometry::sphere::Sphere;
 use ultraviolet::{Vec2, Vec3};
 use geometry::ray::Ray;
 use std::f32::consts::PI;
-use geometry::{Intersectable, Container, CoordinateSystem};
-use crate::mc::{uniform_sample_sphere, uniform_sample_cone_frame};
+use geometry::{Intersectable, CoordinateSystem};
+use crate::mc::{uniform_sample_sphere, uniform_sample_cone_frame, uniform_cone_pdf};
+use util::floats;
 
 impl Sampleable for Sphere {
     fn surface_area(&self) -> f32 {
@@ -12,7 +13,11 @@ impl Sampleable for Sphere {
     }
 
     fn sample(&self, point: &Vec3, sample: &Vec2) -> SurfaceSample {
-        if self.contains(point) {
+        let dist_sq = (*point - self.center).mag_sq();
+        let r2 = self.radius * self.radius;
+
+        if dist_sq - r2 < floats::BIG_EPSILON {
+            // inside the sphere
             let point = self.center + uniform_sample_sphere(sample) * self.radius;
             let normal = point.normalized();
 
@@ -21,7 +26,7 @@ impl Sampleable for Sphere {
             let z = -point.normalized();
             let frame = CoordinateSystem::from(&z);
 
-            let cos_theta_max = f32::max(0.0, 1.0 - self.radius * self.radius / point.mag_sq());
+            let cos_theta_max = f32::max(0.0, 1.0 - r2 / dist_sq);
             let direction = uniform_sample_cone_frame(sample, cos_theta_max, &frame).normalized();
 
             let ray = Ray::new(*point, direction);
@@ -41,14 +46,15 @@ impl Sampleable for Sphere {
     }
 
     fn pdf(&self, ray: &Ray) -> f32 {
-        if let Some(i) = self.intersect(ray) {
-            let dist_sq = (i.point - ray.origin).mag_sq();
-            let dot = i.normal.dot(-ray.direction);
-            let area = self.surface_area();
+        let dist_sq = (ray.origin - self.center).mag_sq();
+        let r2 = self.radius * self.radius;
 
-            dist_sq / (dot.abs() * area)
+        if dist_sq - r2 < floats::BIG_EPSILON {
+            1.0 / self.surface_area()
         } else {
-            0.0
+            let cos_theta = f32::max(0.0, 1.0 - r2 / dist_sq);
+
+            uniform_cone_pdf(cos_theta)
         }
     }
 }

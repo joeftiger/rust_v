@@ -8,29 +8,30 @@ use crate::render::camera::Camera;
 use crate::render::light::{Light, PointLight};
 use crate::render::material::Material;
 use crate::render::scene::Scene;
-use crate::render::scene_objects::SceneObject;
+use crate::render::scene_objects::Object;
 use crate::Spectrum;
 use color::Color;
 use geometry::aabb::Aabb;
 use geometry::sphere::Sphere;
 use std::sync::Arc;
 use ultraviolet::Vec3;
+use geometry::Geometry;
 
 const RADIUS: f32 = 0.5;
 
 pub struct SphereScene;
 
 impl SphereScene {
-    fn ground() -> SceneObject {
+    fn ground() -> Object<Aabb> {
         let min = Vec3::new(-10000.0, -5.0, -10000.0);
         let max = Vec3::new(10000.0, 0.0, 10000.0);
-        let aabb = Box::new(Aabb::new(min, max));
+        let aabb = Aabb::new(min, max);
 
         let lambertian = LambertianReflection::new(Spectrum::white());
         let bsdf = BSDF::new(vec![Box::new(lambertian)]);
         let material = Material::from(bsdf);
 
-        SceneObject::new(aabb, material)
+        Object::new(aabb, material)
     }
 
     fn random_pos() -> Vec3 {
@@ -81,16 +82,16 @@ impl SphereScene {
         }
     }
 
-    fn big_emitter() -> SceneObject {
+    fn big_emitter() -> Object<Aabb> {
         let min = Vec3::new(-10.0, 100.0, -100.0);
         let max = Vec3::new(10.0, 200.0, 10.0);
-        let aabb = Box::new(Aabb::new(min, max));
+        let aabb = Aabb::new(min, max);
 
         let lambertian = LambertianReflection::new(Spectrum::black());
         let bsdf = BSDF::new(vec![Box::new(lambertian)]);
         let material = Material::new(Some(Spectrum::white()), bsdf);
 
-        SceneObject::new(aabb, material)
+        Object::new(aabb, material)
     }
 
     fn light() -> Arc<dyn Light> {
@@ -106,18 +107,18 @@ impl SphereScene {
         for _ in 0..10 {
             for _ in 0..10 {
                 let center = Self::random_pos();
-                let sphere = Box::new(Sphere::new(center, RADIUS));
+                let sphere = Sphere::new(center, RADIUS);
 
                 let color = Self::random_color();
                 let material = Self::random_material(color);
 
-                let object = SceneObject::new(sphere, material);
-                scene.push_obj(object);
+                let object = Object::new(sphere, material);
+                scene.push_obj(Arc::new(object));
             }
         }
 
-        scene.push_obj(Self::ground());
-        scene.push_obj(Self::big_emitter());
+        scene.push_obj(Arc::new(Self::ground()));
+        scene.push_obj(Arc::new(Self::big_emitter()));
         scene.push_light(Self::light());
 
         scene.build_bvh();

@@ -8,7 +8,7 @@ use util::floats;
 
 use crate::aabb::Aabb;
 use crate::ray::Ray;
-use crate::{DistanceExt, Geometry, Intersection, Boundable, Intersectable};
+use crate::{DistanceExt, Intersection, Boundable, Intersectable, Geometry};
 
 #[derive(Debug)]
 pub enum BVHNode<T> {
@@ -49,95 +49,97 @@ impl<T> Bvh<T> {
     }
 }
 
-impl<T: Geometry> Bvh<T> {
+impl<T> Bvh<T> where T: Boundable {
     pub fn aac_vec(objects: Vec<Arc<T>>) -> Arc<Self> {
-        // println!("# Objects: {}\n", objects.len());
-        //
-        // let mut distances = Vec::with_capacity(objects.len() * objects.len() / 2);
-        //
-        // for i in 0..objects.len() {
-        //     for j in (i + 1)..objects.len() {
-        //         let aabb_0 = objects[i].bounding_box();
-        //         let aabb_1 = objects[j].bounding_box();
-        //         let distance = aabb_0.distance(&aabb_1);
-        //
-        //         distances.push(((i, j), distance));
-        //     }
-        // }
-        // println!("Created distance matrix\n");
-        //
-        // let mut clusters = Vec::with_capacity((distances.len() + 1) / 2);
-        //
-        // distances.sort_by(|a, b| floats::fast_cmp(a.1, b.1));
-        //
-        // while !distances.is_empty() {
-        //     let ((i, j), _) = distances[0];
-        //     let aabb_0 = objects[i].bounding_box();
-        //     let aabb_1 = objects[j].bounding_box();
-        //     let aabb = aabb_0.outer_join(&aabb_1);
-        //
-        //     let leaf_0 = BVHNode::Leaf(objects[i].clone());
-        //     let leaf_1 = BVHNode::Leaf(objects[j].clone());
-        //
-        //     let node = BVHNode::Node {
-        //         left_child: Arc::new(leaf_0),
-        //         right_child: Arc::new(leaf_1),
-        //         aabb
-        //     };
-        //     clusters.push(node);
-        //
-        //     distances.retain(|(index, _)| index.0 != i && index.0 != j && index.1 != i && index.1 != j);
-        // }
-        //
-        // println!("Created initial clusters\n");
-        //
-        // let mut distances = Vec::with_capacity(clusters.len() * clusters.len() / 2);
-        //
-        // while clusters.len() > 1 {
-        //     println!("{} clusters left\n", clusters.len());
-        //
-        //     for i in 0..clusters.len() {
-        //         for j in (i + 1)..clusters.len() {
-        //             let aabb_0 = match &clusters[i] {
-        //                 BVHNode::Node { aabb, .. } => aabb,
-        //                 _ => unreachable!(),
-        //             };
-        //             let aabb_1 = match &clusters[j] {
-        //                 BVHNode::Node { aabb, .. } => aabb,
-        //                 _ => unreachable!(),
-        //             };
-        //             let distance = aabb_0.distance(aabb_1);
-        //
-        //             distances.push(((i, j), distance));
-        //         }
-        //     }
-        //     distances.sort_by(|a, b| floats::fast_cmp(a.1, b.1));
-        //
-        //     let ((i, j), _) = distances[0];
-        //
-        //     let aabb_0 = match &clusters[i] {
-        //         BVHNode::Node { aabb, .. } => aabb,
-        //         _ => unreachable!(),
-        //     };
-        //     let aabb_1 = match &clusters[j] {
-        //         BVHNode::Node { aabb, .. } => aabb,
-        //         _ => unreachable!(),
-        //     };
-        //     let aabb = aabb_0.outer_join(aabb_1);
-        //
-        //     // j > i is guaranteed
-        //     let node = BVHNode::Node {
-        //         left_child: Arc::new(clusters.swap_remove(j)),
-        //         right_child: Arc::new(clusters.swap_remove(i)),
-        //         aabb
-        //     };
-        //
-        //     clusters.push(node);
-        //
-        //     distances.retain(|(index, _)| index.0 != i && index.0 != j && index.1 != i && index.1 != j);
-        // }
-        //
-        // println!("{:#?}\n", clusters[0]);
+        /*
+        println!("# Objects: {}\n", objects.len());
+
+        let mut distances = Vec::with_capacity(objects.len() * objects.len() / 2);
+
+        for i in 0..objects.len() {
+            for j in (i + 1)..objects.len() {
+                let aabb_0 = objects[i].bounding_box();
+                let aabb_1 = objects[j].bounding_box();
+                let distance = aabb_0.distance(&aabb_1);
+
+                distances.push(((i, j), distance));
+            }
+        }
+        println!("Created distance matrix\n");
+
+        let mut clusters = Vec::with_capacity((distances.len() + 1) / 2);
+
+        distances.sort_by(|a, b| floats::fast_cmp(a.1, b.1));
+
+        while !distances.is_empty() {
+            let ((i, j), _) = distances[0];
+            let aabb_0 = objects[i].bounding_box();
+            let aabb_1 = objects[j].bounding_box();
+            let aabb = aabb_0.outer_join(&aabb_1);
+
+            let leaf_0 = BVHNode::Leaf(objects[i].clone());
+            let leaf_1 = BVHNode::Leaf(objects[j].clone());
+
+            let node = BVHNode::Node {
+                left_child: Arc::new(leaf_0),
+                right_child: Arc::new(leaf_1),
+                aabb
+            };
+            clusters.push(node);
+
+            distances.retain(|(index, _)| index.0 != i && index.0 != j && index.1 != i && index.1 != j);
+        }
+
+        println!("Created initial clusters\n");
+
+        let mut distances = Vec::with_capacity(clusters.len() * clusters.len() / 2);
+
+        while clusters.len() > 1 {
+            println!("{} clusters left\n", clusters.len());
+
+            for i in 0..clusters.len() {
+                for j in (i + 1)..clusters.len() {
+                    let aabb_0 = match &clusters[i] {
+                        BVHNode::Node { aabb, .. } => aabb,
+                        _ => unreachable!(),
+                    };
+                    let aabb_1 = match &clusters[j] {
+                        BVHNode::Node { aabb, .. } => aabb,
+                        _ => unreachable!(),
+                    };
+                    let distance = aabb_0.distance(aabb_1);
+
+                    distances.push(((i, j), distance));
+                }
+            }
+            distances.sort_by(|a, b| floats::fast_cmp(a.1, b.1));
+
+            let ((i, j), _) = distances[0];
+
+            let aabb_0 = match &clusters[i] {
+                BVHNode::Node { aabb, .. } => aabb,
+                _ => unreachable!(),
+            };
+            let aabb_1 = match &clusters[j] {
+                BVHNode::Node { aabb, .. } => aabb,
+                _ => unreachable!(),
+            };
+            let aabb = aabb_0.outer_join(aabb_1);
+
+            // j > i is guaranteed
+            let node = BVHNode::Node {
+                left_child: Arc::new(clusters.swap_remove(j)),
+                right_child: Arc::new(clusters.swap_remove(i)),
+                aabb
+            };
+
+            clusters.push(node);
+
+            distances.retain(|(index, _)| index.0 != i && index.0 != j && index.1 != i && index.1 != j);
+        }
+
+        println!("{:#?}\n", clusters[0]);
+        */
 
         Self::aac(objects.into_iter().enumerate().collect())
     }
@@ -263,13 +265,13 @@ impl<T: Geometry> Bvh<T> {
     fn combine_clusters() {}
 }
 
-impl<T: Geometry> Boundable for Bvh<T> {
+impl<T> Boundable for Bvh<T> where T: Boundable {
     fn bounds(&self) -> Aabb {
         self.aabb
     }
 }
 
-impl<T: Geometry> Intersectable for Bvh<T> {
+impl<T> Intersectable for Bvh<T> where T: Geometry {
     fn intersect(&self, ray: &Ray) -> Option<Intersection> {
         if !self.bounds().intersects(ray) {
             return None;

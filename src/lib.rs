@@ -8,7 +8,6 @@ use color::*;
 
 pub mod configuration;
 mod demo_scenes;
-pub mod plain_scene;
 pub mod render;
 pub mod shapes;
 pub mod mc;

@@ -4,30 +4,24 @@ use geometry::ray::Ray;
 use geometry::{DefaultGeometry, Geometry, Intersection, Boundable, Intersectable};
 
 #[derive(Debug)]
-pub struct SceneObject {
-    shape: Box<dyn Geometry>,
+pub struct Object<T> {
+    shape: T,
     pub material: Material,
 }
 
-impl Default for SceneObject {
-    fn default() -> Self {
-        Self::new(Box::new(DefaultGeometry), Material::default())
-    }
-}
-
-impl SceneObject {
-    pub fn new(shape: Box<dyn Geometry>, material: Material) -> Self {
+impl<T> Object<T> {
+    pub fn new(shape: T, material: Material) -> Self {
         Self { shape, material }
     }
 }
 
-impl Boundable for SceneObject {
+impl<T> Boundable for Object<T> where T: Boundable {
     fn bounds(&self) -> Aabb {
         self.shape.bounds()
     }
 }
 
-impl Intersectable for SceneObject {
+impl<T> Intersectable for Object<T> where T: Intersectable {
     fn intersect(&self, ray: &Ray) -> Option<Intersection> {
         self.shape.intersect(ray)
     }

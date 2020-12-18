@@ -10,7 +10,7 @@ use crate::render::camera::Camera;
 use crate::render::light::{Light, PointLight};
 use crate::render::material::Material;
 use crate::render::scene::Scene;
-use crate::render::scene_objects::SceneObject;
+use crate::render::scene_objects::Object;
 use crate::Spectrum;
 use color::Color;
 use geometry::aabb::Aabb;
@@ -21,6 +21,7 @@ use geometry::sphere::Sphere;
 use geometry::tube::Tube;
 use std::sync::Arc;
 use ultraviolet::{Bivec3, Rotor3, Vec3};
+use geometry::Geometry;
 
 pub const LEFT_WALL: f32 = -3.0;
 pub const RIGHT_WALL: f32 = 3.0;
@@ -44,16 +45,16 @@ impl CornellScene {
         let mut scene = Scene::default();
 
         // walls
-        scene.push_obj(Self::left_wall());
-        scene.push_obj(Self::right_wall());
-        scene.push_obj(Self::back_wall());
-        scene.push_obj(Self::floor());
-        scene.push_obj(Self::ceiling());
+        scene.push_obj(Arc::new(Self::left_wall()));
+        scene.push_obj(Arc::new(Self::right_wall()));
+        scene.push_obj(Arc::new(Self::back_wall()));
+        scene.push_obj(Arc::new(Self::floor()));
+        scene.push_obj(Arc::new(Self::ceiling()));
 
         // objects
-        scene.push_obj(Self::sphere());
-        scene.push_obj(Self::capsule());
-        scene.push_obj(Self::tube());
+        scene.push_obj(Arc::new(Self::sphere()));
+        scene.push_obj(Arc::new(Self::capsule()));
+        scene.push_obj(Arc::new(Self::tube()));
         // scene.push_obj(Self::bunny());
         // scene.push_obj(Self::dragon());
         // scene.push_obj(Self::emitter());
@@ -94,7 +95,7 @@ impl CornellScene {
         Arc::new(PointLight::new(point, color))
     }
 
-    fn emitter() -> SceneObject {
+    fn emitter() -> Object<Sphere> {
         let center = Vec3::new(X_CENTER, CEILING + RADIUS * 2.0, Z_CENTER);
 
         let sphere = Sphere::new(center, RADIUS * 2.1);
@@ -104,10 +105,10 @@ impl CornellScene {
         let bsdf = BSDF::new(vec![Box::new(oren_nayar)]);
         let material = Material::new(Some(color * 10.0), bsdf);
 
-        SceneObject::new(Box::new(sphere), material)
+        Object::new(sphere, material)
     }
 
-    fn bunny() -> SceneObject {
+    fn bunny() -> Object<Mesh> {
         let file_name = "./resources/meshes/bunny.obj";
         let (model, _) = tobj::load_obj(file_name, true).expect("Could not load bunny file");
         let scale = Vec3::one() * 25.0;
@@ -123,10 +124,10 @@ impl CornellScene {
         let bsdf = BSDF::new(vec![transmission]);
         let material = Material::from(bsdf);
 
-        SceneObject::new(Box::new(bunny), material)
+        Object::new(bunny, material)
     }
 
-    fn dragon() -> SceneObject {
+    fn dragon() -> Object<Mesh> {
         let file_name = "./resources/meshes/dragon_4.obj";
         let (model, _) = tobj::load_obj(file_name, true).expect("Could not load dragon file");
         let scale = Vec3::one() * 25.0;
@@ -142,10 +143,10 @@ impl CornellScene {
         let bsdf = BSDF::new(vec![reflection, transmission]);
         let material = Material::from(bsdf);
 
-        SceneObject::new(Box::new(dragon), material)
+        Object::new(dragon, material)
     }
 
-    fn sphere() -> SceneObject {
+    fn sphere() -> Object<Sphere> {
         // center on ground
         let center = Vec3::new(
             LEFT_WALL + RIGHT_WALL * 1.5,
@@ -161,10 +162,10 @@ impl CornellScene {
         let bsdf = BSDF::new(vec![Box::new(spec_trans)]);
         let material = Material::from(bsdf);
 
-        SceneObject::new(Box::new(sphere), material)
+        Object::new(sphere, material)
     }
 
-    fn capsule() -> SceneObject {
+    fn capsule() -> Object<Capsule> {
         let from = Vec3::new(
             LEFT_WALL * 1.5 + RIGHT_WALL,
             FLOOR + RADIUS,
@@ -183,10 +184,10 @@ impl CornellScene {
         let bsdf = BSDF::new(vec![Box::new(oren_nayar)]);
         let material = Material::from(bsdf);
 
-        SceneObject::new(Box::new(capsule), material)
+        Object::new(capsule, material)
     }
 
-    fn tube() -> SceneObject {
+    fn tube() -> Object<Tube> {
         let radius = RADIUS / 4.0;
         let points = [
             Vec3::unit_y() * radius - Vec3::unit_x() * 2.0 - Vec3::unit_z() * 3.0,
@@ -208,10 +209,10 @@ impl CornellScene {
         // let bsdf = BSDF::new(vec![Box::new(microfacet)]);
         let material = Material::from(bsdf);
 
-        SceneObject::new(Box::new(tube), material)
+        Object::new(tube, material)
     }
 
-    fn left_wall() -> SceneObject {
+    fn left_wall() -> Object<Aabb> {
         let aabb = Aabb::new(
             Vec3::new(
                 LEFT_WALL - THICKNESS,
@@ -226,10 +227,10 @@ impl CornellScene {
         let bsdf = BSDF::new(vec![Box::new(oren_nayar)]);
         let material = Material::from(bsdf);
 
-        SceneObject::new(Box::new(aabb), material)
+        Object::new(aabb, material)
     }
 
-    fn right_wall() -> SceneObject {
+    fn right_wall() -> Object<Aabb> {
         let aabb = Aabb::new(
             Vec3::new(RIGHT_WALL, FLOOR - THICKNESS, BACK_WALL - THICKNESS),
             Vec3::new(RIGHT_WALL + THICKNESS, CEILING + THICKNESS, FRONT),
@@ -240,10 +241,10 @@ impl CornellScene {
         let bsdf = BSDF::new(vec![Box::new(oren_nayar)]);
         let material = Material::from(bsdf);
 
-        SceneObject::new(Box::new(aabb), material)
+        Object::new(aabb, material)
     }
 
-    fn back_wall() -> SceneObject {
+    fn back_wall() -> Object<Aabb> {
         let aabb = Aabb::new(
             Vec3::new(
                 LEFT_WALL - THICKNESS,
@@ -260,10 +261,10 @@ impl CornellScene {
         let bsdf = BSDF::new(vec![Box::new(oren_nayar)]);
         let material = Material::from(bsdf);
 
-        SceneObject::new(Box::new(aabb), material)
+        Object::new(aabb, material)
     }
 
-    fn floor() -> SceneObject {
+    fn floor() -> Object<Aabb> {
         let aabb = Aabb::new(
             Vec3::new(
                 LEFT_WALL - THICKNESS,
@@ -278,10 +279,10 @@ impl CornellScene {
         let bsdf = BSDF::new(vec![Box::new(oren_nayar)]);
         let material = Material::from(bsdf);
 
-        SceneObject::new(Box::new(aabb), material)
+        Object::new(aabb, material)
     }
 
-    fn ceiling() -> SceneObject {
+    fn ceiling() -> Object<Aabb> {
         let aabb = Aabb::new(
             Vec3::new(LEFT_WALL - THICKNESS, CEILING, BACK_WALL - THICKNESS),
             Vec3::new(RIGHT_WALL + THICKNESS, CEILING + THICKNESS, FRONT),
@@ -292,12 +293,12 @@ impl CornellScene {
         let bsdf = BSDF::new(vec![Box::new(oren_nayar)]);
         let material = Material::from(bsdf);
 
-        SceneObject::new(Box::new(aabb), material)
+        Object::new(aabb, material)
     }
 }
 
 impl DemoScene for CornellScene {
-    fn create(width: u32, height: u32) -> (Scene, Camera) {
+    fn create<'a>(width: u32, height: u32) -> (Scene, Camera) {
         (Self::create_box(), Self::create_camera(width, height))
     }
 }

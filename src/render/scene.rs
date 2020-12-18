@@ -1,33 +1,35 @@
 use crate::render::bvh::{SceneBvh, SceneGeometry};
 use crate::render::light::Light;
-use crate::render::scene_objects::SceneObject;
+use crate::render::scene_objects::Object;
 use geometry::aabb::Aabb;
 use geometry::ray::Ray;
-use geometry::{Container, Intersection, Intersectable};
+use geometry::{Intersection, Intersectable, Geometry};
 use std::sync::Arc;
-use ultraviolet::Vec3;
 
 #[derive(Clone)]
 pub struct SceneIntersection {
     pub info: Intersection,
-    pub obj: Arc<SceneObject>,
+    pub obj: Arc<dyn SceneObject>,
 }
 
 impl SceneIntersection {
-    pub fn new(info: Intersection, obj: Arc<SceneObject>) -> Self {
+    pub fn new(info: Intersection, obj: Arc<dyn SceneObject>) -> Self {
         Self { info, obj }
     }
 }
 
+pub trait SceneObject: Geometry {}
+impl<T> SceneObject for Object<T> where T: Geometry {}
+
 pub struct Scene {
     pub aabb: Aabb,
     pub lights: Vec<Arc<dyn Light>>,
-    pub objects: Vec<Arc<SceneObject>>,
-    bvh: Arc<SceneBvh>,
+    pub objects: Vec<Arc<dyn SceneObject>>,
+    bvh: SceneBvh,
 }
 
 impl Scene {
-    pub fn push_obj(&mut self, obj: SceneObject) {
+    pub fn push_obj(&mut self, obj: Arc<dyn SceneObject>) {
         let obj = Arc::new(obj);
 
         self.objects.push(obj.clone());
@@ -74,11 +76,5 @@ impl Default for Scene {
             objects: Vec::default(),
             bvh: Arc::new(SceneBvh::default()),
         }
-    }
-}
-
-impl Container for Scene {
-    fn contains(&self, obj: &Vec3) -> bool {
-        self.aabb.contains(obj)
     }
 }

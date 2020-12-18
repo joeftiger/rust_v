@@ -7,31 +7,32 @@ use crate::render::camera::Camera;
 use crate::render::light::{Light, PointLight};
 use crate::render::material::Material;
 use crate::render::scene::Scene;
-use crate::render::scene_objects::SceneObject;
+use crate::render::scene_objects::Object;
 use crate::Spectrum;
 use color::Color;
 use geometry::aabb::Aabb;
 use geometry::sphere::Sphere;
 use std::sync::Arc;
 use ultraviolet::{Rotor3, Vec3};
+use geometry::Geometry;
 
 pub struct DebugScene;
 
 impl DebugScene {
-    fn plane() -> SceneObject {
+    fn plane() -> Object<Aabb> {
         let min = Vec3::new(-10000.0, -5.0, -10000.0);
         let max = Vec3::new(10000.0, 0.0, 10000.0);
-        let aabb = Box::new(Aabb::new(min, max));
+        let aabb =Aabb::new(min, max);
 
         let lambertian = LambertianReflection::new(Spectrum::white());
         let bsdf = BSDF::new(vec![Box::new(lambertian)]);
         let material = Material::from(bsdf);
 
-        SceneObject::new(aabb, material)
+        Object::new(aabb, material)
     }
 
-    fn sphere() -> SceneObject {
-        let sphere = Box::new(Sphere::new(Vec3::unit_y(), 1.0));
+    fn sphere() -> Object<Sphere> {
+        let sphere =Sphere::new(Vec3::unit_y(), 1.0);
 
         let lambertian = LambertianReflection::new(Spectrum::white());
         let bsdf = BSDF::new(vec![Box::new(lambertian)]);
@@ -41,7 +42,7 @@ impl DebugScene {
             bsdf,
         );
 
-        SceneObject::new(sphere, material)
+        Object::new(sphere, material)
     }
 
     fn top_light() -> Arc<dyn Light> {
@@ -81,8 +82,8 @@ impl DemoScene for DebugScene {
     fn create(width: u32, height: u32) -> (Scene, Camera) {
         let mut scene = Scene::default();
 
-        scene.push_obj(Self::plane());
-        scene.push_obj(Self::sphere());
+        scene.push_obj(Arc::new(Self::plane()));
+        scene.push_obj(Arc::new(Self::sphere()));
 
         // scene.push_light(Self::top_left_light());
         // scene.push_light(Self::top_light());
