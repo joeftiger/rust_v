@@ -3,18 +3,18 @@ use crate::render::light::Light;
 use crate::render::scene_objects::SceneObject;
 use geometry::aabb::Aabb;
 use geometry::ray::Ray;
-use geometry::{Container, IntersectionInfo, Intersectable};
+use geometry::{Container, Intersection, Intersectable};
 use std::sync::Arc;
 use ultraviolet::Vec3;
 
 #[derive(Clone)]
 pub struct SceneIntersection {
-    pub info: IntersectionInfo,
+    pub info: Intersection,
     pub obj: Arc<SceneObject>,
 }
 
 impl SceneIntersection {
-    pub fn new(info: IntersectionInfo, obj: Arc<SceneObject>) -> Self {
+    pub fn new(info: Intersection, obj: Arc<SceneObject>) -> Self {
         Self { info, obj }
     }
 }

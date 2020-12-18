@@ -1,7 +1,7 @@
 use crate::aabb::Aabb;
 use crate::ray::Ray;
 use crate::sphere::Sphere;
-use crate::{Container, IntersectionInfo, Boundable, Intersectable};
+use crate::{Container, Intersection, Boundable, Intersectable};
 use ultraviolet::Vec3;
 use util::MinMaxExt;
 use util::math;
@@ -36,7 +36,7 @@ impl Container for Capsule {
 }
 
 impl Intersectable for Capsule {
-    fn intersect(&self, ray: &Ray) -> Option<IntersectionInfo> {
+    fn intersect(&self, ray: &Ray) -> Option<Intersection> {
         let ab = self.b - self.a;
         let ao = ray.origin - self.a;
 
@@ -71,7 +71,7 @@ impl Intersectable for Capsule {
             let on_axis = self.a + ab * axis_shift;
             let normal = point - on_axis;
 
-            Some(IntersectionInfo::new(*ray, t_min, point, normal))
+            Some(Intersection::new(*ray, t_min, point, normal))
         }
     }
 

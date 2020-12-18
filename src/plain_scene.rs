@@ -1,5 +1,5 @@
-use crate::render::bxdf::bsdf::BSDF;
-use crate::render::bxdf::oren_nayar::OrenNayar;
+use crate::bxdf::bsdf::BSDF;
+use crate::bxdf::oren_nayar::OrenNayar;
 use crate::render::camera::Camera;
 use crate::render::light::{Light, PointLight};
 use crate::render::material::Material;

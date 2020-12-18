@@ -1,8 +1,8 @@
 use crate::Spectrum;
 use color::Color;
 
-use crate::render::bxdf;
-use crate::render::bxdf::{BxDF, BxDFSample, BxDFType};
+use crate::bxdf;
+use crate::bxdf::{BxDF, BxDFSample, BxDFType};
 use bitflags::_core::fmt::Debug;
 use bitflags::_core::mem::swap;
 use ultraviolet::{Vec2, Vec3};

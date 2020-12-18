@@ -1,5 +1,5 @@
-use crate::render::bxdf::fresnel::{Dielectric, Fresnel};
-use crate::render::bxdf::*;
+use crate::bxdf::fresnel::{Dielectric, Fresnel};
+use crate::bxdf::*;
 use crate::Spectrum;
 use color::Color;
 use std::sync::Arc;

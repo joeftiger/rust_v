@@ -2,7 +2,7 @@ use crate::aabb::Aabb;
 use crate::cylinder::Cylinder;
 use crate::ray::Ray;
 use crate::sphere::Sphere;
-use crate::{Container, IntersectionInfo, Boundable, Intersectable};
+use crate::{Container, Intersection, Boundable, Intersectable};
 use ultraviolet::Vec3;
 use util::MinMaxExt;
 
@@ -65,15 +65,15 @@ impl Container for Tube {
 }
 
 impl Intersectable for Tube {
-    fn intersect(&self, ray: &Ray) -> Option<IntersectionInfo> {
+    fn intersect(&self, ray: &Ray) -> Option<Intersection> {
         let mut intersection = None;
 
         self.spheres.iter().for_each(|sphere| {
-            intersection = IntersectionInfo::mmin_op2(intersection, sphere.intersect(ray))
+            intersection = Intersection::mmin_op2(intersection, sphere.intersect(ray))
         });
 
         self.cylinders.iter().for_each(|cylinder| {
-            intersection = IntersectionInfo::mmin_op2(intersection, cylinder.intersect(ray))
+            intersection = Intersection::mmin_op2(intersection, cylinder.intersect(ray))
         });
 
         intersection

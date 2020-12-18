@@ -3,7 +3,7 @@ use util::math::solve_quadratic;
 
 use crate::aabb::Aabb;
 use crate::ray::Ray;
-use crate::{Boundable, Container, IntersectionInfo, Intersectable};
+use crate::{Boundable, Container, Intersection, Intersectable};
 
 /// A geometrical cylinder.
 #[derive(Debug, PartialEq)]
@@ -82,7 +82,7 @@ impl Boundable for Cylinder {
 }
 
 impl Intersectable for Cylinder {
-    fn intersect(&self, ray: &Ray) -> Option<IntersectionInfo> {
+    fn intersect(&self, ray: &Ray) -> Option<Intersection> {
         let dir = ray.direction;
         let oc = ray.origin - self.center();
 
@@ -107,7 +107,7 @@ impl Intersectable for Cylinder {
 
         normal.normalize();
 
-        Some(IntersectionInfo::new(*ray, t, point, normal))
+        Some(Intersection::new(*ray, t, point, normal))
     }
 
     fn intersects(&self, ray: &Ray) -> bool {

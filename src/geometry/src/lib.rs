@@ -22,14 +22,14 @@ pub fn spherical_direction(sin_theta: f32, cos_theta: f32, phi: f32) -> Vec3 {
 }
 
 #[derive(Copy, Clone, Debug)]
-pub struct IntersectionInfo {
+pub struct Intersection {
     pub ray: Ray,
     pub t: f32,
     pub point: Vec3,
     pub normal: Vec3,
 }
 
-impl IntersectionInfo {
+impl Intersection {
     pub fn new(ray: Ray, t: f32, point: Vec3, normal: Vec3) -> Self {
         Self { ray, t, point, normal }
     }
@@ -42,7 +42,7 @@ impl IntersectionInfo {
     }
 }
 
-impl MinMaxExt for IntersectionInfo {
+impl MinMaxExt for Intersection {
     fn mmin(&self, other: &Self) -> Self {
         if self.t <= other.t {
             return *self;
@@ -60,20 +60,9 @@ impl MinMaxExt for IntersectionInfo {
     }
 }
 
-impl PartialEq for IntersectionInfo {
+impl PartialEq for Intersection {
     fn eq(&self, other: &Self) -> bool {
         self.t == other.t && self.point == other.point && self.normal == other.normal
-    }
-}
-
-pub struct GeometrySample {
-    pub point: Vec3,
-    pub normal: Vec3,
-}
-
-impl GeometrySample {
-    pub fn new(point: Vec3, normal: Vec3) -> Self {
-        Self { point, normal }
     }
 }
 
@@ -92,7 +81,7 @@ pub trait Container<T = Vec3> {
 /// A trait for objects that can be intersected by rays.
 pub trait Intersectable<T = Ray> {
     /// Intersects the given ray with this object.
-    fn intersect(&self, ray: &T) -> Option<IntersectionInfo>;
+    fn intersect(&self, ray: &T) -> Option<Intersection>;
 
     /// Returns whether the given ray intersects with this object.
     ///
@@ -119,7 +108,7 @@ impl Boundable for DefaultGeometry {
 
 impl Intersectable for DefaultGeometry {
 
-    fn intersect(&self, _: &Ray) -> Option<IntersectionInfo> {
+    fn intersect(&self, _: &Ray) -> Option<Intersection> {
         None
     }
 

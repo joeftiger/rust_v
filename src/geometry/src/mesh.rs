@@ -7,7 +7,7 @@ use util::floats;
 use crate::aabb::Aabb;
 use crate::bvh::Bvh;
 use crate::ray::Ray;
-use crate::{IntersectionInfo, Boundable, Intersectable};
+use crate::{Intersection, Boundable, Intersectable};
 
 #[derive(Debug, PartialEq)]
 pub struct Triangle {
@@ -33,7 +33,7 @@ impl Boundable for Triangle {
 
 impl Intersectable for Triangle {
     #[allow(clippy::many_single_char_names)]
-    fn intersect(&self, ray: &Ray) -> Option<IntersectionInfo> {
+    fn intersect(&self, ray: &Ray) -> Option<Intersection> {
         let ab = *self.b - *self.a;
         let ac = *self.c - *self.a;
         let h = ray.direction.cross(ac);
@@ -72,7 +72,7 @@ impl Intersectable for Triangle {
             normal = -normal;
         }
 
-        Some(IntersectionInfo::new(*ray, t, point, normal))
+        Some(Intersection::new(*ray, t, point, normal))
     }
 
     #[allow(clippy::many_single_char_names)]
@@ -199,7 +199,7 @@ impl Boundable for Mesh {
 }
 
 impl Intersectable for Mesh {
-    fn intersect(&self, ray: &Ray) -> Option<IntersectionInfo> {
+    fn intersect(&self, ray: &Ray) -> Option<Intersection> {
         self.bvh.intersect(ray)
     }
 

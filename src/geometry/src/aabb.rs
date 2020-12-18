@@ -2,7 +2,7 @@ use ultraviolet::Vec3;
 use util::floats;
 
 use crate::ray::Ray;
-use crate::{ComparableExt, Container, DistanceExt, IntersectionInfo, Boundable, Intersectable};
+use crate::{ComparableExt, Container, DistanceExt, Intersection, Boundable, Intersectable};
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Aabb {
@@ -119,7 +119,7 @@ impl Container for Aabb {
 }
 
 impl Intersectable for Aabb {
-    fn intersect(&self, ray: &Ray) -> Option<IntersectionInfo> {
+    fn intersect(&self, ray: &Ray) -> Option<Intersection> {
         let t1 = (self.min - ray.origin) / ray.direction;
         let t2 = (self.max - ray.origin) / ray.direction;
 
@@ -150,7 +150,7 @@ impl Intersectable for Aabb {
         }
 
         // approximating epsilon is too small (unlikely) or the given hit was illegal
-        Some(IntersectionInfo::new(*ray, t_min, hit, normal))
+        Some(Intersection::new(*ray, t_min, hit, normal))
     }
 
     fn intersects(&self, ray: &Ray) -> bool {

@@ -1,5 +1,5 @@
-use crate::render::bxdf::BxDFType;
-use crate::render::sampler::Sampler;
+use crate::bxdf::BxDFType;
+use crate::sampler::Sampler;
 use crate::render::scene::{Scene, SceneIntersection};
 use crate::Spectrum;
 use color::Color;

@@ -1,8 +1,8 @@
 #![allow(dead_code)]
 
 use crate::demo_scenes::{DemoScene, FOVY};
-use crate::render::bxdf::bsdf::BSDF;
-use crate::render::bxdf::lambertian::LambertianReflection;
+use crate::bxdf::bsdf::BSDF;
+use crate::bxdf::lambertian::LambertianReflection;
 use crate::render::camera::Camera;
 use crate::render::light::{Light, PointLight};
 use crate::render::material::Material;

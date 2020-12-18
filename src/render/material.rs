@@ -1,4 +1,4 @@
-use crate::render::bxdf::bsdf::BSDF;
+use crate::bxdf::bsdf::BSDF;
 use crate::Spectrum;
 use color::Color;
 use ultraviolet::Vec3;

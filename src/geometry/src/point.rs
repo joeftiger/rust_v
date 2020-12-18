@@ -1,6 +1,6 @@
 use crate::aabb::Aabb;
 use crate::ray::Ray;
-use crate::{IntersectionInfo, Boundable, Intersectable};
+use crate::{Intersection, Boundable, Intersectable};
 use ultraviolet::Vec3;
 
 #[derive(Debug, PartialEq, Default)]
@@ -22,7 +22,7 @@ impl Boundable for Point {
 
 impl Intersectable for Point {
     #[inline(always)]
-    fn intersect(&self, _: &Ray) -> Option<IntersectionInfo> {
+    fn intersect(&self, _: &Ray) -> Option<Intersection> {
         None
     }
 

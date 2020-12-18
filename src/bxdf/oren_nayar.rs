@@ -1,5 +1,5 @@
-use crate::render::bxdf;
-use crate::render::bxdf::{BxDF, BxDFType};
+use crate::bxdf;
+use crate::bxdf::{BxDF, BxDFType};
 use crate::Spectrum;
 use std::f32::consts::FRAC_1_PI;
 use ultraviolet::Vec3;

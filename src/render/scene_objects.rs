@@ -1,7 +1,7 @@
 use crate::render::material::Material;
 use geometry::aabb::Aabb;
 use geometry::ray::Ray;
-use geometry::{DefaultGeometry, Geometry, IntersectionInfo, Boundable, Intersectable};
+use geometry::{DefaultGeometry, Geometry, Intersection, Boundable, Intersectable};
 
 #[derive(Debug)]
 pub struct SceneObject {
@@ -28,7 +28,7 @@ impl Boundable for SceneObject {
 }
 
 impl Intersectable for SceneObject {
-    fn intersect(&self, ray: &Ray) -> Option<IntersectionInfo> {
+    fn intersect(&self, ray: &Ray) -> Option<Intersection> {
         self.shape.intersect(ray)
     }
 

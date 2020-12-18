@@ -1,7 +1,7 @@
 use ultraviolet::Vec3;
 
-use crate::render::bxdf::{same_hemisphere, world_to_bxdf, BxDF, BxDFSample, BxDFType};
-use crate::render::sampler::Sample;
+use crate::bxdf::{same_hemisphere, world_to_bxdf, BxDF, BxDFSample, BxDFType};
+use crate::sampler::Sample;
 use crate::Spectrum;
 
 #[derive(Debug)]

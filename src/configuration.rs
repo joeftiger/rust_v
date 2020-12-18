@@ -2,12 +2,12 @@ use crate::demo_scenes::debug::DebugScene;
 use crate::demo_scenes::*;
 #[cfg(feature = "live-window")]
 use crate::render::fast_window::FastWindow;
-use crate::render::integrator::debug_normals::DebugNormals;
-use crate::render::integrator::path::Path;
-use crate::render::integrator::whitted::Whitted;
-use crate::render::integrator::Integrator;
+use crate::integrator::debug_normals::DebugNormals;
+use crate::integrator::path::Path;
+use crate::integrator::whitted::Whitted;
+use crate::integrator::Integrator;
 use crate::render::renderer::Renderer;
-use crate::render::sampler::{NoopSampler, RandomSampler, Sampler};
+use crate::sampler::{NoopSampler, RandomSampler, Sampler};
 use std::convert::TryInto;
 use std::sync::Arc;
 use std::time::Instant;

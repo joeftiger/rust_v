@@ -6,8 +6,8 @@ use color::Color;
 use geometry::spherical_direction;
 use util::{floats, math};
 
-use crate::render::bxdf::fresnel::Fresnel;
-use crate::render::bxdf::*;
+use crate::bxdf::fresnel::Fresnel;
+use crate::bxdf::*;
 use crate::Spectrum;
 
 #[allow(dead_code)]

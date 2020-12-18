@@ -1,9 +1,9 @@
 use crate::demo_scenes::{DemoScene, FOVY, SIGMA};
-use crate::render::bxdf::bsdf::BSDF;
-use crate::render::bxdf::fresnel::{Dielectric, FresnelNoOp};
-use crate::render::bxdf::lambertian::LambertianReflection;
-use crate::render::bxdf::oren_nayar::OrenNayar;
-use crate::render::bxdf::specular::{SpecularReflection, SpecularTransmission};
+use crate::bxdf::bsdf::BSDF;
+use crate::bxdf::fresnel::{Dielectric, FresnelNoOp};
+use crate::bxdf::lambertian::LambertianReflection;
+use crate::bxdf::oren_nayar::OrenNayar;
+use crate::bxdf::specular::{SpecularReflection, SpecularTransmission};
 use crate::render::camera::Camera;
 use crate::render::light::{Light, PointLight};
 use crate::render::material::Material;

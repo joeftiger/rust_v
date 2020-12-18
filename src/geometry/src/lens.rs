@@ -1,7 +1,7 @@
 use crate::aabb::Aabb;
 use crate::ray::Ray;
 use crate::sphere::Sphere;
-use crate::{Container, IntersectionInfo, Boundable, Intersectable};
+use crate::{Container, Intersection, Boundable, Intersectable};
 use ultraviolet::Vec3;
 
 #[derive(Debug, PartialEq)]
@@ -36,7 +36,7 @@ impl Container for BiconvexLens {
 }
 
 impl Intersectable for BiconvexLens {
-    fn intersect(&self, ray: &Ray) -> Option<IntersectionInfo> {
+    fn intersect(&self, ray: &Ray) -> Option<Intersection> {
         let ray_start = ray.at(ray.t_start);
 
         if let Some(i0) = self.sphere0.intersect(ray) {

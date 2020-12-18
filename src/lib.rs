@@ -10,6 +10,11 @@ pub mod configuration;
 mod demo_scenes;
 pub mod plain_scene;
 pub mod render;
+pub mod shapes;
+pub mod mc;
+pub mod bxdf;
+pub mod integrator;
+pub mod sampler;
 
 pub type Spectrum = Srgb;
 
