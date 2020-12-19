@@ -15,7 +15,6 @@ use crate::ray::Ray;
 use std::fmt::Debug;
 use ultraviolet::Vec3;
 use util::{floats, MinMaxExt};
-use std::borrow::Borrow;
 use std::ops::Deref;
 
 #[inline]
@@ -75,7 +74,7 @@ pub trait Boundable {
 }
 impl<T: ?Sized> Boundable for T where T: Deref, T::Target: Boundable {
     fn bounds(&self) -> Aabb {
-        self.borrow().bounds()
+        self.deref().bounds()
     }
 }
 
@@ -98,13 +97,13 @@ pub trait Intersectable<T = Ray> {
         self.intersect(ray).is_some()
     }
 }
-impl<T: ?Sized> Intersectable for T where T: Deref, T::Target: Boundable {
+impl<T: ?Sized> Intersectable for T where T: Deref, T::Target: Intersectable {
     fn intersect(&self, ray: &Ray) -> Option<Intersection> {
-        self.borrow().intersect(ray)
+        self.deref().intersect(ray)
     }
 
     fn intersects(&self, ray: &Ray) -> bool {
-        self.borrow().intersects(ray)
+        self.deref().intersects(ray)
     }
 }
 
