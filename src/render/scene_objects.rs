@@ -1,7 +1,8 @@
 use crate::render::material::Material;
 use geometry::aabb::Aabb;
 use geometry::ray::Ray;
-use geometry::{DefaultGeometry, Geometry, Intersection, Boundable, Intersectable};
+use geometry::{Boundable, Geometry, Intersectable, Intersection};
+use std::ops::Deref;
 
 #[derive(Debug)]
 pub struct Object<T> {
@@ -15,19 +16,46 @@ impl<T> Object<T> {
     }
 }
 
-impl<T> Boundable for Object<T> where T: Boundable {
+impl<T> Boundable for Object<T>
+where
+    T: Boundable,
+{
     fn bounds(&self) -> Aabb {
         self.shape.bounds()
     }
 }
 
-impl<T> Intersectable for Object<T> where T: Intersectable {
+impl<T> Intersectable for Object<T>
+where
+    T: Intersectable,
+{
     fn intersect(&self, ray: &Ray) -> Option<Intersection> {
         self.shape.intersect(ray)
     }
 
     fn intersects(&self, ray: &Ray) -> bool {
         self.shape.intersects(ray)
+    }
+}
+
+pub trait SceneObject: Geometry {
+    fn material(&self) -> &Material;
+}
+impl<T> SceneObject for Object<T>
+where
+    T: Geometry,
+{
+    fn material(&self) -> &Material {
+        &self.material
+    }
+}
+impl<T: ?Sized> SceneObject for T
+where
+    T: Deref + Geometry,
+    T::Target: SceneObject,
+{
+    fn material(&self) -> &Material {
+        self.deref().material()
     }
 }
 

@@ -1,9 +1,9 @@
-use crate::demo_scenes::{DemoScene, FOVY, SIGMA};
 use crate::bxdf::bsdf::BSDF;
 use crate::bxdf::fresnel::{Dielectric, FresnelNoOp};
 use crate::bxdf::lambertian::LambertianReflection;
 use crate::bxdf::oren_nayar::OrenNayar;
 use crate::bxdf::specular::{SpecularReflection, SpecularTransmission};
+use crate::demo_scenes::{DemoScene, FOVY, SIGMA};
 use crate::render::camera::Camera;
 use crate::render::light::{Light, PointLight};
 use crate::render::material::Material;
@@ -15,7 +15,6 @@ use geometry::aabb::Aabb;
 use geometry::sphere::Sphere;
 use std::sync::Arc;
 use ultraviolet::Vec3;
-use geometry::Geometry;
 
 const RADIUS: f32 = 0.5;
 

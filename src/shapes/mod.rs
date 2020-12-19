@@ -1,8 +1,8 @@
 mod sphere;
 
-use ultraviolet::{Vec3, Vec2};
 use geometry::ray::Ray;
 use geometry::Geometry;
+use ultraviolet::{Vec2, Vec3};
 
 pub struct SurfaceSample {
     pub point: Vec3,

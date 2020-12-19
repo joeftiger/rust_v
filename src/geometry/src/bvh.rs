@@ -24,7 +24,7 @@ pub enum BVHNode<T> {
 pub struct Bvh<T> {
     pub aabb: Aabb,
     pub children: Vec<Arc<Bvh<T>>>,
-    pub objects: Vec<Arc<T>>,
+    pub objects: Vec<T>,
 }
 
 impl<T> Default for Bvh<T> {
@@ -40,7 +40,7 @@ impl<T: PartialEq> PartialEq for Bvh<T> {
 }
 
 impl<T> Bvh<T> {
-    pub fn new(aabb: Aabb, children: Vec<Arc<Bvh<T>>>, objects: Vec<Arc<T>>) -> Self {
+    pub fn new(aabb: Aabb, children: Vec<Arc<Bvh<T>>>, objects: Vec<T>) -> Self {
         Self {
             aabb,
             children,
@@ -50,7 +50,7 @@ impl<T> Bvh<T> {
 }
 
 impl<T> Bvh<T> where T: Boundable {
-    pub fn aac_vec(objects: Vec<Arc<T>>) -> Arc<Self> {
+    pub fn aac_vec(objects: Vec<T>) -> Arc<Self> {
         /*
         println!("# Objects: {}\n", objects.len());
 
@@ -144,7 +144,7 @@ impl<T> Bvh<T> where T: Boundable {
         Self::aac(objects.into_iter().enumerate().collect())
     }
 
-    pub fn aac(mut objects: HashMap<usize, Arc<T>>) -> Arc<Self> {
+    pub fn aac(mut objects: HashMap<usize, T>) -> Arc<Self> {
         if objects.is_empty() {
             return Arc::new(Self::default());
         } else if objects.len() == 1 {

@@ -12,7 +12,7 @@ fn is_sorted(lambda: &[f32]) -> bool {
     let mut iter = lambda.iter();
     let mut prev = iter.next().unwrap();
 
-    while let Some(next) = iter.next() {
+    for next in iter {
         if prev > next {
             return false;
         }

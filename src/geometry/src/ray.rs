@@ -20,7 +20,7 @@ impl Ray {
     pub fn in_range(from: &Vec3, to: &Vec3) -> Self {
         let origin = *from;
         let mut direction = *to - *from;
-        let t_start = 0.0.into();
+        let t_start = 0.0;
         let t_end = direction.mag();
         direction.normalize();
 

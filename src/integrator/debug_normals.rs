@@ -1,6 +1,6 @@
 use crate::integrator::Integrator;
-use crate::sampler::Sampler;
 use crate::render::scene::{Scene, SceneIntersection};
+use crate::sampler::Sampler;
 use crate::Spectrum;
 use color::Color;
 use geometry::ray::Ray;

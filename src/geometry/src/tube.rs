@@ -53,7 +53,7 @@ impl Tube {
 
 impl Boundable for Tube {
     fn bounds(&self) -> Aabb {
-        self.aabb.clone()
+        self.aabb
     }
 }
 

@@ -36,6 +36,7 @@ impl Container for Capsule {
 }
 
 impl Intersectable for Capsule {
+    #[allow(clippy::many_single_char_names)]
     fn intersect(&self, ray: &Ray) -> Option<Intersection> {
         let ab = self.b - self.a;
         let ao = ray.origin - self.a;
@@ -75,6 +76,7 @@ impl Intersectable for Capsule {
         }
     }
 
+    #[allow(clippy::many_single_char_names)]
     fn intersects(&self, ray: &Ray) -> bool {
         let ab = self.b - self.a;
         let ao = ray.origin - self.a;

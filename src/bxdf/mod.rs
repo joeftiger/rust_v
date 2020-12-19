@@ -7,11 +7,11 @@ pub mod specular;
 
 use util::floats;
 
+use crate::mc::cos_sample_hemisphere;
 use crate::Spectrum;
 use bitflags::_core::fmt::Debug;
 use std::f32::consts::{FRAC_1_PI, PI};
 use ultraviolet::{Rotor3, Vec2, Vec3};
-use crate::mc::cos_sample_hemisphere;
 
 #[inline(always)]
 pub fn bxdf_normal() -> Vec3 {

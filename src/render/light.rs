@@ -100,7 +100,7 @@ pub trait Light: Send + Sync {
 
     fn spectrum(&self) -> Spectrum;
 
-    fn sample<'a>(&self, intersection: &SceneIntersection, sample: &Vec3) -> Box<dyn LightTester>;
+    fn sample(&self, intersection: &SceneIntersection, sample: &Vec3) -> Box<dyn LightTester>;
 }
 
 #[derive(Debug)]

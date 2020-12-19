@@ -89,6 +89,7 @@ impl Aabb {
     /// * right back
     /// * right front
     /// * left front
+    #[allow(clippy::many_single_char_names)]
     pub fn corners(&self) -> [Vec3; 8] {
         let min = self.min;
         let max = self.max;

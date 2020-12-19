@@ -1,8 +1,8 @@
 #![allow(dead_code)]
 
-use crate::demo_scenes::{DemoScene, FOVY};
 use crate::bxdf::bsdf::BSDF;
 use crate::bxdf::lambertian::LambertianReflection;
+use crate::demo_scenes::{DemoScene, FOVY};
 use crate::render::camera::Camera;
 use crate::render::light::{Light, PointLight};
 use crate::render::material::Material;
@@ -14,7 +14,6 @@ use geometry::aabb::Aabb;
 use geometry::sphere::Sphere;
 use std::sync::Arc;
 use ultraviolet::{Rotor3, Vec3};
-use geometry::Geometry;
 
 pub struct DebugScene;
 
@@ -22,7 +21,7 @@ impl DebugScene {
     fn plane() -> Object<Aabb> {
         let min = Vec3::new(-10000.0, -5.0, -10000.0);
         let max = Vec3::new(10000.0, 0.0, 10000.0);
-        let aabb =Aabb::new(min, max);
+        let aabb = Aabb::new(min, max);
 
         let lambertian = LambertianReflection::new(Spectrum::white());
         let bsdf = BSDF::new(vec![Box::new(lambertian)]);
@@ -32,7 +31,7 @@ impl DebugScene {
     }
 
     fn sphere() -> Object<Sphere> {
-        let sphere =Sphere::new(Vec3::unit_y(), 1.0);
+        let sphere = Sphere::new(Vec3::unit_y(), 1.0);
 
         let lambertian = LambertianReflection::new(Spectrum::white());
         let bsdf = BSDF::new(vec![Box::new(lambertian)]);

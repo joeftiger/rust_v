@@ -1,10 +1,10 @@
+use crate::mc::{uniform_cone_pdf, uniform_sample_cone_frame, uniform_sample_sphere};
 use crate::shapes::{Sampleable, SurfaceSample};
-use geometry::sphere::Sphere;
-use ultraviolet::{Vec2, Vec3};
 use geometry::ray::Ray;
+use geometry::sphere::Sphere;
+use geometry::{CoordinateSystem, Intersectable};
 use std::f32::consts::PI;
-use geometry::{Intersectable, CoordinateSystem};
-use crate::mc::{uniform_sample_sphere, uniform_sample_cone_frame, uniform_cone_pdf};
+use ultraviolet::{Vec2, Vec3};
 use util::floats;
 
 impl Sampleable for Sphere {
@@ -40,7 +40,7 @@ impl Sampleable for Sphere {
                     let normal = point.normalized();
 
                     SurfaceSample::new(point, normal)
-                },
+                }
             }
         }
     }

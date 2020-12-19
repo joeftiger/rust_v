@@ -1,7 +1,7 @@
 use crate::bxdf::BxDFType;
 use crate::integrator::Integrator;
-use crate::sampler::Sampler;
 use crate::render::scene::{Scene, SceneIntersection};
+use crate::sampler::Sampler;
 use crate::Spectrum;
 use color::Color;
 use geometry::ray::Ray;
@@ -36,7 +36,7 @@ impl Integrator for Whitted {
     ) -> Spectrum {
         let outgoing = -intersection.info.ray.direction;
 
-        let bsdf = &intersection.obj.material.bsdf;
+        let bsdf = &intersection.obj.material().bsdf;
         let point = &intersection.info.point;
         let normal = &intersection.info.normal;
 

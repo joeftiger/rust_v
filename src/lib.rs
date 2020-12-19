@@ -6,14 +6,14 @@ extern crate bitflags;
 
 use color::*;
 
+pub mod bxdf;
 pub mod configuration;
 mod demo_scenes;
-pub mod render;
-pub mod shapes;
-pub mod mc;
-pub mod bxdf;
 pub mod integrator;
+pub mod mc;
+pub mod render;
 pub mod sampler;
+pub mod shapes;
 
 pub type Spectrum = Srgb;
 

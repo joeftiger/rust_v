@@ -1,6 +1,7 @@
 use crate::bxdf::BxDFType;
-use crate::sampler::Sampler;
 use crate::render::scene::{Scene, SceneIntersection};
+use crate::render::scene_objects::SceneObject;
+use crate::sampler::Sampler;
 use crate::Spectrum;
 use color::Color;
 use geometry::ray::Ray;
@@ -31,7 +32,7 @@ pub trait Integrator: Send + Sync {
     ) -> Spectrum {
         let outgoing = -intersection.info.ray.direction;
 
-        let bsdf = &intersection.obj.material.bsdf;
+        let bsdf = &intersection.obj.material().bsdf;
         let normal = intersection.info.normal;
         let sample = sampler.get_sample();
 
@@ -71,7 +72,7 @@ pub trait Integrator: Send + Sync {
     ) -> Spectrum {
         let outgoing = -intersection.info.ray.direction;
 
-        let bsdf = &intersection.obj.material.bsdf;
+        let bsdf = &intersection.obj.material().bsdf;
         let normal = intersection.info.normal;
         let sample = sampler.get_sample();
 

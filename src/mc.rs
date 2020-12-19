@@ -1,6 +1,6 @@
-use std::f32::consts::{FRAC_PI_2, FRAC_PI_4, PI};
-use ultraviolet::{Vec2, Vec3, Lerp};
 use geometry::CoordinateSystem;
+use std::f32::consts::{FRAC_PI_2, FRAC_PI_4, PI};
+use ultraviolet::{Lerp, Vec2, Vec3};
 
 /// # Summary
 /// Samples a concentric mapped point from the given random sample.
@@ -96,14 +96,17 @@ pub fn uniform_sample_cone(sample: &Vec2, cos_theta_max: f32) -> Vec3 {
 ///
 /// # Results
 /// * `Vec3` - A direction in the cone around `frame.e2`
-pub fn uniform_sample_cone_frame(sample: &Vec2, cos_theta_max: f32, frame: &CoordinateSystem) -> Vec3 {
+pub fn uniform_sample_cone_frame(
+    sample: &Vec2,
+    cos_theta_max: f32,
+    frame: &CoordinateSystem,
+) -> Vec3 {
     let cos = cos_theta_max.lerp(1.0, sample.x);
     let sin = f32::sqrt(1.0 - cos * cos);
     let phi = sample.y * 2.0 * PI;
 
     (phi.cos() * sin * frame.e1) + (cos * frame.e2) + (phi.sin() * sin * frame.e3)
 }
-
 
 /// # Summary
 /// Computes the pdf for uniformly sampling a code.

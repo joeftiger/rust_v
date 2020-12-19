@@ -15,6 +15,8 @@ use crate::ray::Ray;
 use std::fmt::Debug;
 use ultraviolet::Vec3;
 use util::{floats, MinMaxExt};
+use std::borrow::Borrow;
+use std::ops::Deref;
 
 #[inline]
 pub fn spherical_direction(sin_theta: f32, cos_theta: f32, phi: f32) -> Vec3 {
@@ -71,6 +73,11 @@ pub trait Boundable {
     /// The bounds of this object.
     fn bounds(&self) -> Aabb;
 }
+impl<T: ?Sized> Boundable for T where T: Deref, T::Target: Boundable {
+    fn bounds(&self) -> Aabb {
+        self.borrow().bounds()
+    }
+}
 
 /// A trait for objects that can contain a point or position.
 pub trait Container<T = Vec3> {
@@ -91,6 +98,15 @@ pub trait Intersectable<T = Ray> {
         self.intersect(ray).is_some()
     }
 }
+impl<T: ?Sized> Intersectable for T where T: Deref, T::Target: Boundable {
+    fn intersect(&self, ray: &Ray) -> Option<Intersection> {
+        self.borrow().intersect(ray)
+    }
+
+    fn intersects(&self, ray: &Ray) -> bool {
+        self.borrow().intersects(ray)
+    }
+}
 
 /// A helper trait to combine both `Boundable` and `Intersectable` in a threadsafe way
 /// (`Send` + `Sync`), allowing `Debug` prints.
@@ -107,7 +123,6 @@ impl Boundable for DefaultGeometry {
 }
 
 impl Intersectable for DefaultGeometry {
-
     fn intersect(&self, _: &Ray) -> Option<Intersection> {
         None
     }

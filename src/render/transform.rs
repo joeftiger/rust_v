@@ -1,6 +1,6 @@
+use std::ops::Mul;
 use ultraviolet::{Mat4, Vec3};
 use util::floats;
-use std::ops::Mul;
 
 pub struct Transform {
     m: Mat4,
@@ -40,7 +40,9 @@ impl Transform {
     }
 
     pub fn has_scale(&self) -> bool {
-        !floats::approx_equal(self.m[0][0], 1.0) || !floats::approx_equal(self.m[1][1], 1.0) || !floats::approx_equal(self.m[2][2], 1.0)
+        !floats::approx_equal(self.m[0][0], 1.0)
+            || !floats::approx_equal(self.m[1][1], 1.0)
+            || !floats::approx_equal(self.m[2][2], 1.0)
     }
 
     pub fn has_translation(&self) -> bool {
@@ -50,9 +52,12 @@ impl Transform {
     }
 
     pub fn has_rotation(&self) -> bool {
-        !floats::approx_zero(self.m[0][1]) || !floats::approx_zero(self.m[0][2])
-            || !floats::approx_zero(self.m[1][0]) || !floats::approx_zero(self.m[1][2])
-            || !floats::approx_zero(self.m[2][0]) || !floats::approx_zero(self.m[2][1])
+        !floats::approx_zero(self.m[0][1])
+            || !floats::approx_zero(self.m[0][2])
+            || !floats::approx_zero(self.m[1][0])
+            || !floats::approx_zero(self.m[1][2])
+            || !floats::approx_zero(self.m[2][0])
+            || !floats::approx_zero(self.m[2][1])
     }
 
     #[rustfmt::skip]
@@ -160,15 +165,21 @@ impl Transform {
             yz * (1.0 - cos) + a.x * sin,
             zz + (1.0 - zz) * cos,
             0.0,
-            0.0, 0.0, 0.0, 1.0
+            0.0,
+            0.0,
+            0.0,
+            1.0,
         ]);
 
-        Self { m, m_inv: m.transposed() }
+        Self {
+            m,
+            m_inv: m.transposed(),
+        }
     }
 
     pub fn look_at(pos: &Vec3, look: &Vec3, up: &Vec3) -> Self {
         let dir = (*look - *pos).normalized();
-        let right =  up.normalized().cross(dir);
+        let right = up.normalized().cross(dir);
 
         if right.mag() == 0.0 {
             panic!("'up' vector {:?} and viewing direction {:?} passed to look_at() are pointing in the same direction.", up, dir);
@@ -180,10 +191,13 @@ impl Transform {
             right.into_homogeneous_vector(),
             new_up.into_homogeneous_vector(),
             dir.into_homogeneous_vector(),
-            pos.into_homogeneous_point()
+            pos.into_homogeneous_point(),
         );
 
-        Self { m: m_inv.inversed(), m_inv }
+        Self {
+            m: m_inv.inversed(),
+            m_inv,
+        }
     }
 
     pub fn orthographic(z_near: f32, z_far: f32) -> Self {
@@ -198,10 +212,7 @@ impl Transform {
         let m22 = f / (f - n);
         let m23 = -m22 * n;
         let perspective = Mat4::from([
-            1.0, 0.0, 0.0, 0.0,
-            0.0, 1.0, 0.0, 0.0,
-            0.0, 0.0, m22, m23,
-            0.0, 0.0, 1.0, 0.0
+            1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, m22, m23, 0.0, 0.0, 1.0, 0.0,
         ]);
 
         // Scale canonical perspective view to specified field of view
@@ -225,7 +236,7 @@ impl Mul for Transform {
     fn mul(self, rhs: Self) -> Self::Output {
         Self {
             m: self.m * rhs.m,
-            m_inv: rhs.m * self.m
+            m_inv: rhs.m * self.m,
         }
     }
 }

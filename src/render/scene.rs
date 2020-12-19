@@ -1,9 +1,9 @@
 use crate::render::bvh::{SceneBvh, SceneGeometry};
 use crate::render::light::Light;
-use crate::render::scene_objects::Object;
+use crate::render::scene_objects::SceneObject;
 use geometry::aabb::Aabb;
 use geometry::ray::Ray;
-use geometry::{Intersection, Intersectable, Geometry};
+use geometry::{Intersectable, Intersection};
 use std::sync::Arc;
 
 #[derive(Clone)]
@@ -18,21 +18,18 @@ impl SceneIntersection {
     }
 }
 
-pub trait SceneObject: Geometry {}
-impl<T> SceneObject for Object<T> where T: Geometry {}
-
 pub struct Scene {
     pub aabb: Aabb,
     pub lights: Vec<Arc<dyn Light>>,
     pub objects: Vec<Arc<dyn SceneObject>>,
-    bvh: SceneBvh,
+    bvh: Arc<SceneBvh>,
 }
 
 impl Scene {
     pub fn push_obj(&mut self, obj: Arc<dyn SceneObject>) {
         let obj = Arc::new(obj);
 
-        self.objects.push(obj.clone());
+        self.objects.push(Arc::clone(&obj));
         // if obj.material.emissive() {
         //     self.push_light(obj)
         // }

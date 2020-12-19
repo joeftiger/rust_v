@@ -9,10 +9,10 @@ use color::Color;
 use util::range_block::{Block, RangeBlock};
 
 use crate::configuration::Configuration;
-use crate::render::camera::Camera;
 use crate::integrator::Integrator;
-use crate::sampler::Sampler;
+use crate::render::camera::Camera;
 use crate::render::scene::Scene;
+use crate::sampler::Sampler;
 use crate::Spectrum;
 use bitflags::_core::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 use std::thread;

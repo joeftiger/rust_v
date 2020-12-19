@@ -1,24 +1,16 @@
 use geometry::ray::Ray;
 use util::floats;
 
-use crate::render::scene::{SceneIntersection, SceneObject};
+use crate::render::scene::SceneIntersection;
+use crate::render::scene_objects::SceneObject;
 use geometry::bvh::Bvh;
-use std::sync::Arc;
 use geometry::{Boundable, Intersectable};
-use geometry::aabb::Aabb;
+use std::sync::Arc;
 
 pub type SceneBvh = Bvh<Arc<dyn SceneObject>>;
 
 pub trait SceneGeometry {
     fn intersect_detailed(&self, ray: &Ray) -> Option<SceneIntersection>;
-}
-
-pub fn intersect(bvh: &SceneBvh, ray: &Ray) -> Option<SceneIntersection> {
-    if !bvh.bounds().intersects(ray) {
-        return None;
-    }
-
-    unimplemented!()
 }
 
 impl SceneGeometry for SceneBvh {
@@ -30,7 +22,7 @@ impl SceneGeometry for SceneBvh {
         let obj_intersection = self
             .objects
             .iter()
-            .filter_map(|o| Some(SceneIntersection::new(o.intersect(ray)?, o.clone())))
+            .filter_map(|o| Some(SceneIntersection::new(o.intersect(ray)?, Arc::clone(o))))
             .min_by(|a, b| floats::fast_cmp(a.info.t, b.info.t));
 
         if let Some(obj) = obj_intersection {

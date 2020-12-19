@@ -1,11 +1,11 @@
 #![allow(dead_code)]
 #![allow(unused_imports)]
 
-use crate::demo_scenes::{DemoScene, FOVY, SIGMA};
 use crate::bxdf::bsdf::BSDF;
 use crate::bxdf::fresnel::{Dielectric, FresnelNoOp};
 use crate::bxdf::oren_nayar::OrenNayar;
 use crate::bxdf::specular::{SpecularReflection, SpecularTransmission};
+use crate::demo_scenes::{DemoScene, FOVY, SIGMA};
 use crate::render::camera::Camera;
 use crate::render::light::{Light, PointLight};
 use crate::render::material::Material;
@@ -19,9 +19,9 @@ use geometry::cylinder::Cylinder;
 use geometry::mesh::Mesh;
 use geometry::sphere::Sphere;
 use geometry::tube::Tube;
+use geometry::Geometry;
 use std::sync::Arc;
 use ultraviolet::{Bivec3, Rotor3, Vec3};
-use geometry::Geometry;
 
 pub const LEFT_WALL: f32 = -3.0;
 pub const RIGHT_WALL: f32 = 3.0;

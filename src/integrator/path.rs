@@ -1,7 +1,7 @@
 use crate::bxdf::BxDFType;
 use crate::integrator::Integrator;
-use crate::sampler::Sampler;
 use crate::render::scene::{Scene, SceneIntersection};
+use crate::sampler::Sampler;
 use crate::Spectrum;
 use color::Color;
 use geometry::ray::Ray;
@@ -49,7 +49,7 @@ impl Integrator for Path {
         for bounce in 0..self.max_depth {
             let outgoing = -hit.info.ray.direction;
 
-            let material = &hit.obj.material;
+            let material = &hit.obj.material();
             let bsdf = &material.bsdf;
             let normal = &hit.info.normal;
 

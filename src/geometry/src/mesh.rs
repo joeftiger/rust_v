@@ -9,7 +9,7 @@ use crate::bvh::Bvh;
 use crate::ray::Ray;
 use crate::{Intersection, Boundable, Intersectable};
 
-#[derive(Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct Triangle {
     a: Arc<Vec3>,
     b: Arc<Vec3>,
@@ -133,7 +133,15 @@ pub struct Mesh {
 
 impl Mesh {
     pub fn new(vertices: Vec<Arc<Vec3>>, triangles: Vec<Arc<Triangle>>) -> Self {
-        let bvh = Bvh::aac_vec(triangles.clone());
+        let clone: Vec<Triangle> = triangles.iter().map(|t| {
+            let a = Arc::new(*t.a);
+            let b = Arc::new(*t.b);
+            let c = Arc::new(*t.c);
+
+            Triangle::new(a, b, c)
+        }).collect();
+        // let clone = triangles.clone();
+        let bvh = Bvh::aac_vec(clone);
 
         Self {
             vertices,
