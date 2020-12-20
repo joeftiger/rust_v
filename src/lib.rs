@@ -13,7 +13,6 @@ pub mod integrator;
 pub mod mc;
 pub mod render;
 pub mod sampler;
-pub mod shapes;
 
 pub type Spectrum = Srgb;
 

@@ -1,6 +1,6 @@
 use crate::render::bvh::{SceneBvh, SceneGeometry};
-use crate::render::light::Light;
-use crate::render::scene_objects::SceneObject;
+use crate::render::objects::emitter::Emitter;
+use crate::render::objects::Instance;
 use geometry::aabb::Aabb;
 use geometry::ray::Ray;
 use geometry::{Intersectable, Intersection};
@@ -9,34 +9,33 @@ use std::sync::Arc;
 #[derive(Clone)]
 pub struct SceneIntersection {
     pub info: Intersection,
-    pub obj: Arc<dyn SceneObject>,
+    pub obj: Instance,
 }
 
 impl SceneIntersection {
-    pub fn new(info: Intersection, obj: Arc<dyn SceneObject>) -> Self {
+    pub fn new(info: Intersection, obj: Instance) -> Self {
         Self { info, obj }
     }
 }
 
 pub struct Scene {
     pub aabb: Aabb,
-    pub lights: Vec<Arc<dyn Light>>,
-    pub objects: Vec<Arc<dyn SceneObject>>,
+    pub lights: Vec<Arc<dyn Emitter>>,
+    pub objects: Vec<Instance>,
     bvh: Arc<SceneBvh>,
 }
 
 impl Scene {
-    pub fn push_obj(&mut self, obj: Arc<dyn SceneObject>) {
-        let obj = Arc::new(obj);
+    pub fn add(&mut self, obj: Instance) -> &mut Self {
+        match &obj {
+            Instance::Emitter(e) => {
+                self.objects.push(obj.clone());
+                self.lights.push(e.clone());
+            }
+            Instance::Receiver(_) => self.objects.push(obj.clone()),
+        }
 
-        self.objects.push(Arc::clone(&obj));
-        // if obj.material.emissive() {
-        //     self.push_light(obj)
-        // }
-    }
-
-    pub fn push_light(&mut self, light: Arc<dyn Light>) {
-        self.lights.push(light);
+        self
     }
 
     pub fn build_bvh(&mut self) {

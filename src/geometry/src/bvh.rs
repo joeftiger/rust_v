@@ -8,7 +8,7 @@ use util::floats;
 
 use crate::aabb::Aabb;
 use crate::ray::Ray;
-use crate::{DistanceExt, Intersection, Boundable, Intersectable, Geometry};
+use crate::{DistanceExt, Intersection, Boundable, Intersectable};
 
 #[derive(Debug)]
 pub enum BVHNode<T> {
@@ -271,9 +271,9 @@ impl<T> Boundable for Bvh<T> where T: Boundable {
     }
 }
 
-impl<T> Intersectable for Bvh<T> where T: Geometry {
+impl<T> Intersectable for Bvh<T> where T: Intersectable {
     fn intersect(&self, ray: &Ray) -> Option<Intersection> {
-        if !self.bounds().intersects(ray) {
+        if !self.aabb.intersects(ray) {
             return None;
         }
 

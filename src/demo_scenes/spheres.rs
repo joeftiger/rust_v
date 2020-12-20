@@ -5,10 +5,11 @@ use crate::bxdf::oren_nayar::OrenNayar;
 use crate::bxdf::specular::{SpecularReflection, SpecularTransmission};
 use crate::demo_scenes::{DemoScene, FOVY, SIGMA};
 use crate::render::camera::Camera;
-use crate::render::light::{Light, PointLight};
-use crate::render::material::Material;
+use crate::render::objects::emitter::EmitterObj;
+use crate::render::objects::receiver::ReceiverObj;
+use crate::render::objects::Instance;
+use crate::render::objects::Instance::{Emitter, Receiver};
 use crate::render::scene::Scene;
-use crate::render::scene_objects::Object;
 use crate::Spectrum;
 use color::Color;
 use geometry::aabb::Aabb;
@@ -21,16 +22,15 @@ const RADIUS: f32 = 0.5;
 pub struct SphereScene;
 
 impl SphereScene {
-    fn ground() -> Object<Aabb> {
+    fn ground() -> Instance {
         let min = Vec3::new(-10000.0, -5.0, -10000.0);
         let max = Vec3::new(10000.0, 0.0, 10000.0);
         let aabb = Aabb::new(min, max);
 
         let lambertian = LambertianReflection::new(Spectrum::white());
         let bsdf = BSDF::new(vec![Box::new(lambertian)]);
-        let material = Material::from(bsdf);
 
-        Object::new(aabb, material)
+        Receiver(Arc::new(ReceiverObj::new(aabb, Arc::new(bsdf))))
     }
 
     fn random_pos() -> Vec3 {
@@ -56,48 +56,36 @@ impl SphereScene {
         }
     }
 
-    fn random_material(color: Spectrum) -> Material {
+    fn random_bsdf(color: Spectrum) -> (bool, BSDF) {
         let rand = fastrand::f32();
 
         if color == Spectrum::white() {
             if rand < 0.6 {
-                let oren_nayar = OrenNayar::new(color, SIGMA);
-                let bsdf = BSDF::new(vec![Box::new(oren_nayar)]);
-                Material::new(Some(color * 0.5), bsdf)
+                let oren_nayar = LambertianReflection::new(color);
+                (true, BSDF::new(vec![Box::new(oren_nayar)]))
             } else if rand < 0.8 {
                 let reflection = SpecularReflection::new(color, Arc::new(FresnelNoOp));
-                let bsdf = BSDF::new(vec![Box::new(reflection)]);
-                Material::from(bsdf)
+                (false, BSDF::new(vec![Box::new(reflection)]))
             } else {
                 let fresnel = Arc::new(Dielectric::new(1.0, 1.5));
                 let transmission = SpecularTransmission::new(color, fresnel);
-                let bsdf = BSDF::new(vec![Box::new(transmission)]);
-                Material::from(bsdf)
+                (false, BSDF::new(vec![Box::new(transmission)]))
             }
         } else {
             let oren_nayar = OrenNayar::new(color, SIGMA);
-            let bsdf = BSDF::new(vec![Box::new(oren_nayar)]);
-            Material::from(bsdf)
+            (false, BSDF::new(vec![Box::new(oren_nayar)]))
         }
     }
 
-    fn big_emitter() -> Object<Aabb> {
-        let min = Vec3::new(-10.0, 100.0, -100.0);
-        let max = Vec3::new(10.0, 200.0, 10.0);
-        let aabb = Aabb::new(min, max);
+    fn big_emitter() -> Instance {
+        let center = Vec3::new(0.0, 100.0, 0.0);
+        let sphere = Sphere::new(center, 10.0);
 
-        let lambertian = LambertianReflection::new(Spectrum::black());
+        let color = Spectrum::white();
+        let lambertian = LambertianReflection::new(color);
         let bsdf = BSDF::new(vec![Box::new(lambertian)]);
-        let material = Material::new(Some(Spectrum::white()), bsdf);
 
-        Object::new(aabb, material)
-    }
-
-    fn light() -> Arc<dyn Light> {
-        let point = Vec3::new(0.0, 90.0, 0.0);
-        let color = Spectrum::white() * 10000.0;
-
-        Arc::new(PointLight::new(point, color))
+        Emitter(Arc::new(EmitterObj::new(sphere, Arc::new(bsdf), color * 10.0)))
     }
 
     fn create_scene() -> Scene {
@@ -109,16 +97,19 @@ impl SphereScene {
                 let sphere = Sphere::new(center, RADIUS);
 
                 let color = Self::random_color();
-                let material = Self::random_material(color);
+                let bsdf = Self::random_bsdf(color);
 
-                let object = Object::new(sphere, material);
-                scene.push_obj(Arc::new(object));
+                let obj = if bsdf.0 {
+                    Emitter(Arc::new(EmitterObj::new(sphere, Arc::new(bsdf.1), color * 2.0)))
+                } else {
+                    Receiver(Arc::new(ReceiverObj::new(sphere, Arc::new(bsdf.1))))
+                };
+
+                scene.add(obj);
             }
         }
 
-        scene.push_obj(Arc::new(Self::ground()));
-        scene.push_obj(Arc::new(Self::big_emitter()));
-        scene.push_light(Self::light());
+        scene.add(Self::ground()).add(Self::big_emitter());
 
         scene.build_bvh();
         scene

@@ -72,7 +72,7 @@ pub trait Boundable {
     /// The bounds of this object.
     fn bounds(&self) -> Aabb;
 }
-impl<T: ?Sized> Boundable for T where T: Deref, T::Target: Boundable {
+impl<T> Boundable for T where T: Deref, T::Target: Boundable {
     fn bounds(&self) -> Aabb {
         self.deref().bounds()
     }
@@ -97,7 +97,7 @@ pub trait Intersectable<T = Ray> {
         self.intersect(ray).is_some()
     }
 }
-impl<T: ?Sized> Intersectable for T where T: Deref, T::Target: Intersectable {
+impl<T> Intersectable for T where T: Deref, T::Target: Intersectable {
     fn intersect(&self, ray: &Ray) -> Option<Intersection> {
         self.deref().intersect(ray)
     }
@@ -110,7 +110,7 @@ impl<T: ?Sized> Intersectable for T where T: Deref, T::Target: Intersectable {
 /// A helper trait to combine both `Boundable` and `Intersectable` in a threadsafe way
 /// (`Send` + `Sync`), allowing `Debug` prints.
 pub trait Geometry: Debug + Boundable + Intersectable + Send + Sync {}
-impl<T: ?Sized> Geometry for T where T: Debug + Boundable + Intersectable + Send + Sync {}
+impl<T> Geometry for T where T: Debug + Boundable + Intersectable + Send + Sync {}
 
 #[derive(Debug, PartialEq)]
 pub struct DefaultGeometry;

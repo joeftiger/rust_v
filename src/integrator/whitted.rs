@@ -1,5 +1,6 @@
 use crate::bxdf::BxDFType;
 use crate::integrator::Integrator;
+use crate::render::objects::Instance;
 use crate::render::scene::{Scene, SceneIntersection};
 use crate::sampler::Sampler;
 use crate::Spectrum;
@@ -36,7 +37,12 @@ impl Integrator for Whitted {
     ) -> Spectrum {
         let outgoing = -intersection.info.ray.direction;
 
-        let bsdf = &intersection.obj.material().bsdf;
+        let obj = match &intersection.obj {
+            Instance::Emitter(e) => e.as_receiver(),
+            Instance::Receiver(r) => r.clone(),
+        };
+
+        let bsdf = obj.bsdf();
         let point = &intersection.info.point;
         let normal = &intersection.info.normal;
 
@@ -46,20 +52,22 @@ impl Integrator for Whitted {
             // for _ in 0..LIGHT_SAMPLES_1D.min(scene.lights.len()) {
             //     let index = (sampler.get_1d() * scene.lights.len() as f32) as usize;
             //     let light = &scene.lights[index];
-            let light_tester = light.sample(intersection, &sampler.get_3d());
+            let emitter_sample = light.sample(&intersection, &sampler.get_2d());
 
-            if let Some(light_sample) = light_tester.test(scene) {
-                if light_sample.pdf > 0.0 {
-                    let c = bsdf.evaluate(normal, &light_sample.incident, &outgoing, BxDFType::ALL);
+            if emitter_sample.pdf > 0.0
+                && !emitter_sample.radiance.is_black()
+                && !emitter_sample.occlusion_tester.is_occluded(scene)
+            {
+                let c = bsdf.evaluate(normal, &emitter_sample.incident, &outgoing, BxDFType::ALL);
 
-                    if !c.is_black() {
-                        let cos = light_sample.incident.dot(*normal).abs();
+                if !c.is_black() {
+                    let cos = emitter_sample.incident.dot(*normal).abs();
 
-                        if cos != 0.0 {
-                            illumination += light.spectrum()
-                                * c
-                                * (light_sample.intensity * cos / light_sample.pdf);
-                        }
+                    if cos != 0.0 {
+                        illumination += light.emission()
+                            * c
+                            * emitter_sample.radiance
+                            * (cos / emitter_sample.pdf);
                     }
                 }
             }

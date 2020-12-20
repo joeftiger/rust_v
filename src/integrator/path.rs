@@ -1,5 +1,6 @@
 use crate::bxdf::BxDFType;
 use crate::integrator::Integrator;
+use crate::render::objects::Instance;
 use crate::render::scene::{Scene, SceneIntersection};
 use crate::sampler::Sampler;
 use crate::Spectrum;
@@ -49,35 +50,43 @@ impl Integrator for Path {
         for bounce in 0..self.max_depth {
             let outgoing = -hit.info.ray.direction;
 
-            let material = &hit.obj.material();
-            let bsdf = &material.bsdf;
+            let (obj, emitter) = match &intersection.obj {
+                Instance::Emitter(e) => (e.as_receiver(), Some(e)),
+                Instance::Receiver(r) => (r.clone(), None),
+            };
+
+            let bsdf = obj.bsdf();
             let normal = &hit.info.normal;
 
             let mut illumination = Spectrum::black();
 
-            if (bounce == 0 || specular) && material.emissive() {
-                illumination += throughput * material.radiance(&outgoing, normal);
+            if bounce == 0 || specular {
+                if let Some(e) = emitter {
+                    illumination += throughput * e.emission();
+                }
             }
 
             for light in &scene.lights {
-                // for _ in 0..LIGHT_SAMPLES_1D.min(scene.lights.len()) {
-                //     let index = (sampler.get_1d() * scene.lights.len() as f32) as usize;
-                //     let light = &scene.lights[index];
-                let light_tester = light.sample(&hit, &sampler.get_3d());
+            // for _ in 0..5.min(scene.lights.len()) {
+            //     let index = (sampler.get_1d() * scene.lights.len() as f32) as usize;
+            //     let light = &scene.lights[index];
+                let emitter_sample = light.sample(&hit, &sampler.get_2d());
 
-                if let Some(light_sample) = light_tester.test(scene) {
-                    if light_sample.pdf > 0.0 {
-                        let c =
-                            bsdf.evaluate(normal, &light_sample.incident, &outgoing, BxDFType::ALL);
+                if emitter_sample.pdf > 0.0
+                    && !emitter_sample.radiance.is_black()
+                    && !emitter_sample.occlusion_tester.is_occluded(scene)
+                {
+                    let c =
+                        bsdf.evaluate(normal, &emitter_sample.incident, &outgoing, BxDFType::ALL);
 
-                        if !c.is_black() {
-                            let cos = light_sample.incident.dot(*normal).abs();
+                    if !c.is_black() {
+                        let cos = emitter_sample.incident.dot(*normal).abs();
 
-                            if cos != 0.0 {
-                                illumination += light.spectrum()
-                                    * c
-                                    * (light_sample.intensity * cos / light_sample.pdf);
-                            }
+                        if cos != 0.0 {
+                            illumination += light.emission()
+                                * c
+                                * emitter_sample.radiance
+                                * (cos / emitter_sample.pdf);
                         }
                     }
                 }

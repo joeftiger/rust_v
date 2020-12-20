@@ -1,5 +1,5 @@
 use crate::mc::{uniform_cone_pdf, uniform_sample_cone_frame, uniform_sample_sphere};
-use crate::shapes::{Sampleable, SurfaceSample};
+use crate::render::objects::emitter::{Sampleable, SurfaceSample};
 use geometry::ray::Ray;
 use geometry::sphere::Sphere;
 use geometry::{CoordinateSystem, Intersectable};
@@ -12,7 +12,7 @@ impl Sampleable for Sphere {
         4.0 * PI * self.radius * self.radius
     }
 
-    fn sample(&self, point: &Vec3, sample: &Vec2) -> SurfaceSample {
+    fn sample_surface(&self, point: &Vec3, sample: &Vec2) -> SurfaceSample {
         let dist_sq = (*point - self.center).mag_sq();
         let r2 = self.radius * self.radius;
 

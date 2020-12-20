@@ -2,9 +2,7 @@ pub mod bvh;
 pub mod camera;
 #[cfg(feature = "live-window")]
 pub mod fast_window;
-pub mod light;
-pub mod material;
+pub mod objects;
 pub mod renderer;
 pub mod scene;
-pub mod scene_objects;
 pub mod transform;

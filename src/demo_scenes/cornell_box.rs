@@ -3,14 +3,16 @@
 
 use crate::bxdf::bsdf::BSDF;
 use crate::bxdf::fresnel::{Dielectric, FresnelNoOp};
+use crate::bxdf::lambertian::LambertianReflection;
 use crate::bxdf::oren_nayar::OrenNayar;
 use crate::bxdf::specular::{SpecularReflection, SpecularTransmission};
 use crate::demo_scenes::{DemoScene, FOVY, SIGMA};
 use crate::render::camera::Camera;
-use crate::render::light::{Light, PointLight};
-use crate::render::material::Material;
+use crate::render::objects::emitter::EmitterObj;
+use crate::render::objects::receiver::ReceiverObj;
+use crate::render::objects::Instance;
+use crate::render::objects::Instance::{Emitter, Receiver};
 use crate::render::scene::Scene;
-use crate::render::scene_objects::Object;
 use crate::Spectrum;
 use color::Color;
 use geometry::aabb::Aabb;
@@ -45,22 +47,18 @@ impl CornellScene {
         let mut scene = Scene::default();
 
         // walls
-        scene.push_obj(Arc::new(Self::left_wall()));
-        scene.push_obj(Arc::new(Self::right_wall()));
-        scene.push_obj(Arc::new(Self::back_wall()));
-        scene.push_obj(Arc::new(Self::floor()));
-        scene.push_obj(Arc::new(Self::ceiling()));
-
-        // objects
-        scene.push_obj(Arc::new(Self::sphere()));
-        scene.push_obj(Arc::new(Self::capsule()));
-        scene.push_obj(Arc::new(Self::tube()));
-        // scene.push_obj(Self::bunny());
-        // scene.push_obj(Self::dragon());
-        // scene.push_obj(Self::emitter());
-
-        // light
-        scene.push_light(Self::light());
+        scene
+            .add(Self::left_wall())
+            .add(Self::right_wall())
+            .add(Self::back_wall())
+            .add(Self::floor())
+            .add(Self::ceiling())
+            // objects
+            .add(Self::sphere())
+            .add(Self::capsule())
+            .add(Self::tube())
+            // lights
+            .add(Self::emitter());
 
         scene.build_bvh();
 
@@ -87,28 +85,22 @@ impl CornellScene {
         Camera::new(position, center, up, FOVY, width, height)
     }
 
-    fn light() -> Arc<dyn Light> {
-        let point = Vec3::new(X_CENTER, Y_CENTER + (CEILING - Y_CENTER) * 0.5, Z_CENTER);
-
-        let color = Spectrum::white() * 20.0;
-
-        Arc::new(PointLight::new(point, color))
-    }
-
-    fn emitter() -> Object<Sphere> {
+    fn emitter() -> Instance {
         let center = Vec3::new(X_CENTER, CEILING + RADIUS * 2.0, Z_CENTER);
-
         let sphere = Sphere::new(center, RADIUS * 2.1);
 
         let color = Spectrum::white();
         let oren_nayar = OrenNayar::new(color, SIGMA);
         let bsdf = BSDF::new(vec![Box::new(oren_nayar)]);
-        let material = Material::new(Some(color * 10.0), bsdf);
 
-        Object::new(sphere, material)
+        Emitter(Arc::new(EmitterObj::new(
+            sphere,
+            Arc::new(bsdf),
+            color * 10.0,
+        )))
     }
 
-    fn bunny() -> Object<Mesh> {
+    fn bunny() -> Instance {
         let file_name = "./resources/meshes/bunny.obj";
         let (model, _) = tobj::load_obj(file_name, true).expect("Could not load bunny file");
         let scale = Vec3::one() * 25.0;
@@ -122,12 +114,11 @@ impl CornellScene {
         let transmission = Box::new(SpecularTransmission::new(color, dielectric));
         // let reflection = Box::new(SpecularReflection::new(color, dielectric));
         let bsdf = BSDF::new(vec![transmission]);
-        let material = Material::from(bsdf);
 
-        Object::new(bunny, material)
+        Receiver(Arc::new(ReceiverObj::new(bunny, Arc::new(bsdf))))
     }
 
-    fn dragon() -> Object<Mesh> {
+    fn dragon() -> Instance {
         let file_name = "./resources/meshes/dragon_4.obj";
         let (model, _) = tobj::load_obj(file_name, true).expect("Could not load dragon file");
         let scale = Vec3::one() * 25.0;
@@ -141,12 +132,11 @@ impl CornellScene {
         let transmission = Box::new(SpecularTransmission::new(color, dielectric.clone()));
         let reflection = Box::new(SpecularReflection::new(color * 0.25, dielectric));
         let bsdf = BSDF::new(vec![reflection, transmission]);
-        let material = Material::from(bsdf);
 
-        Object::new(dragon, material)
+        Receiver(Arc::new(ReceiverObj::new(dragon, Arc::new(bsdf))))
     }
 
-    fn sphere() -> Object<Sphere> {
+    fn sphere() -> Instance {
         // center on ground
         let center = Vec3::new(
             LEFT_WALL + RIGHT_WALL * 1.5,
@@ -160,12 +150,11 @@ impl CornellScene {
         let fresnel = Arc::new(Dielectric::new(1.0, 2.0));
         let spec_trans = SpecularTransmission::new(color, fresnel);
         let bsdf = BSDF::new(vec![Box::new(spec_trans)]);
-        let material = Material::from(bsdf);
 
-        Object::new(sphere, material)
+        Receiver(Arc::new(ReceiverObj::new(sphere, Arc::new(bsdf))))
     }
 
-    fn capsule() -> Object<Capsule> {
+    fn capsule() -> Instance {
         let from = Vec3::new(
             LEFT_WALL * 1.5 + RIGHT_WALL,
             FLOOR + RADIUS,
@@ -182,12 +171,11 @@ impl CornellScene {
         let color = Spectrum::white();
         let oren_nayar = OrenNayar::new(color, SIGMA);
         let bsdf = BSDF::new(vec![Box::new(oren_nayar)]);
-        let material = Material::from(bsdf);
 
-        Object::new(capsule, material)
+        Receiver(Arc::new(ReceiverObj::new(capsule, Arc::new(bsdf))))
     }
 
-    fn tube() -> Object<Tube> {
+    fn tube() -> Instance {
         let radius = RADIUS / 4.0;
         let points = [
             Vec3::unit_y() * radius - Vec3::unit_x() * 2.0 - Vec3::unit_z() * 3.0,
@@ -207,12 +195,11 @@ impl CornellScene {
         // let microfacet =
         //     MicrofacetReflection::new(color, Box::new(distribution), Box::new(FresnelNoOp));
         // let bsdf = BSDF::new(vec![Box::new(microfacet)]);
-        let material = Material::from(bsdf);
 
-        Object::new(tube, material)
+        Receiver(Arc::new(ReceiverObj::new(tube, Arc::new(bsdf))))
     }
 
-    fn left_wall() -> Object<Aabb> {
+    fn left_wall() -> Instance {
         let aabb = Aabb::new(
             Vec3::new(
                 LEFT_WALL - THICKNESS,
@@ -225,12 +212,11 @@ impl CornellScene {
         let color = Spectrum::red();
         let oren_nayar = OrenNayar::new(color, SIGMA);
         let bsdf = BSDF::new(vec![Box::new(oren_nayar)]);
-        let material = Material::from(bsdf);
 
-        Object::new(aabb, material)
+        Receiver(Arc::new(ReceiverObj::new(aabb, Arc::new(bsdf))))
     }
 
-    fn right_wall() -> Object<Aabb> {
+    fn right_wall() -> Instance {
         let aabb = Aabb::new(
             Vec3::new(RIGHT_WALL, FLOOR - THICKNESS, BACK_WALL - THICKNESS),
             Vec3::new(RIGHT_WALL + THICKNESS, CEILING + THICKNESS, FRONT),
@@ -239,12 +225,11 @@ impl CornellScene {
         let color = Spectrum::green();
         let oren_nayar = OrenNayar::new(color, SIGMA);
         let bsdf = BSDF::new(vec![Box::new(oren_nayar)]);
-        let material = Material::from(bsdf);
 
-        Object::new(aabb, material)
+        Receiver(Arc::new(ReceiverObj::new(aabb, Arc::new(bsdf))))
     }
 
-    fn back_wall() -> Object<Aabb> {
+    fn back_wall() -> Instance {
         let aabb = Aabb::new(
             Vec3::new(
                 LEFT_WALL - THICKNESS,
@@ -259,12 +244,11 @@ impl CornellScene {
         // let bsdf = BSDF::new(vec![Box::new(spec_refl)]);
         let oren_nayar = OrenNayar::new(color, SIGMA);
         let bsdf = BSDF::new(vec![Box::new(oren_nayar)]);
-        let material = Material::from(bsdf);
 
-        Object::new(aabb, material)
+        Receiver(Arc::new(ReceiverObj::new(aabb, Arc::new(bsdf))))
     }
 
-    fn floor() -> Object<Aabb> {
+    fn floor() -> Instance {
         let aabb = Aabb::new(
             Vec3::new(
                 LEFT_WALL - THICKNESS,
@@ -277,12 +261,11 @@ impl CornellScene {
         let color = Spectrum::white();
         let oren_nayar = OrenNayar::new(color, SIGMA);
         let bsdf = BSDF::new(vec![Box::new(oren_nayar)]);
-        let material = Material::from(bsdf);
 
-        Object::new(aabb, material)
+        Receiver(Arc::new(ReceiverObj::new(aabb, Arc::new(bsdf))))
     }
 
-    fn ceiling() -> Object<Aabb> {
+    fn ceiling() -> Instance {
         let aabb = Aabb::new(
             Vec3::new(LEFT_WALL - THICKNESS, CEILING, BACK_WALL - THICKNESS),
             Vec3::new(RIGHT_WALL + THICKNESS, CEILING + THICKNESS, FRONT),
@@ -291,9 +274,8 @@ impl CornellScene {
         let color = Spectrum::white();
         let oren_nayar = OrenNayar::new(color, SIGMA);
         let bsdf = BSDF::new(vec![Box::new(oren_nayar)]);
-        let material = Material::from(bsdf);
 
-        Object::new(aabb, material)
+        Receiver(Arc::new(ReceiverObj::new(aabb, Arc::new(bsdf))))
     }
 }
 
