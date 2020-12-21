@@ -92,7 +92,7 @@ pub fn uniform_sample_cone(sample: &Vec2, cos_theta_max: f32) -> Vec3 {
 /// # Arguments
 /// * `sample` - A random sample in `[0, 1]`
 /// * `cos_theta_max` - The max angle
-/// * `frame` - The coordinate system frame
+/// * `frame` - The coordinate system frame. Y-axis is "up"-axis.
 ///
 /// # Results
 /// * `Vec3` - A direction in the cone around `frame.e2`
@@ -105,7 +105,7 @@ pub fn uniform_sample_cone_frame(
     let sin = f32::sqrt(1.0 - cos * cos);
     let phi = sample.y * 2.0 * PI;
 
-    (phi.cos() * sin * frame.e1) + (cos * frame.e2) + (phi.sin() * sin * frame.e3)
+    (phi.cos() * sin * frame.e1) - (cos * frame.e2) + (phi.sin() * sin * frame.e3)
 }
 
 /// # Summary

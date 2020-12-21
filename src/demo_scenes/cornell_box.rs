@@ -86,8 +86,8 @@ impl CornellScene {
     }
 
     fn emitter() -> Instance {
-        let center = Vec3::new(X_CENTER, CEILING + RADIUS * 2.0, Z_CENTER);
-        let sphere = Sphere::new(center, RADIUS * 2.1);
+        let center = Vec3::new(X_CENTER, CEILING - RADIUS, Z_CENTER);
+        let sphere = Sphere::new(center, RADIUS);
 
         let color = Spectrum::white();
         let oren_nayar = OrenNayar::new(color, SIGMA);
@@ -96,7 +96,7 @@ impl CornellScene {
         Emitter(Arc::new(EmitterObj::new(
             sphere,
             Arc::new(bsdf),
-            color * 10.0,
+            color * 5.0,
         )))
     }
 

@@ -307,16 +307,18 @@ impl CoordinateSystem {
 
 impl From<&Vec3> for CoordinateSystem {
     /// Creates a local ortho-normal coordinate system from the given vector.
-    fn from(e1: &Vec3) -> Self {
-        let e2 = if e1.x.abs() > e1.y.abs() {
-            let inv = 1.0 / f32::sqrt(e1.x * e1.x + e1.z * e1.z);
-            Vec3::new(-e1.z * inv, 0.0, e1.x * inv)
-        } else {
-            let inv = 1.0 / f32::sqrt(e1.y * e1.y + e1.z * e1.z);
-            Vec3::new(0.0, e1.z * inv, -e1.y * inv)
-        };
-        let e3 = e1.cross(e2);
+    fn from(e3: &Vec3) -> Self {
+        debug_assert_ne!(*e3, Vec3::zero());
 
-        Self::new(*e1, e2, e3)
+        let e1 = if e3.x.abs() > e3.y.abs() {
+            let inv = 1.0 / f32::sqrt(e3.x * e3.x + e3.z * e3.z);
+            Vec3::new(-e3.z * inv, 0.0, e3.x * inv)
+        } else {
+            let inv = 1.0 / f32::sqrt(e3.y * e3.y + e3.z * e3.z);
+            Vec3::new(0.0, e3.z * inv, -e3.y * inv)
+        };
+        let e2 = e3.cross(e1);
+
+        Self::new(e1, e2, *e3)
     }
 }

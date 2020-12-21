@@ -4,9 +4,10 @@ use crate::bxdf::bsdf::BSDF;
 use crate::bxdf::lambertian::LambertianReflection;
 use crate::demo_scenes::{DemoScene, FOVY};
 use crate::render::camera::Camera;
+use crate::render::objects::emitter::EmitterObj;
 use crate::render::objects::receiver::ReceiverObj;
 use crate::render::objects::Instance;
-use crate::render::objects::Instance::{Receiver, Emitter};
+use crate::render::objects::Instance::{Emitter, Receiver};
 use crate::render::scene::Scene;
 use crate::Spectrum;
 use color::Color;
@@ -14,7 +15,6 @@ use geometry::aabb::Aabb;
 use geometry::sphere::Sphere;
 use std::sync::Arc;
 use ultraviolet::Vec3;
-use crate::render::objects::emitter::EmitterObj;
 
 pub struct DebugScene;
 
@@ -33,12 +33,14 @@ impl DebugScene {
     fn sphere() -> Instance {
         let sphere = Sphere::new(Vec3::unit_y(), 1.0);
 
-        let color = Spectrum::white();
-
-        let lambertian = LambertianReflection::new(color);
+        let lambertian = LambertianReflection::new(Spectrum::black());
         let bsdf = BSDF::new(vec![Box::new(lambertian)]);
 
-        Emitter(Arc::new(EmitterObj::new(sphere, Arc::new(bsdf), color)))
+        Emitter(Arc::new(EmitterObj::new(
+            sphere,
+            Arc::new(bsdf),
+            Spectrum::white() * 3.0,
+        )))
     }
 
     fn create_camera(width: u32, height: u32) -> Camera {

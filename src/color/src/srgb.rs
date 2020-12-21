@@ -64,7 +64,7 @@ impl Into<Rgb<u8>> for Srgb {
         let mut data = [0; 3];
         data.iter_mut()
             .zip(self.data.iter())
-            .for_each(|(d0, d1)| *d0 = (d1 * 2u32.pow(8) as f32) as u8);
+            .for_each(|(d0, d1)| *d0 = (d1.max(0.0).min(1.0) * 2u32.pow(8) as f32) as u8);
 
         Rgb::from(data)
     }

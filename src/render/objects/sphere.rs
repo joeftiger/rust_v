@@ -6,6 +6,7 @@ use geometry::{CoordinateSystem, Intersectable};
 use std::f32::consts::PI;
 use ultraviolet::{Vec2, Vec3};
 use util::floats;
+use crate::bxdf::world_to_bxdf;
 
 impl Sampleable for Sphere {
     fn surface_area(&self) -> f32 {
@@ -13,20 +14,23 @@ impl Sampleable for Sphere {
     }
 
     fn sample_surface(&self, point: &Vec3, sample: &Vec2) -> SurfaceSample {
-        let dist_sq = (*point - self.center).mag_sq();
+        let center_to_point = *point - self.center;
+        let dist_sq = center_to_point.mag_sq();
         let r2 = self.radius * self.radius;
 
         if dist_sq - r2 < floats::BIG_EPSILON {
             // inside the sphere
-            let point = self.center + uniform_sample_sphere(sample) * self.radius;
-            let normal = point.normalized();
+            let p = uniform_sample_sphere(sample) * self.radius;
+            let normal = p.normalized();
 
-            SurfaceSample::new(point, normal)
+            SurfaceSample::new(self.center + p, normal)
         } else {
-            let z = -point.normalized();
-            let frame = CoordinateSystem::from(&z);
+            let y_as_z = -center_to_point.normalized();
+            let f = CoordinateSystem::from(&y_as_z); // this is rotated!
+            // correct frame
+            let frame = CoordinateSystem::new(f.e1, f.e3, f.e2);
 
-            let cos_theta_max = f32::max(0.0, 1.0 - r2 / dist_sq);
+            let cos_theta_max = f32::max(0.0, 1.0 - r2 / dist_sq).sqrt();
             let direction = uniform_sample_cone_frame(sample, cos_theta_max, &frame).normalized();
 
             let ray = Ray::new(*point, direction);
@@ -36,10 +40,10 @@ impl Sampleable for Sphere {
                 None => {
                     // if we miss, approximate the hit of the edge
                     let t = ray.direction.dot(-*point);
-                    let point = ray.at(t);
-                    let normal = point.normalized();
+                    let p = ray.at(t);
+                    let normal = p.normalized();
 
-                    SurfaceSample::new(point, normal)
+                    SurfaceSample::new(p, normal)
                 }
             }
         }
@@ -52,7 +56,7 @@ impl Sampleable for Sphere {
         if dist_sq - r2 < floats::BIG_EPSILON {
             1.0 / self.surface_area()
         } else {
-            let cos_theta = f32::max(0.0, 1.0 - r2 / dist_sq);
+            let cos_theta = f32::max(0.0, 1.0 - r2 / dist_sq).sqrt();
 
             uniform_cone_pdf(cos_theta)
         }
