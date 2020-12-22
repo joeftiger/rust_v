@@ -26,7 +26,7 @@ impl Sampleable for Sphere {
         } else {
             let y_as_z = -center_to_point.normalized();
             let f = CoordinateSystem::from(&y_as_z); // this is rotated!
-            // correct frame
+                                                     // correct frame
             let frame = CoordinateSystem::new(f.e1, f.e3, f.e2);
 
             let cos_theta_max = f32::max(0.0, 1.0 - r2 / dist_sq).sqrt() / 2.0;

@@ -2,6 +2,7 @@ use crate::bxdf::bsdf::BSDF;
 use crate::bxdf::fresnel::{Dielectric, FresnelNoOp};
 use crate::bxdf::lambertian::LambertianReflection;
 use crate::bxdf::oren_nayar::OrenNayar;
+use crate::bxdf::specular::{SpecularReflection, SpecularTransmission};
 use crate::demo_scenes::{DemoScene, FOVY, SIGMA};
 use crate::render::camera::Camera;
 use crate::render::objects::emitter::EmitterObj;
@@ -15,7 +16,6 @@ use geometry::aabb::Aabb;
 use geometry::sphere::Sphere;
 use std::sync::Arc;
 use ultraviolet::Vec3;
-use crate::bxdf::specular::{SpecularReflection, SpecularTransmission};
 
 const RADIUS: f32 = 0.5;
 
@@ -28,9 +28,7 @@ impl SphereScene {
         let aabb = Aabb::new(min, max);
 
         let lambertian = LambertianReflection::new(Spectrum::white());
-        let bsdf = BSDF::new(vec![
-            Box::new(lambertian),
-        ]);
+        let bsdf = BSDF::new(vec![Box::new(lambertian)]);
 
         Receiver(Arc::new(ReceiverObj::new(aabb, Arc::new(bsdf))))
     }
@@ -120,7 +118,7 @@ impl SphereScene {
         }
 
         scene.add(Self::ground());
-            // .add(Self::big_emitter());
+        // .add(Self::big_emitter());
 
         scene.build_bvh();
         scene

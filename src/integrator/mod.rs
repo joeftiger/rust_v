@@ -63,7 +63,7 @@ pub trait Integrator: Send + Sync {
                             bxdf_sample.spectrum * illumination * cos / bxdf_sample.pdf
                         } else {
                             bxdf_sample.spectrum
-                        }
+                        };
                     }
                 }
             }
@@ -113,7 +113,7 @@ pub trait Integrator: Send + Sync {
                             bxdf_sample.spectrum * illumination * cos / bxdf_sample.pdf
                         } else {
                             bxdf_sample.spectrum
-                        }
+                        };
                     }
                 }
             }

@@ -19,12 +19,12 @@ use geometry::aabb::Aabb;
 use geometry::capsule::Capsule;
 use geometry::cylinder::Cylinder;
 use geometry::mesh::Mesh;
+use geometry::point::Point;
 use geometry::sphere::Sphere;
 use geometry::tube::Tube;
 use geometry::Geometry;
 use std::sync::Arc;
 use ultraviolet::{Bivec3, Rotor3, Vec3};
-use geometry::point::Point;
 
 pub const LEFT_WALL: f32 = -3.0;
 pub const RIGHT_WALL: f32 = 3.0;
