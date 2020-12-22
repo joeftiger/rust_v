@@ -78,8 +78,8 @@ impl SphereScene {
     }
 
     fn big_emitter() -> Instance {
-        let center = Vec3::new(0.0, 20.0, 0.0);
-        let sphere = Sphere::new(center, 2.0);
+        let center = Vec3::new(0.0, 30.0, 0.0);
+        let sphere = Sphere::new(center, 0.1);
 
         let lambertian = LambertianReflection::new(Spectrum::black());
         let bsdf = BSDF::new(vec![Box::new(lambertian)]);
@@ -87,7 +87,8 @@ impl SphereScene {
         Emitter(Arc::new(EmitterObj::new(
             sphere,
             Arc::new(bsdf),
-            Spectrum::white() * 5.0,
+            (Spectrum::white() * 5.0 + Spectrum::red() + Spectrum::green()) * 50.0,
+            // (Spectrum::white() * 2.0 + Spectrum::red() + Spectrum::green()) / 4.0 * 10.0,
         )))
     }
 
@@ -106,7 +107,7 @@ impl SphereScene {
                     Emitter(Arc::new(EmitterObj::new(
                         sphere,
                         Arc::new(bsdf.1),
-                        color * 5.0,
+                        color * 2.0,
                     )))
                 } else {
                     Receiver(Arc::new(ReceiverObj::new(sphere, Arc::new(bsdf.1))))

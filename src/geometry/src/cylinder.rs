@@ -101,9 +101,9 @@ impl Intersectable for Cylinder {
 
         // Choose the normal's orientation to be opposite the ray's
         // (in case the ray intersects the inside surface)
-        if normal.dot(ray.direction) > 0.0 {
-            normal = -normal;
-        }
+        // if normal.dot(ray.direction) > 0.0 {
+        //     normal = -normal;
+        // }
 
         normal.normalize();
 

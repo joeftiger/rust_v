@@ -20,8 +20,8 @@ pub struct DebugScene;
 
 impl DebugScene {
     fn plane() -> Instance {
-        let min = Vec3::new(-10000.0, -5.0, -10000.0);
-        let max = Vec3::new(10000.0, 0.0, 10000.0);
+        let min = Vec3::new(-10.0, -5.0, -10.0);
+        let max = Vec3::new(10.0, 0.0, 10.0);
         let aabb = Aabb::new(min, max);
 
         let lambertian = LambertianReflection::new(Spectrum::white());
@@ -31,7 +31,7 @@ impl DebugScene {
     }
 
     fn sphere() -> Instance {
-        let sphere = Sphere::new(Vec3::unit_y(), 1.0);
+        let sphere = Sphere::new(Vec3::unit_y() * 1.1, 1.0);
 
         let lambertian = LambertianReflection::new(Spectrum::black());
         let bsdf = BSDF::new(vec![Box::new(lambertian)]);
@@ -45,7 +45,7 @@ impl DebugScene {
 
     fn create_camera(width: u32, height: u32) -> Camera {
         Camera::new(
-            Vec3::new(0.0, 2.0, -4.0),
+            Vec3::new(0.0, 2.0, 4.0),
             -Vec3::unit_y() / 4.0,
             Vec3::unit_y(),
             FOVY,

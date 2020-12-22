@@ -33,7 +33,7 @@ impl Ray {
 
     #[inline(always)]
     pub fn is_in_range(&self, t: f32) -> bool {
-        t >= self.t_start && t <= self.t_end
+        self.t_start <= t && t <= self.t_end
     }
 
     #[inline]

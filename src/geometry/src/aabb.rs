@@ -146,9 +146,9 @@ impl Intersectable for Aabb {
 
         // Choose the normal's orientation to be opposite the ray's
         // (in case the ray intersects the inside surface)
-        if normal.dot(ray.direction) > 0.0 {
-            normal = -normal;
-        }
+        // if normal.dot(ray.direction) > 0.0 {
+        //     normal = -normal;
+        // }
 
         // approximating epsilon is too small (unlikely) or the given hit was illegal
         Some(Intersection::new(*ray, t_min, hit, normal))

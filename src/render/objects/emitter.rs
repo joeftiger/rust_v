@@ -94,7 +94,9 @@ where
         let surface = self.shape.sample_surface(&point, sample);
 
         let incident = (surface.point - point).normalized();
-        let occlusion_tester = OcclusionTester::between(point, surface.point);
+
+        let from = point + intersection.info.normal * floats::EPSILON;
+        let occlusion_tester = OcclusionTester::between(from, surface.point);
 
         let pdf = self.shape.pdf(&occlusion_tester.ray);
         let radiance = self.radiance(&incident, &surface.normal);
@@ -136,8 +138,8 @@ impl OcclusionTester {
         let ray = Ray::with(
             from,
             dir.normalized(),
-            floats::BIG_EPSILON,
-            dir.mag() - floats::BIG_EPSILON,
+            floats::EPSILON,
+            dir.mag() - floats::EPSILON,
         );
 
         Self { ray }

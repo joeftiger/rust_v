@@ -53,13 +53,13 @@ impl Intersectable for Sphere {
         let t_min = f32::mmin_op2(ray.is_in_range_op(t0), ray.is_in_range_op(t1))?;
 
         let point = ray.at(t_min);
-        let mut normal = (point - self.center).normalized();
+        let normal = (point - self.center).normalized();
 
         // Choose the normal's orientation to be opposite the ray's
         // (in case the ray intersects the inside surface)
-        if normal.dot(ray.direction) > 0.0 {
-            normal = -normal;
-        }
+        // if normal.dot(ray.direction) > 0.0 {
+        //     normal = -normal;
+        // }
 
         Some(Intersection::new(*ray, t_min, point, normal))
     }

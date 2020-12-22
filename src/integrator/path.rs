@@ -60,11 +60,11 @@ impl Integrator for Path {
 
             let mut illumination = Spectrum::black();
 
-            // if bounce == 0 || specular {
-            //     if let Some(e) = emitter {
-            //         illumination += throughput * e.emission();
-            //     }
-            // }
+            if bounce == 0 || specular {
+                if let Some(e) = emitter {
+                    illumination += throughput * e.emission();
+                }
+            }
 
             for light in &scene.lights {
                 // for _ in 0..5.min(scene.lights.len()) {

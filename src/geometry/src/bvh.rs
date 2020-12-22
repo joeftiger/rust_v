@@ -309,7 +309,21 @@ impl<T> Intersectable for Bvh<T> where T: Intersectable {
     }
 
     fn intersects(&self, ray: &Ray) -> bool {
-        self.objects.iter().any(|o| o.intersects(ray))
-            || self.children.iter().any(|c| c.intersects(ray))
+        for obj in &self.objects {
+            if obj.intersects(ray) {
+                return true;
+            }
+        }
+
+        for child in &self.children {
+            if child.intersects(ray) {
+                return true;
+            }
+        }
+
+        return false;
+
+        // self.objects.iter().any(|o| o.intersects(ray))
+        //     || self.children.iter().any(|c| c.intersects(ray))
     }
 }

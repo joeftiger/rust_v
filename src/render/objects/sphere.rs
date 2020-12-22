@@ -6,7 +6,6 @@ use geometry::{CoordinateSystem, Intersectable};
 use std::f32::consts::PI;
 use ultraviolet::{Vec2, Vec3};
 use util::floats;
-use crate::bxdf::world_to_bxdf;
 
 impl Sampleable for Sphere {
     fn surface_area(&self) -> f32 {
@@ -27,10 +26,10 @@ impl Sampleable for Sphere {
         } else {
             let y_as_z = -center_to_point.normalized();
             let f = CoordinateSystem::from(&y_as_z); // this is rotated!
-            // correct frame
+                                                     // correct frame
             let frame = CoordinateSystem::new(f.e1, f.e3, f.e2);
 
-            let cos_theta_max = f32::max(0.0, 1.0 - r2 / dist_sq).sqrt();
+            let cos_theta_max = f32::max(0.0, 1.0 - r2 / dist_sq).sqrt() / 2.0;
             let direction = uniform_sample_cone_frame(sample, cos_theta_max, &frame).normalized();
 
             let ray = Ray::new(*point, direction);
@@ -54,6 +53,7 @@ impl Sampleable for Sphere {
         let r2 = self.radius * self.radius;
 
         if dist_sq - r2 < floats::BIG_EPSILON {
+            // inside the sphere (may happen)
             1.0 / self.surface_area()
         } else {
             let cos_theta = f32::max(0.0, 1.0 - r2 / dist_sq).sqrt();

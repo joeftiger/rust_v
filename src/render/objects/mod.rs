@@ -6,6 +6,7 @@ use geometry::{Boundable, Intersectable, Intersection};
 use std::sync::Arc;
 
 pub mod emitter;
+mod point;
 pub mod receiver;
 mod sphere;
 
