@@ -24,6 +24,7 @@ use geometry::tube::Tube;
 use geometry::Geometry;
 use std::sync::Arc;
 use ultraviolet::{Bivec3, Rotor3, Vec3};
+use geometry::point::Point;
 
 pub const LEFT_WALL: f32 = -3.0;
 pub const RIGHT_WALL: f32 = 3.0;
@@ -86,7 +87,10 @@ impl CornellScene {
     }
 
     fn emitter() -> Instance {
-        let center = Vec3::new(X_CENTER, CEILING - RADIUS, Z_CENTER);
+        let position = Vec3::new(X_CENTER, CEILING - RADIUS, Z_CENTER);
+        let point = Point::new(position);
+
+        let center = Vec3::new(X_CENTER, CEILING, Z_CENTER);
         let sphere = Sphere::new(center, RADIUS);
 
         let color = Spectrum::white();
@@ -94,9 +98,9 @@ impl CornellScene {
         let bsdf = BSDF::new(vec![Box::new(oren_nayar)]);
 
         Emitter(Arc::new(EmitterObj::new(
-            sphere,
+            point,
             Arc::new(bsdf),
-            color * 5.0,
+            color * 2.0,
         )))
     }
 
@@ -147,7 +151,7 @@ impl CornellScene {
         let sphere = Sphere::new(center, RADIUS);
 
         let color = Spectrum::white();
-        let fresnel = Arc::new(Dielectric::new(1.0, 2.0));
+        let fresnel = Arc::new(Dielectric::new(1.0, 1.1));
         let spec_trans = SpecularTransmission::new(color, fresnel);
         let bsdf = BSDF::new(vec![Box::new(spec_trans)]);
 

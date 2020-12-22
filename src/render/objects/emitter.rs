@@ -19,7 +19,9 @@ pub trait Emitter: Receiver {
 
     #[inline]
     fn radiance(&self, incident: &Vec3, normal: &Vec3) -> Spectrum {
-        if incident.dot(*normal) > 0.0 {
+        let dot = incident.dot(*normal);
+
+        if dot > 0.0 {
             self.emission()
         } else {
             Spectrum::new_const(0.0)
@@ -95,7 +97,7 @@ where
 
         let incident = (surface.point - point).normalized();
 
-        let from = point + intersection.info.normal * floats::EPSILON;
+        let from = point; // + intersection.info.normal * floats::EPSILON;
         let occlusion_tester = OcclusionTester::between(from, surface.point);
 
         let pdf = self.shape.pdf(&occlusion_tester.ray);
@@ -138,8 +140,8 @@ impl OcclusionTester {
         let ray = Ray::with(
             from,
             dir.normalized(),
-            floats::EPSILON,
-            dir.mag() - floats::EPSILON,
+            floats::BIG_EPSILON,
+            dir.mag() - floats::BIG_EPSILON,
         );
 
         Self { ray }

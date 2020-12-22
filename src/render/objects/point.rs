@@ -5,11 +5,11 @@ use ultraviolet::{Vec2, Vec3};
 
 impl Sampleable for Point {
     fn surface_area(&self) -> f32 {
-        0.0
+        1.0
     }
 
     fn sample_surface(&self, point: &Vec3, _: &Vec2) -> SurfaceSample {
-        let normal = *point - self.position;
+        let normal = self.position - *point;
 
         SurfaceSample::new(self.position, normal.normalized())
     }

@@ -56,9 +56,14 @@ pub trait Integrator: Send + Sync {
                     let reflected_ray = intersection.info.create_ray(bxdf_sample.incident);
 
                     if let Some(i) = scene.intersect(&reflected_ray) {
-                        let illumination = self.illumination(scene, &i, sampler, depth - 1);
+                        let new_depth = depth - 1;
 
-                        return bxdf_sample.spectrum * illumination * cos / bxdf_sample.pdf;
+                        return if new_depth > 0 {
+                            let illumination = self.illumination(scene, &i, sampler, depth - 1);
+                            bxdf_sample.spectrum * illumination * cos / bxdf_sample.pdf
+                        } else {
+                            bxdf_sample.spectrum
+                        }
                     }
                 }
             }
@@ -101,9 +106,14 @@ pub trait Integrator: Send + Sync {
                     let transmitted_ray = intersection.info.create_ray(bxdf_sample.incident);
 
                     if let Some(i) = scene.intersect(&transmitted_ray) {
-                        let illumination = self.illumination(scene, &i, sampler, depth - 1);
+                        let new_depth = depth - 1;
 
-                        return bxdf_sample.spectrum * illumination * cos / bxdf_sample.pdf;
+                        return if new_depth > 0 {
+                            let illumination = self.illumination(scene, &i, sampler, depth - 1);
+                            bxdf_sample.spectrum * illumination * cos / bxdf_sample.pdf
+                        } else {
+                            bxdf_sample.spectrum
+                        }
                     }
                 }
             }

@@ -2,7 +2,6 @@ use crate::bxdf::bsdf::BSDF;
 use crate::bxdf::fresnel::{Dielectric, FresnelNoOp};
 use crate::bxdf::lambertian::LambertianReflection;
 use crate::bxdf::oren_nayar::OrenNayar;
-use crate::bxdf::specular::{SpecularReflection, SpecularTransmission};
 use crate::demo_scenes::{DemoScene, FOVY, SIGMA};
 use crate::render::camera::Camera;
 use crate::render::objects::emitter::EmitterObj;
@@ -16,6 +15,7 @@ use geometry::aabb::Aabb;
 use geometry::sphere::Sphere;
 use std::sync::Arc;
 use ultraviolet::Vec3;
+use crate::bxdf::specular::{SpecularReflection, SpecularTransmission};
 
 const RADIUS: f32 = 0.5;
 
@@ -28,7 +28,9 @@ impl SphereScene {
         let aabb = Aabb::new(min, max);
 
         let lambertian = LambertianReflection::new(Spectrum::white());
-        let bsdf = BSDF::new(vec![Box::new(lambertian)]);
+        let bsdf = BSDF::new(vec![
+            Box::new(lambertian),
+        ]);
 
         Receiver(Arc::new(ReceiverObj::new(aabb, Arc::new(bsdf))))
     }
@@ -78,7 +80,7 @@ impl SphereScene {
     }
 
     fn big_emitter() -> Instance {
-        let center = Vec3::new(0.0, 30.0, 0.0);
+        let center = Vec3::new(0.0, 60.0, 0.0);
         let sphere = Sphere::new(center, 0.1);
 
         let lambertian = LambertianReflection::new(Spectrum::black());
@@ -87,7 +89,7 @@ impl SphereScene {
         Emitter(Arc::new(EmitterObj::new(
             sphere,
             Arc::new(bsdf),
-            (Spectrum::white() * 5.0 + Spectrum::red() + Spectrum::green()) * 50.0,
+            (Spectrum::white() * 5.0 + Spectrum::red() + Spectrum::green()) * 100.0,
             // (Spectrum::white() * 2.0 + Spectrum::red() + Spectrum::green()) / 4.0 * 10.0,
         )))
     }
@@ -117,7 +119,8 @@ impl SphereScene {
             }
         }
 
-        scene.add(Self::ground()).add(Self::big_emitter());
+        scene.add(Self::ground());
+            // .add(Self::big_emitter());
 
         scene.build_bvh();
         scene
