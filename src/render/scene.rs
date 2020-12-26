@@ -44,11 +44,24 @@ impl Scene {
 
     /// Checks if the given ray intersects any object before reaching it's own maximum t lifespan.
     pub fn is_occluded(&self, ray: &Ray) -> bool {
+        // self.objects.iter().any(|i| i.intersects(ray))
+
         self.bvh.intersects(ray)
-        // self.objects.iter().any(|o| o.bounding_box().intersects(ray) && o.intersects(ray))
     }
 
     pub fn intersect(&self, ray: &Ray) -> Option<SceneIntersection> {
+        // let mut ray = *ray;
+        //
+        // let mut intersection = None;
+        // for o in &self.objects {
+        //     if let Some(i) = o.intersect(&ray) {
+        //         ray.t_end = i.t;
+        //         intersection = Some(SceneIntersection::new(i, o.clone()));
+        //     }
+        // }
+        //
+        // intersection
+
         self.bvh.intersect_detailed(ray)
     }
 

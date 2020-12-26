@@ -37,9 +37,9 @@ impl Integrator for Whitted {
     ) -> Spectrum {
         let outgoing = -intersection.info.ray.direction;
 
-        let obj = match &intersection.obj {
-            Instance::Emitter(e) => e.as_receiver(),
-            Instance::Receiver(r) => r.clone(),
+        let (obj, emitter) = match &intersection.obj {
+            Instance::Emitter(e) => (e.as_receiver(), Some(e)),
+            Instance::Receiver(r) => (r.clone(), None),
         };
 
         let bsdf = obj.bsdf();
@@ -47,6 +47,12 @@ impl Integrator for Whitted {
         let normal = &intersection.info.normal;
 
         let mut illumination = Spectrum::black();
+
+        if depth == self.max_depth {
+            if let Some(e) = emitter {
+                illumination += e.emission();
+            }
+        }
 
         for light in &scene.lights {
             // for _ in 0..LIGHT_SAMPLES_1D.min(scene.lights.len()) {

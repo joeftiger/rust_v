@@ -1,11 +1,12 @@
-use crate::mc::{uniform_cone_pdf, uniform_sample_cone_frame, uniform_sample_sphere};
+use crate::mc::{uniform_cone_pdf, uniform_sample_sphere, uniform_sample_cone};
 use crate::render::objects::emitter::{Sampleable, SurfaceSample};
 use geometry::ray::Ray;
 use geometry::sphere::Sphere;
-use geometry::{CoordinateSystem, Intersectable};
+use geometry::Intersectable;
 use std::f32::consts::PI;
 use ultraviolet::{Vec2, Vec3};
 use util::floats;
+use crate::bxdf::world_to_bxdf;
 
 impl Sampleable for Sphere {
     fn surface_area(&self) -> f32 {
@@ -13,8 +14,8 @@ impl Sampleable for Sphere {
     }
 
     fn sample_surface(&self, point: &Vec3, sample: &Vec2) -> SurfaceSample {
-        let center_to_point = *point - self.center;
-        let dist_sq = center_to_point.mag_sq();
+        let to_center = self.center - *point;
+        let dist_sq = to_center.mag_sq();
         let r2 = self.radius * self.radius;
 
         if dist_sq - r2 < floats::BIG_EPSILON {
@@ -24,18 +25,20 @@ impl Sampleable for Sphere {
 
             SurfaceSample::new(self.center + p, normal)
         } else {
-            let y_as_z = -center_to_point.normalized();
-            let f = CoordinateSystem::from(&y_as_z); // this is rotated!
-                                                     // correct frame
-            let frame = CoordinateSystem::new(f.e1, f.e3, f.e2);
-
             let cos_theta_max = f32::max(0.0, 1.0 - r2 / dist_sq).sqrt() / 2.0;
-            let direction = uniform_sample_cone_frame(sample, cos_theta_max, &frame).normalized();
+
+            let axis = to_center;
+
+            let rotation = world_to_bxdf(&axis);
+            let direction = rotation.reversed() * uniform_sample_cone(sample, cos_theta_max).normalized();
+            // let direction = axis.normalized();
 
             let ray = Ray::new(*point, direction);
 
             match self.intersect(&ray) {
-                Some(i) => SurfaceSample::new(i.point, i.normal),
+                Some(i) => {
+                    SurfaceSample::new(i.point, i.normal)
+                },
                 None => {
                     // if we miss, approximate the hit of the edge
                     let t = ray.direction.dot(-*point);

@@ -5,7 +5,7 @@ use ultraviolet::{Vec2, Vec3};
 
 impl Sampleable for Point {
     fn surface_area(&self) -> f32 {
-        1.0
+        0.0
     }
 
     fn sample_surface(&self, point: &Vec3, _: &Vec2) -> SurfaceSample {

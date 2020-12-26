@@ -1,6 +1,6 @@
 use bitflags::_core::time::Duration;
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
-use rust_v::render::bxdf;
+use rust_v::bxdf;
 use ultraviolet::Vec3;
 
 pub fn criterion_benchmark(c: &mut Criterion) {

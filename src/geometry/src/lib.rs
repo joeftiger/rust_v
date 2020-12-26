@@ -36,10 +36,12 @@ impl Intersection {
     }
 
     pub fn create_ray(&self, dir: Vec3) -> Ray {
+        let origin = self.point + self.normal * floats::BIG_EPSILON;
+
         let t_start = floats::BIG_EPSILON;
         let t_end = f32::INFINITY;
 
-        Ray::with(self.point, dir, t_start, t_end)
+        Ray::with(origin, dir, t_start, t_end)
     }
 }
 

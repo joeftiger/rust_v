@@ -4,7 +4,6 @@ use crate::aabb::Aabb;
 use crate::ray::Ray;
 use crate::{Container, Intersection, Boundable, Intersectable};
 use util::math::solve_quadratic;
-use util::MinMaxExt;
 
 #[derive(Debug, PartialEq)]
 pub struct Sphere {
@@ -48,11 +47,17 @@ impl Intersectable for Sphere {
         let b = 2.0 * dir.dot(oc);
         let c = oc.dot(oc) - self.radius * self.radius;
 
-        let (t0, t1) = solve_quadratic(a, b, c)?;
+        let (t_min, t_max) = solve_quadratic(a, b, c)?;
+        let t;
+        if ray.is_in_range(t_min) {
+            t = t_min;
+        } else if ray.is_in_range(t_max) {
+            t = t_max;
+        } else {
+            return None;
+        }
 
-        let t_min = f32::mmin_op2(ray.is_in_range_op(t0), ray.is_in_range_op(t1))?;
-
-        let point = ray.at(t_min);
+        let point = ray.at(t);
         let normal = (point - self.center).normalized();
 
         // Choose the normal's orientation to be opposite the ray's
@@ -61,7 +66,7 @@ impl Intersectable for Sphere {
         //     normal = -normal;
         // }
 
-        Some(Intersection::new(*ray, t_min, point, normal))
+        Some(Intersection::new(*ray, t, point, normal))
     }
 
     #[inline]

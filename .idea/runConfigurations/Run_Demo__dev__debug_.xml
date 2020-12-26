@@ -1,12 +1,14 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="Run Demo (dev, debug)" type="CargoCommandRunConfiguration" factoryName="Cargo Command">
+    <option name="command" value="run --package rust_v --bin rust_v --features &quot;live-window&quot; -- debug --live -i path -v -d 1 -p 1 -t 1" />
+    <option name="workingDirectory" value="file://$PROJECT_DIR$" />
     <option name="channel" value="DEFAULT" />
-    <option name="command" value="run --package rust_v --bin rust_v --features &quot;live-window&quot; -- demo --live -i debug -v" />
     <option name="allFeatures" value="false" />
     <option name="emulateTerminal" value="false" />
     <option name="backtrace" value="SHORT" />
-    <option name="workingDirectory" value="file://$PROJECT_DIR$" />
     <envs />
+    <option name="isRedirectInput" value="false" />
+    <option name="redirectInputPath" value="" />
     <method v="2">
       <option name="CARGO.BUILD_TASK_PROVIDER" enabled="true" />
     </method>

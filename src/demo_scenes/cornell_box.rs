@@ -90,8 +90,8 @@ impl CornellScene {
         let position = Vec3::new(X_CENTER, CEILING - RADIUS, Z_CENTER);
         let point = Point::new(position);
 
-        let center = Vec3::new(X_CENTER, CEILING, Z_CENTER);
-        let sphere = Sphere::new(center, RADIUS);
+        // let center = Vec3::new(X_CENTER, CEILING, Z_CENTER);
+        // let sphere = Sphere::new(center, RADIUS);
 
         let color = Spectrum::white();
         let oren_nayar = OrenNayar::new(color, SIGMA);

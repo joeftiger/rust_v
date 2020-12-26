@@ -110,7 +110,7 @@ impl Integrator for Path {
                     floats::fast_clamp(bxdf_sample.incident.dot(hit.info.normal).abs(), 0.0, 1.0)
                 };
 
-                throughput *= bxdf_sample.spectrum * (dot / bxdf_sample.pdf);
+                throughput *= bxdf_sample.spectrum * (dot / bxdf_sample.pdf) * 0.5;
 
                 // if bounce > self.min_depth {
                 //     let const_prob = 0.75;
@@ -125,10 +125,10 @@ impl Integrator for Path {
 
                 match scene.intersect(&ray) {
                     Some(i) => hit = i,
-                    None => return color,
+                    None => break,
                 }
             } else {
-                return color;
+                break;
             }
         }
 

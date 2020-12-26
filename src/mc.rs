@@ -79,7 +79,7 @@ pub fn uniform_sample_sphere(sample: &Vec2) -> Vec3 {
 /// # Results
 /// * `Vec3` - A direction in the cone around `(0, 1, 0)`
 pub fn uniform_sample_cone(sample: &Vec2, cos_theta_max: f32) -> Vec3 {
-    let cos = (1.0 - sample.x) + sample.x * cos_theta_max;
+    let cos = cos_theta_max.lerp(1.0, sample.x);
     let sin = f32::sqrt(1.0 - cos * cos);
     let phi = sample.y * 2.0 * PI;
 

@@ -8,12 +8,14 @@
       <sourceFolder url="file://$MODULE_DIR$/src/geometry/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/util/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/color/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/morton-code/src" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/.idea" />
       <excludeFolder url="file://$MODULE_DIR$/src/color/target" />
       <excludeFolder url="file://$MODULE_DIR$/src/geometry/target" />
       <excludeFolder url="file://$MODULE_DIR$/src/util" />
       <excludeFolder url="file://$MODULE_DIR$/src/util/target" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
+      <excludeFolder url="file://$MODULE_DIR$/src/morton-code/target" />
     </content>
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
